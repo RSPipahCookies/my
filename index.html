@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PipahCookies — Reseller Portal (Demo)</title>
+  <style>
+ :root{
+    --primary:#A67734;
+    --primary-dark:#d4b390;
+    --accent:#fff1e6;
+    --whatsapp:#25d366;
+    --bg:#fff8f2;
+    --card:#ffffff;
+    --muted:#6b6b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Fredoka",sans-serif;background:var(--bg);color:#222;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Poppins",sans-serif;color:var(--primary-dark);margin:0 0 8px}
+  a{color:inherit}
+
+/* Header */
+  .site-header{display:block}
+  .header-img{width:100%;height:auto;display:block;object-fit:cover;max-height:360px;border-radius:0 0 14px 14px;box-shadow:0 8px 18px rgba(0,0,0,0.06);animation:fadeUp .9s both}
+/* Nav */
+  .site-nav{position:sticky;top:0;background:var(--primary);z-index:40;padding:10px 0}
+  .nav-list{list-style:none;margin:0;padding:0;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+  .nav-list a{color:#fff;text-decoration:none;font-weight:700;padding:8px 12px;border-radius:8px;transition:transform .15s}
+  .nav-list a:hover{transform:translateY(-3px);background:rgba(255,255,255,0.08)}
+
+/* Sections */
+  .section{padding:36px 18px}
+  .lead{max-width:900px;margin:0 auto;color:var(--muted);line-height:1.6}
+
+/* Syarat box */
+.syarat-box{max-width:920px;margin:0 auto;background:linear-gradient(180deg,rgba(255,255,255,0.9),var(--accent));padding:18px;border-radius:12px;box-shadow:0 12px 30px rgba(166,119,52,0.08);border:1px solid rgba(166,119,52,0.06)}
+.syarat-box ul{margin:12px 0 0 18px}
+.syarat-box li{margin-bottom:8px;color:#333}
+
+/* Product Section Layout */
+.products { display:flex;flex-wrap:wrap;gap:20px;justify-content:center }
+.product-card { flex:0 0 calc(33.333% - 20px); height:420px; background:var(--card); padding:15px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden; text-align:center; display:flex; flex-direction:column; justify-content:space-between }
+@media (max-width: 900px){ .product-card{flex:0 0 calc(50% - 20px)} }
+@media (max-width:600px){ .product-card{flex:0 0 calc(100% - 20px)} }
+.product-slider{position:relative;overflow:hidden;border-radius:10px}
+.product-img{
+  width:100%;
+  height:240px;              /* was 170px → now taller/wider */
+  object-fit:cover;          /* fills better visually */
+  display:none;
+  border-radius:10px;
+  transition:opacity .4s ease-in-out;
+}
+.product-img.active{display:block}
+.slider-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.6);cursor:pointer}
+.dot.active{background:var(--primary-dark)}
+
+.card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 12px 24px rgba(0,0,0,0.06);transition:transform .18s}
+.card:hover{transform:translateY(-8px)}
+.old-price{text-decoration:line-through;color:gray;font-size:14px}
+.price{color:var(--primary-dark);font-weight:700;margin-bottom:6px}
+
+.qty-control{display:flex;justify-content:center;align-items:center;gap:8px;margin:10px 0}
+.qty-btn{background:var(--primary);color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:18px;cursor:pointer;transition:transform .12s}
+.qty-btn:hover{background:var(--primary-dark);transform:scale(1.04)}
+.qty-input{min-width:48px;text-align:center;border-radius:8px;border:1px solid #eee;padding:6px;background:#fff}
+.btn{display:inline-block;padding:10px 14px;border-radius:22px;border:none;cursor:pointer;font-weight:800;transition:transform .14s,box-shadow .14s}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.primary:hover{background:var(--primary-dark);transform:translateY(-3px)}
+.btn.secondary{background:#fff;color:var(--primary);border:2px solid var(--primary)}
+.btn.checkout{background:var(--whatsapp);color:#fff}
+
+.thumbs{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:8px;justify-content:center}
+.thumb{width:72px;height:72px;border-radius:8px;border:2px solid transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.thumb.active{border-color:var(--accent)}
+
+#cart-icon{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;z-index:120;box-shadow:0 14px 30px rgba(0,0,0,0.16);transition:transform .18s}
+#cart-badge{position:absolute;top:6px;right:6px;background:#ff3b3b;color:#fff;padding:3px 7px;border-radius:50%;font-weight:800;font-size:12px;box-shadow:0 6px 12px rgba(0,0,0,0.12)}
+
+.cart-panel{position:fixed;right:20px;bottom:92px;width:340px;max-height:72vh;overflow:auto;background:#fff;padding:12px;border-radius:12px;box-shadow:0 30px 60px rgba(0,0,0,0.18);z-index:120;transform:translateY(10px);opacity:0;pointer-events:none}
+.cart-panel.show{transform:translateY(0);opacity:1;pointer-events:auto;animation:slideUp .26s both}
+.cart-header{display:flex;justify-content:space-between;align-items:center}
+.close-cart{background:transparent;border:none;font-size:18px;cursor:pointer}
+.cart-items{list-style:none;padding:0;margin:10px 0;display:flex;flex-direction:column;gap:8px}
+.cart-items li{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fff9f5;border:1px solid #fee6d8}
+.cart-items li button{margin-left:6px;padding:6px 8px;border-radius:6px;border:none;cursor:pointer}
+
+.checkout-form{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.checkout-form input,.checkout-form textarea{padding:8px;border-radius:8px;border:1px solid #eee;font-family:inherit}
+
+.cart-summary{margin-top:6px}
+.cart-actions{margin-top:10px;display:flex;gap:8px;justify-content:space-between}
+.hidden{display:none}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.added{animation:bounce .46s both}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{opacity:0;animation:fadeInUp .9s forwards}
+
+  </style>
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="site-header">
+    <img src="images/img.jpg" alt="Pipah Cookies" class="header-img">
+  </header>
+
+  <!-- ========== NAV ========== -->
+  <nav class="site-nav">
+    <ul class="nav-list">
+      <li><a href="#syarat">Syarat</a></li>
+      <li><a href="#products">Produk</a></li>
+      <li><a href="#contact">Hubungi</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="syarat" class="section fade-up">
+      <h2 style="text-align:center;color:var(--primary-dark);">Syarat - Syarat Reseller</h2>
+      <div class="syarat-box">
+        <p style="margin:0;font-weight:700;color:var(--primary-dark)">Harap baca sebelum membuat pesanan:</p>
+        <ul>
+          <li><strong>Deposit:</strong> 50% deposit diperlukan semasa membuat pesanan.</li>
+          <li><strong>Masa Siap:</strong> Freshly baked upon order — biasanya 2–3 hari bergantung kepada kuantiti.</li>
+          <li><strong>Bayaran Penuh:</strong> Bayaran penuh perlu diselesaikan semasa pengambilan.</li>
+          <li><strong>Harga Jualan:</strong> Retail price dikawal bebas oleh reseller.</li>
+          <li><strong>Pembatalan:</strong> Pembatalan selepas 24 jam dari tempahan akan kehilangan deposit.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="products" class="section fade-up">
+      <h2 style="text-align:center;color:var(--primary-dark);margin-bottom:16px">Produk</h2>
+
+      <div class="products" id="product-grid">
+        <!-- Product cards will be injected by JS for easier maintenance -->
+      </div>
+    </section>
+
+    <section id="contact" class="section fade-up">
+      <h2>Hubungi Kami</h2>
+      <p class="lead">Untuk pesanan atau pertanyaan, hantarkan mesej melalui WhatsApp atau follow & chat di Shopee / TikTok / Facebook kami.</p>
+      <p><a class="btn secondary" href="#" onclick="window.open('https://wa.me/601121243407','_blank')">Chat di WhatsApp</a></p>
+    </section>
+  </main>
+
+  <!-- FLOATING CART ICON -->
+  <button id="cart-icon" aria-label="Troli" onclick="toggleCart()">
+    <span class="icon">🛒</span>
+    <span id="cart-badge" class="badge">0</span>
+  </button>
+
+  <!-- CART PANEL -->
+  <aside id="cart-panel" class="cart-panel" aria-live="polite" aria-hidden="true">
+    <div class="cart-header">
+      <h3>Troli Anda</h3>
+      <button class="close-cart" onclick="toggleCart()">✕</button>
+    </div>
+
+    <ul id="cart-items" class="cart-items"></ul>
+
+    <div class="cart-summary">
+      <p id="cart-total">Jumlah: RM 0.00</p>
+    </div>
+
+    <div id="checkout-form" class="checkout-form hidden">
+      <label for="orderId">No. Pesanan</label>
+      <input type="text" id="orderId" name="orderId" readonly style="background:#f4f4f4;">
+      <input id="full-name" type="text" placeholder="Nama penuh" />
+      <textarea id="full-address" placeholder="Alamat penuh (boleh kosong untuk pickup)"></textarea>
+      <button class="btn checkout" id="go-to-summary">Teruskan ke Ringkasan</button>
+    </div>
+
+    <div class="cart-actions">
+      <button class="btn primary" id="open-checkout" onclick="showCheckoutForm()">Checkout</button>
+    </div>
+  </aside>
+
+ <script>
+// ===== CONFIG =====
+const WHATSAPP_NUMBER = '601121243407'; 
+
+// ✅ Each product now has its own tiers
+// You can EASILY edit this part on GitHub to add/remove products
+const products = [
+  {
+    id: 'p1',
+    title: 'Seasalt Cookies (65pcs)',
+    images: ['images/ss1.jpg','images/ss2.jpg','images/ss3.jpg'],
+    oldPrice: 16,
+    tiers: [
+      { max: 4, price: 16 },
+      { max: 9, price: 15 },
+      { max: Infinity, price: 14 }
+    ]
+  },
+  {
+    id: 'p2',
+    title: 'ChocHazelnut Button (38pcs)',
+    images: ['images/ch1.jpg','images/ch2.jpg','images/ch3.jpg'],
+    oldPrice: 22,
+    tiers: [
+      { max: 4, price: 22 },
+      { max: 9, price: 21 },
+      { max: Infinity, price: 20 }
+    ]
+  },
+  {
+    id: 'p3',
+    title: 'Brownies Cookies (70pcs)',
+    images: ['images/br1.jpg','images/br2.jpg','images/br3.jpg'],
+    oldPrice: 17,
+    tiers: [
+      { max: 4, price: 17 },
+      { max: 9, price: 16 },
+      { max: Infinity, price: 15 }
+    ]
+  },
+  {
+    id: 'p4',
+    title: 'Black Cookies (80pcs)',
+    images: ['images/bc1.jpg','images/bc2.jpg','images/bc3.jpg'],
+    oldPrice: 22,
+    tiers: [
+      { max: 9, price: 12 },
+      { max: 49, price: 11 },
+      { max: Infinity, price: 10 }
+    ]
+  },
+  {
+    id: 'p5',
+    title: 'RedVelvet Button',
+    images: ['images/rv1.jpg','images/rv2.jpg','images/rv3.jpg'],
+    oldPrice: 22,
+    tiers: [
+      { max: 9, price: 11 },
+      { max: 49, price: 10 },
+      { max: Infinity, price: 9 }
+    ]
+  },
+  {
+    id: 'p6',
+    title: 'DarkChoc Cookies (70pcs)',
+    images: ['images/dc1.jpg','images/dc2.jpg','images/dc3.jpg'],
+    oldPrice: 22,
+    tiers: [
+      { max: 9, price: 11 },
+      { max: 49, price: 10 },
+      { max: Infinity, price: 9 }
+    ]
+  }
+];
+
+// ===== LOCAL STORAGE =====
+const CART_KEY = 'pipah_cart_v3';
+
+// ===== APP STATE =====
+let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderProducts();
+  updateCartUI();
+
+  document.querySelectorAll('.fade-up').forEach((el,i)=> el.style.animationDelay = (i*80)+'ms');
+
+  const orderIdInput = document.getElementById('orderId');
+  if(orderIdInput) orderIdInput.value = getNextOrderNumber();
+
+  document.getElementById('go-to-summary').addEventListener('click', ()=>{
+    const name = document.getElementById('full-name').value.trim();
+    const address = document.getElementById('full-address').value.trim();
+    if(!name){ alert('Sila isi nama penuh.'); return; }
+
+    const order = {
+      orderId: document.getElementById('orderId').value,
+      name, address,
+      date: new Date().toISOString(),
+      items: cart
+    };
+    localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
+    window.open('reseller-summary.html', '_blank');
+  });
+});
+
+// ===== HELPER: Get price per product and quantity =====
+function getUnitPriceForQty(productId, qty){
+  const prod = products.find(p => p.id === productId);
+  if(!prod || !prod.tiers) return 0;
+  for(const t of prod.tiers){
+    if(qty <= t.max) return t.price;
+  }
+  return prod.tiers[prod.tiers.length - 1].price;
+}
+
+// ===== RENDER PRODUCTS =====
+function renderProducts(){
+  const grid = document.getElementById('product-grid');
+  grid.innerHTML = '';
+  products.forEach(prod => {
+    const card = document.createElement('article');
+    card.className = 'card product-card';
+    card.innerHTML = `
+      <div class="product-slider" data-id="${prod.id}">
+        ${prod.images.map((src,i)=>`<img src="${src}" class="product-img ${i===0?'active':''}" alt="${prod.title}">`).join('')}
+        <div class="slider-dots">
+          ${prod.images.map((_,i)=>`<span class="dot ${i===0?'active':''}" data-index="${i}"></span>`).join('')}
+        </div>
+      </div>
+      <h3>${prod.title}</h3>
+      <p class="old-price">RM ${prod.oldPrice}</p>
+      <div style="font-size:14px;color:#444;margin-bottom:6px">
+        Harga per unit ikut kuantiti (auto update bila ubah kuantiti)
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn" data-action="minus" data-id="${prod.id}">−</button>
+        <input id="qty-${prod.id}" class="qty-input" type="number" value="1" min="1">
+        <button class="qty-btn" data-action="plus" data-id="${prod.id}">+</button>
+      </div>
+      <div style="margin-bottom:8px">
+        Unit price: <strong id="unit-${prod.id}">RM ${getUnitPriceForQty(prod.id,1).toFixed(2)}</strong>
+      </div>
+      <button class="btn primary add-btn" data-id="${prod.id}">Tambah ke Troli</button>
+    `;
+    grid.appendChild(card);
+  });
+
+  document.querySelectorAll('.product-slider').forEach(initSlider);
+  document.querySelectorAll('.qty-btn').forEach(b=> b.addEventListener('click', onQtyButton));
+  document.querySelectorAll('.qty-input').forEach(inp=> inp.addEventListener('input', onQtyInput));
+  document.querySelectorAll('.add-btn').forEach(b=> b.addEventListener('click', onAddToCart));
+}
+
+function initSlider(container){
+  const imgs = container.querySelectorAll('.product-img');
+  const dots = container.querySelectorAll('.dot');
+  let idx = 0;
+
+  // Manual click
+  dots.forEach(d => d.addEventListener('click', ()=>{
+    idx = Number(d.dataset.index);
+    updateSlide();
+    resetAutoSlide();
+  }));
+
+  // Auto-slide every 3 seconds
+  let interval = setInterval(nextSlide, 3000);
+
+  function nextSlide(){
+    idx = (idx + 1) % imgs.length;
+    updateSlide();
+  }
+
+  function updateSlide(){
+    imgs.forEach((im,i)=> im.classList.toggle('active', i===idx));
+    dots.forEach((dd,i)=> dd.classList.toggle('active', i===idx));
+  }
+
+  function resetAutoSlide(){
+    clearInterval(interval);
+    interval = setInterval(nextSlide, 3000);
+  }
+}
+
+function onQtyButton(e){
+  const id = e.currentTarget.dataset.id;
+  const action = e.currentTarget.dataset.action;
+  const inp = document.getElementById('qty-'+id);
+  let val = Math.max(1, parseInt(inp.value||'1'));
+  val = action === 'plus' ? val+1 : Math.max(1, val-1);
+  inp.value = val;
+  updateUnitPriceDisplay(id, val);
+}
+
+function onQtyInput(e){
+  const id = e.currentTarget.id.replace('qty-','');
+  let v = parseInt(e.currentTarget.value||'1');
+  if(isNaN(v)||v<1) v=1;
+  e.currentTarget.value=v;
+  updateUnitPriceDisplay(id,v);
+}
+
+function updateUnitPriceDisplay(id, qty){
+  const el = document.getElementById('unit-'+id);
+  if(!el) return;
+  const price = getUnitPriceForQty(id, qty);
+  el.textContent = 'RM '+price.toFixed(2);
+}
+
+function onAddToCart(e){
+  const id = e.currentTarget.dataset.id;
+  const qty = parseInt(document.getElementById('qty-'+id).value||'1');
+  const unit = getUnitPriceForQty(id, qty);
+  const prod = products.find(p=>p.id===id);
+  const existing = cart.find(i=> i.id===id && i.unitPrice===unit);
+  if(existing){ existing.qty += qty; } 
+  else { cart.push({ id, name:prod.title, unitPrice:unit, qty }); }
+  saveCart(); updateCartUI();
+  const icon = document.getElementById('cart-icon');
+  icon.classList.add('added'); setTimeout(()=> icon.classList.remove('added'),480);
+}
+
+function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
+
+function updateCartUI(){
+  const list = document.getElementById('cart-items');
+  const totalEl = document.getElementById('cart-total');
+  const badge = document.getElementById('cart-badge');
+  list.innerHTML='';
+  let subtotal=0, count=0;
+
+  cart.forEach((item,idx)=>{
+    subtotal += item.unitPrice*item.qty; count += item.qty;
+    const li = document.createElement('li');
+    const left = document.createElement('div');
+    left.style.flex='1';
+    left.innerHTML = `<strong>${escapeHtml(item.name)}</strong>
+      <div style="font-size:12px;color:#666">${item.qty} × RM ${item.unitPrice.toFixed(2)} = RM ${(item.unitPrice*item.qty).toFixed(2)}</div>`;
+    const middle = document.createElement('div');
+    const minus = document.createElement('button');
+    minus.textContent='−'; minus.onclick = ()=> changeCartQty(idx,-1);
+    const qtySpan = document.createElement('span');
+    qtySpan.textContent=' '+item.qty+' '; qtySpan.style.fontWeight='700';
+    const plus = document.createElement('button');
+    plus.textContent='+'; plus.onclick = ()=> changeCartQty(idx,1);
+    middle.append(minus, qtySpan, plus);
+    const right = document.createElement('div');
+    const rem = document.createElement('button');
+    rem.textContent='x';
+    rem.style.background='#ff4d4d';
+    rem.style.color='#fff';
+    rem.style.border='none';
+    rem.style.padding='6px 8px';
+    rem.style.borderRadius='6px';
+    rem.onclick = ()=> removeCartItem(idx);
+    right.appendChild(rem);
+    li.append(left,middle,right);
+    list.appendChild(li);
+  });
+
+  totalEl.innerHTML = `<strong style="font-size:16px">Jumlah: RM ${subtotal.toFixed(2)}</strong>`;
+  badge.textContent = count;
+  saveCart();
+}
+
+function changeCartQty(index, delta){
+  if(!cart[index]) return;
+  cart[index].qty += delta;
+  if(cart[index].qty<=0){ cart.splice(index,1); }
+  saveCart(); updateCartUI();
+}
+
+function removeCartItem(index){
+  cart.splice(index,1);
+  saveCart(); updateCartUI();
+}
+
+function toggleCart(){
+  const panel = document.getElementById('cart-panel');
+  const isShown = panel.classList.contains('show');
+  panel.classList.toggle('show', !isShown);
+  panel.setAttribute('aria-hidden', isShown ? 'true' : 'false');
+}
+
+function showCheckoutForm(){
+  document.getElementById('checkout-form').classList.remove('hidden');
+  document.getElementById('open-checkout').style.display='none';
+  const panel = document.getElementById('cart-panel');
+  panel.scrollTop = panel.scrollHeight;
+}
+
+// ===== ORDER ID =====
+function formatOrderId(num){ return 'RS'+num.toString().padStart(8,'0'); }
+function getNextOrderNumber(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); return formatOrderId(last+1); }
+function incrementOrderCounter(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); localStorage.setItem('orderCounter', (last+1).toString()); }
+
+// ===== UTIL =====
+function escapeHtml(text){ return String(text).replace(/[&<>"]/, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+</script>
+</body>
+</html>
