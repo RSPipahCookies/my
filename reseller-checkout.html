@@ -1,286 +1,199 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ringkasan Pesanan — PipahCookies</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Ringkasan Pesanan - PipahCookies</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <style>
-    :root{
-      --primary:#A67734;
-      --primary-dark:#d4b390;
-      --bg:#fff8f2;
-      --card:#ffffff;
-      --muted:#6b6b6b;
-      --whatsapp:#25d366;
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #fff8f2;
+      color: #4a3b2c;
+      padding: 20px;
     }
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#222;padding:18px}
-    .wrap{max-width:920px;margin:22px auto;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.06)}
-    h1{font-family:Poppins, sans-serif;color:var(--primary-dark);margin:0 0 12px}
-    table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{padding:8px;border-bottom:1px solid #f1e6da;text-align:left;font-size:14px}
-    .muted{color:var(--muted)}
-    .controls{display:flex;gap:8px;flex-wrap:wrap; margin-top:12px}
-    .btn{padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer}
-    .btn.primary{background:var(--primary);color:#fff}
-    .btn.whatsapp{background:var(--whatsapp);color:#fff}
-    .btn.ghost{background:transparent;border:2px solid #eee}
-    input[type="text"], textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #eee}
-    .totals{margin-top:12px;font-weight:800;font-size:16px}
-    .small{font-size:13px;color:var(--muted)}
+    h1 {
+      color: #a67734;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .summary-box {
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      max-width: 800px;
+      margin: 20px auto;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .info p {
+      margin: 4px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border-bottom: 1px solid #eee;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #fff1e6;
+      color: #a67734;
+    }
+    tfoot td {
+      font-weight: bold;
+    }
+    button {
+      display: block;
+      background: #a67734;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 20px auto 0;
+      font-size: 15px;
+    }
+    button:hover {
+      background: #d4b390;
+    }
+    .logo {
+      display: block;
+      margin: 0 auto 15px;
+      width: 120px;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Ringkasan Pesanan</h1>
-    <p class="small">Semak pesanan anda — klik <strong>Submit Order</strong> untuk buka WhatsApp dengan mesej pesanan dan muat turun CSV automatik.</p>
 
-    <div id="meta">
-      <label>No. Pesanan</label>
-      <div><input type="text" id="orderId" readonly style="background:#f6f2ee"></div>
-      <label>Nama Penuh</label>
-      <div><input type="text" id="customerName" placeholder="Nama penuh"></div>
-      <label>Alamat (boleh kosong untuk pickup)</label>
-      <div><textarea id="customerAddress" rows="2" placeholder="Alamat penuh (optional)"></textarea></div>
+  <!-- Optional Logo -->
+  <img src="images/logo.png" alt="PipahCookies Logo" class="logo" onerror="this.style.display='none'">
+  <h1>Ringkasan Pesanan</h1>
+
+  <div class="summary-box">
+    <div class="info">
+      <p><strong>No. Pesanan:</strong> <span id="orderId"></span></p>
+      <p><strong>Nama:</strong> <span id="customerName"></span></p>
+      <p><strong>Alamat:</strong> <span id="customerAddress"></span></p>
+      <p><strong>Tarikh:</strong> <span id="orderDate"></span></p>
     </div>
 
-    <div id="items-area">
-      <table id="items-table">
-        <thead>
-          <tr><th>Produk</th><th>Unit</th><th>Qty</th><th>Subtotal (RM)</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <table id="orderTable">
+      <thead>
+        <tr><th>Produk</th><th>Kuantiti</th><th>Harga (RM)</th><th>Jumlah (RM)</th></tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr><td colspan="3">Jumlah Keseluruhan</td><td id="totalCell">0.00</td></tr>
+      </tfoot>
+    </table>
 
-    <div class="totals" id="total-display">Jumlah: RM 0.00</div>
-
-    <div class="controls">
-      <button class="btn btn.ghost" id="download-csv">Muat Turun CSV</button>
-      <button class="btn primary" id="refresh-from-storage">Refresh</button>
-      <button class="btn whatsapp" id="submit-order">Submit Order (WhatsApp)</button>
-    </div>
-
-    <p class="small" style="margin-top:12px">
-      Nota: CSV akan dimuat turun automatik ke peranti anda. Aplikasi web tidak boleh melampirkan fail terus ke WhatsApp — selepas WhatsApp terbuka, sila lampirkan CSV jika perlu atau hantar mesej terus.
-    </p>
+    <button id="downloadPDF">Muat Turun PDF</button>
   </div>
 
-<script>
-/**
- * reseller-summary.html
- * - reads localStorage key 'pipah_reseller_order' (saved by your index page)
- * - shows items & totals
- * - allows downloading CSV
- * - opens WhatsApp with a nicely formatted order message
- * - clears cart and increments order counter after submit
- *
- * NOTE: cannot auto-attach the file to WhatsApp via wa.me due to browser/WhatsApp limitations.
- */
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const order = JSON.parse(localStorage.getItem('pipah_reseller_order') || '{}');
+    if (!order || !order.items) {
+      alert('Tiada pesanan dijumpai.');
+      return;
+    }
 
-const WHATSAPP_NUMBER = '601121243407'; // edit here if you later change number
-const CART_KEY = 'pipah_cart_v3';
-const ORDER_KEY = 'pipah_reseller_order';
+    // 🧁 Display data
+    document.getElementById('orderId').textContent = order.orderId || '-';
+    document.getElementById('customerName').textContent = order.name || '-';
+    document.getElementById('customerAddress').textContent = order.address || '-';
+    document.getElementById('orderDate').textContent = new Date(order.date || Date.now()).toLocaleString();
 
-function formatCurrency(n){ return Number(n).toFixed(2); }
+    const tbody = document.querySelector('#orderTable tbody');
+    let total = 0;
+    order.items.forEach(item => {
+      const subtotal = item.unitPrice * item.qty;
+      total += subtotal;
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${item.name}</td>
+        <td>${item.qty}</td>
+        <td>${item.unitPrice.toFixed(2)}</td>
+        <td>${subtotal.toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+    document.getElementById('totalCell').textContent = total.toFixed(2);
 
-function loadOrderFromStorage(){
-  const raw = localStorage.getItem(ORDER_KEY);
-  if(raw){
-    try { return JSON.parse(raw); } catch(e){ console.error('invalid order json', e); }
-  }
-  // fallback construct from cart if pipah_reseller_order not present
-  const cartRaw = localStorage.getItem(CART_KEY);
-  const cart = cartRaw ? JSON.parse(cartRaw) : [];
-  return {
-    orderId: getNextOrderNumber(),
-    name: '',
-    address: '',
-    date: new Date().toISOString(),
-    items: cart
-  };
-}
+    // 🍪 PDF Download
+    document.getElementById('downloadPDF').addEventListener('click', () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const logo = document.querySelector('.logo').src;
 
-function renderOrder(){
-  const order = loadOrderFromStorage();
-  document.getElementById('orderId').value = order.orderId || getNextOrderNumber();
-  document.getElementById('customerName').value = order.name || '';
-  document.getElementById('customerAddress').value = order.address || '';
-  const tbody = document.querySelector('#items-table tbody');
-  tbody.innerHTML = '';
-  let total = 0;
-  (order.items || []).forEach(it => {
-    const tr = document.createElement('tr');
-    const subtotal = (it.unitPrice || 0) * (it.qty || 0);
-    total += subtotal;
-    tr.innerHTML = `<td>${escapeHtml(it.name || it.id)}</td>
-                    <td>RM ${formatCurrency(it.unitPrice||0)}</td>
-                    <td>${it.qty}</td>
-                    <td>RM ${formatCurrency(subtotal)}</td>`;
-    tbody.appendChild(tr);
+      // --- Header Section ---
+      doc.setFillColor(245, 228, 195);
+      doc.rect(0, 0, 210, 30, "F");
+      doc.setFontSize(16);
+      doc.setTextColor(70, 50, 30);
+      doc.text("PipahCookies", 20, 18);
+      doc.setFontSize(10);
+      doc.text("Ringkasan Pesanan", 20, 25);
+
+      // --- Logo if available ---
+      if (logo && !logo.includes('data:')) {
+        const img = new Image();
+        img.src = logo;
+        img.onload = () => {
+          doc.addImage(img, "PNG", 160, 5, 35, 20);
+          generatePDF();
+        };
+      } else {
+        generatePDF();
+      }
+
+      function generatePDF() {
+        let y = 40;
+        doc.setFontSize(11);
+        doc.setTextColor(60, 45, 30);
+        doc.text(`No. Pesanan: ${order.orderId}`, 20, y);
+        y += 7;
+        doc.text(`Nama: ${order.name}`, 20, y);
+        y += 7;
+        doc.text(`Alamat: ${order.address || '-'}`, 20, y);
+        y += 7;
+        doc.text(`Tarikh: ${new Date(order.date || Date.now()).toLocaleString()}`, 20, y);
+
+        // --- Table Section ---
+        const tableData = order.items.map(item => [
+          item.name,
+          item.qty,
+          item.unitPrice.toFixed(2),
+          (item.qty * item.unitPrice).toFixed(2)
+        ]);
+
+        doc.autoTable({
+          head: [['Produk', 'Kuantiti', 'Harga (RM)', 'Jumlah (RM)']],
+          body: tableData,
+          startY: y + 10,
+          theme: 'grid',
+          styles: { fontSize: 10, cellPadding: 3 },
+          headStyles: { fillColor: [245, 228, 195], textColor: [70, 50, 30], halign: 'center' },
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(12);
+        doc.text(`Jumlah Keseluruhan: RM${total.toFixed(2)}`, 20, finalY);
+
+        // --- Footer ---
+        doc.setFontSize(9);
+        doc.text("Terima kasih atas pesanan anda 💕", 20, finalY + 10);
+        doc.text("PipahCookies - Rangup & Sedap, Setiap Gigitan Ada Senyuman 🍪", 20, finalY + 15);
+
+        doc.save(`Pesanan_${order.orderId}.pdf`);
+      }
+    });
   });
-  document.getElementById('total-display').textContent = 'Jumlah: RM ' + formatCurrency(total);
-}
+  </script>
 
-function escapeHtml(text){ return String(text).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
-
-// CSV generator
-function orderToCSV(order){
-  // header + rows
-  const rows = [
-    ['orderId', order.orderId || ''],
-    ['date', order.date || ''],
-    ['name', order.name || ''],
-    ['address', order.address || ''],
-    [],
-    ['product','unitPrice','qty','subtotal']
-  ];
-  let total = 0;
-  (order.items || []).forEach(it=>{
-    const sub = (it.unitPrice||0) * (it.qty||0);
-    total += sub;
-    rows.push([it.name || it.id, (it.unitPrice||0).toFixed(2), String(it.qty||0), sub.toFixed(2)]);
-  });
-  rows.push([]);
-  rows.push(['TOTAL', '', '', total.toFixed(2)]);
-  // convert to CSV string
-  return rows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-}
-
-// trigger download
-function downloadCSV(filename, csvContent){
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-// open whatsapp with message
-function openWhatsApp(order){
-  const lines = [];
-  lines.push(`PipahCookies — Pesanan Baru`);
-  lines.push(`No. Pesanan: ${order.orderId}`);
-  lines.push(`Nama: ${order.name || '-'}`);
-  if(order.address) lines.push(`Alamat: ${order.address}`);
-  lines.push('');
-  lines.push('Items:');
-  let total = 0;
-  (order.items || []).forEach(it => {
-    const sub = (it.unitPrice||0) * (it.qty||0);
-    total += sub;
-    lines.push(`- ${it.name}  | ${it.qty} x RM ${formatCurrency(it.unitPrice)} = RM ${formatCurrency(sub)}`);
-  });
-  lines.push('');
-  lines.push(`Jumlah: RM ${formatCurrency(total)}`);
-  lines.push('');
-  lines.push('Sila semak dan sahkan. Terima kasih!');
-
-  const text = encodeURIComponent(lines.join('\n'));
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`;
-  window.open(url, '_blank');
-}
-
-function getNextOrderNumber(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); return formatOrderId(last+1); }
-function formatOrderId(num){ return 'PC' + String(num).padStart(8,'0'); }
-function incrementOrderCounter(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); localStorage.setItem('orderCounter', String(last+1)); }
-
-function gatherOrderFromForm(){
-  const base = loadOrderFromStorage();
-  const order = {
-    orderId: document.getElementById('orderId').value || base.orderId || getNextOrderNumber(),
-    date: base.date || new Date().toISOString(),
-    name: document.getElementById('customerName').value.trim(),
-    address: document.getElementById('customerAddress').value.trim(),
-    items: base.items || []
-  };
-  return order;
-}
-
-// handlers
-document.getElementById('refresh-from-storage').addEventListener('click', ()=>{
-  renderOrder();
-});
-
-// download csv button
-document.getElementById('download-csv').addEventListener('click', ()=>{
-  const order = gatherOrderFromForm();
-  const csv = orderToCSV(order);
-  const fn = `${order.orderId || 'order'}_${(new Date()).toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
-  downloadCSV(fn, csv);
-});
-
-// submit button
-document.getElementById('submit-order').addEventListener('click', ()=>{
-  const order = gatherOrderFromForm();
-  if(!order.name){ alert('Sila isi nama penuh sebelum hantar pesanan.'); return; }
-
-  // 1) auto-download CSV
-  const csv = orderToCSV(order);
-  const fn = `${order.orderId || 'order'}.csv`;
-  downloadCSV(fn, csv);
-
-  // 2) open WhatsApp with prefilled message
-  openWhatsApp(order);
-
-  // 3) persist final order record (optional)
-  localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
-
-  // 4) increment order counter so next order has new number
-  incrementOrderCounter();
-
-  // 5) clear the cart
-  try { localStorage.removeItem(CART_KEY); } catch(e){}
-
-  // 6) show a small confirmation and optionally close after a bit
-  alert('Order prepared — WhatsApp opened in new tab and CSV telah dimuat turun. Sila semak dan hantar mesej di WhatsApp.');
-});
-
-// initial render
-renderOrder();
-
-</script>
-  <h2>Ringkasan Pesanan</h2>
-<div id="summary" class="summary-box"></div>
-
-<script>
-const orderData = JSON.parse(localStorage.getItem('resellerOrder'));
-
-if (orderData) {
-  let html = `
-    <p><strong>Nama Pelanggan:</strong> ${orderData.customerName}</p>
-    <ul>
-      ${orderData.items.map(item => `
-        <li>${item.name} — ${item.qty} unit — RM${item.price}</li>
-      `).join('')}
-    </ul>
-    <p><strong>Jumlah Keseluruhan:</strong> RM${orderData.totalPrice}</p>
-  `;
-  document.getElementById('summary').innerHTML = html;
-} else {
-  document.getElementById('summary').innerHTML = '<p>Tiada data ditemui.</p>';
-}
-</script>
-
-<style>
-.summary-box {
-  background-color: #f5e4c3;
-  border-radius: 16px;
-  padding: 20px;
-  margin: 20px;
-  color: #5b3b1e;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-}
-.summary-box ul {
-  list-style-type: none;
-  padding: 0;
-}
-.summary-box li {
-  margin: 6px 0;
-}
-</style>
 </body>
 </html>
