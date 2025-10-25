@@ -482,27 +482,6 @@ function incrementOrderCounter(){ let last = parseInt(localStorage.getItem('orde
 // ===== UTIL =====
 function escapeHtml(text){ return String(text).replace(/[&<>"]/, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 </script>
-  <!-- Teruskan button -->
-<button id="toSummary" class="btn">Teruskan ke Ringkasan</button>
 
-<script>
-document.getElementById('toSummary').addEventListener('click', function() {
-  // Example data – replace with your real form fields or calculated values
-  const order = {
-    customerName: document.getElementById('name')?.value || 'Pelanggan',
-    totalPrice: document.getElementById('totalPrice')?.innerText || '0.00',
-    items: [
-      { name: 'Seasalt Cookies', qty: 5, price: 50 },
-      { name: 'Chocolate Chip', qty: 3, price: 30 }
-    ]
-  };
-
-  // Save order to localStorage
-  localStorage.setItem('resellerOrder', JSON.stringify(order));
-
-  // Redirect to summary page
-  window.location.href = 'reseller-checkout.html';
-});
-</script>
 </body>
 </html>
