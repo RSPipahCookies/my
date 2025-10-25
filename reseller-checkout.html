@@ -16,7 +16,7 @@
       background: #fff8f0;
       border: 1px solid #e6d3b3;
       padding: 20px;
-      max-width: 450px;
+      max-width: 480px;
       margin: 0 auto;
       border-radius: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
@@ -91,18 +91,23 @@
 
   <script>
     const order = JSON.parse(localStorage.getItem('pipah_reseller_order')) || {};
-    const orderBox = document.getElementById('orderDetails');
+    order.items = Array.isArray(order.items) ? order.items : [];
+    order.items = order.items.map(i => ({
+      name: i.name || "Tanpa Nama",
+      price: Number(i.price) || 0,
+      quantity: Number(i.quantity) || 0
+    }));
+    order.name = order.name || "—";
+    order.address = order.address || "—";
 
-    // Get or initialize order number counter
+    const orderBox = document.getElementById('orderDetails');
     let orderCount = parseInt(localStorage.getItem('pipah_order_counter')) || 1;
 
-    // If order has no ID, assign next available
     if (!order.orderId) {
       order.orderId = "ORD" + orderCount.toString().padStart(3, '0');
     }
 
-    // Display order details
-    if (!order.items || order.items.length === 0) {
+    if (!order.items.length) {
       orderBox.innerHTML = '<p>Tiada pesanan dijumpai.</p>';
     } else {
       let html = `
@@ -133,9 +138,8 @@
       orderBox.innerHTML = html;
     }
 
-    // WhatsApp Button Function
+    // ✅ WhatsApp Function
     document.getElementById('sendWhatsApp').addEventListener('click', () => {
-      // Increment order count when order submitted
       orderCount++;
       localStorage.setItem('pipah_order_counter', orderCount);
 
@@ -146,48 +150,64 @@
         `\n\n💰 Jumlah: RM${order.items.reduce((a,i)=>a+(i.price*i.quantity),0).toFixed(2)}`
       );
 
-      // 🟢 Put your real WhatsApp number here
-      const phone = "601121243407"; 
+      const phone = "60123456789";
       window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
     });
 
-    // PDF Download Function
+    // ✅ PDF Function — proper black & white invoice style
     document.getElementById('downloadPDF').addEventListener('click', () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: [80, 200] // thermal size
+        format: [80, 200]
       });
 
       let y = 10;
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text("PipahCookies", 10, y);
-      doc.setFontSize(8);
-      y += 6;
-      doc.text(`ID Pesanan: ${order.orderId}`, 10, y);
-      y += 4;
-      doc.text(`Nama: ${order.name}`, 10, y);
-      y += 4;
-      doc.text(`Alamat: ${order.address}`, 10, y);
-      y += 6;
-      doc.text("------------------------------------------", 10, y);
+      doc.text("INVOIS PESANAN - PIPAHCOOKIES", 10, y);
       y += 6;
 
-      order.items.forEach(item => {
-        doc.text(`${item.name} x${item.quantity}`, 10, y);
-        doc.text(`RM ${(item.price * item.quantity).toFixed(2)}`, 55, y);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text(`ID Pesanan: ${order.orderId}`, 10, y); y += 4;
+      doc.text(`Nama: ${order.name}`, 10, y); y += 4;
+      doc.text(`Alamat: ${order.address}`, 10, y); y += 6;
+
+      // Header line
+      doc.setLineWidth(0.2);
+      doc.line(10, y, 70, y); y += 5;
+      doc.setFont("helvetica", "bold");
+      doc.text("Produk", 10, y);
+      doc.text("Kuantiti", 40, y);
+      doc.text("Jumlah (RM)", 60, y);
+      y += 3;
+      doc.setLineWidth(0.2);
+      doc.line(10, y, 70, y);
+      y += 5;
+
+      // Items
+      doc.setFont("helvetica", "normal");
+      order.items.forEach(i => {
+        doc.text(i.name, 10, y);
+        doc.text(i.quantity.toString(), 45, y);
+        doc.text((i.price * i.quantity).toFixed(2), 60, y, { align: "right" });
         y += 5;
       });
 
-      y += 4;
-      doc.text("------------------------------------------", 10, y);
+      // Footer
+      y += 2;
+      doc.line(10, y, 70, y);
       y += 6;
       const total = order.items.reduce((a, i) => a + (i.price * i.quantity), 0);
-      doc.setFontSize(10);
-      doc.text(`Jumlah Keseluruhan: RM ${total.toFixed(2)}`, 10, y);
+      doc.setFont("helvetica", "bold");
+      doc.text("JUMLAH:", 10, y);
+      doc.text(`RM ${total.toFixed(2)}`, 60, y, { align: "right" });
       y += 10;
+
       doc.setFontSize(8);
+      doc.setFont("helvetica", "italic");
       doc.text("Terima kasih atas pesanan anda!", 10, y);
 
       doc.save(`Pesanan_${order.orderId}.pdf`);
