@@ -243,5 +243,44 @@ document.getElementById('submit-order').addEventListener('click', ()=>{
 renderOrder();
 
 </script>
+  <h2>Ringkasan Pesanan</h2>
+<div id="summary" class="summary-box"></div>
+
+<script>
+const orderData = JSON.parse(localStorage.getItem('resellerOrder'));
+
+if (orderData) {
+  let html = `
+    <p><strong>Nama Pelanggan:</strong> ${orderData.customerName}</p>
+    <ul>
+      ${orderData.items.map(item => `
+        <li>${item.name} — ${item.qty} unit — RM${item.price}</li>
+      `).join('')}
+    </ul>
+    <p><strong>Jumlah Keseluruhan:</strong> RM${orderData.totalPrice}</p>
+  `;
+  document.getElementById('summary').innerHTML = html;
+} else {
+  document.getElementById('summary').innerHTML = '<p>Tiada data ditemui.</p>';
+}
+</script>
+
+<style>
+.summary-box {
+  background-color: #f5e4c3;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px;
+  color: #5b3b1e;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+.summary-box ul {
+  list-style-type: none;
+  padding: 0;
+}
+.summary-box li {
+  margin: 6px 0;
+}
+</style>
 </body>
 </html>
