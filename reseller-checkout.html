@@ -8,7 +8,6 @@
   <style>
     :root {
       --primary: #A67734;
-      --primary-dark: #d4b390;
       --bg: #fff8f2;
       --card: #ffffff;
       --muted: #6b6b6b;
@@ -16,28 +15,26 @@
     }
     body {
       margin: 0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial;
+      font-family: Poppins, Arial, sans-serif;
       background: var(--bg);
-      color: #222;
+      color: #333;
       padding: 18px;
     }
     .wrap {
-      max-width: 920px;
-      margin: 22px auto;
+      max-width: 900px;
+      margin: 0 auto;
       background: var(--card);
-      padding: 18px;
       border-radius: 12px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
     h1 {
-      font-family: Poppins, sans-serif;
-      color: var(--primary-dark);
-      margin: 0 0 12px;
+      color: var(--primary);
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    h1 img { height: 36px; vertical-align: middle; border-radius: 8px; }
+    h1 img { height: 36px; border-radius: 8px; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -45,198 +42,206 @@
     }
     th, td {
       padding: 8px;
-      border-bottom: 1px solid #f1e6da;
+      border-bottom: 1px solid #eee;
       text-align: left;
-      font-size: 14px;
     }
-    .muted { color: var(--muted); }
     .controls {
+      margin-top: 16px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 18px;
     }
     .btn {
       padding: 10px 14px;
-      border-radius: 10px;
-      border: none;
-      font-weight: 700;
+      border-radius: 8px;
+      font-weight: 600;
       cursor: pointer;
+      border: none;
     }
     .btn.primary { background: var(--primary); color: #fff; }
     .btn.whatsapp { background: var(--whatsapp); color: #fff; }
-    .btn.ghost { background: transparent; border: 2px solid #eee; }
-    .btn.cancel { background: #b7b7b7; color: #fff; }
-    .btn.close { background: #ff6464; color: #fff; }
-    input[type="text"], textarea {
+    .btn.ghost { background: #eee; color: #333; }
+    .btn.cancel { background: #888; color: #fff; }
+    .btn.close { background: #ff5c5c; color: #fff; }
+    input, textarea {
       width: 100%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
       padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #eee;
+      margin-bottom: 8px;
     }
-    .totals { margin-top: 12px; font-weight: 800; font-size: 16px; }
-    .small { font-size: 13px; color: var(--muted); }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1><img src="https://pipahcookies.github.io/com/images/logo.png" alt="PipahCookies"> Ringkasan Pesanan</h1>
-    <p class="small">Semak pesanan anda — klik <strong>Download PDF</strong> untuk simpan invois atau <strong>Submit Order</strong> untuk buka WhatsApp.</p>
+    <h1><img src="https://pipahcookies.github.io/com/images/logo.png"> Ringkasan Pesanan</h1>
 
-    <div id="meta">
-      <label>No. Pesanan</label>
-      <div><input type="text" id="orderId" readonly style="background:#f6f2ee"></div>
-      <label>Nama Penuh</label>
-      <div><input type="text" id="customerName" placeholder="Nama penuh"></div>
-      <label>Alamat (boleh kosong untuk pickup)</label>
-      <div><textarea id="customerAddress" rows="2" placeholder="Alamat penuh (optional)"></textarea></div>
-    </div>
+    <label>No. Pesanan</label>
+    <input type="text" id="orderId" readonly>
 
-    <div id="items-area">
-      <table id="items-table">
-        <thead>
-          <tr><th>Produk</th><th>Unit</th><th>Qty</th><th>Subtotal (RM)</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <label>Nama Penuh</label>
+    <input type="text" id="customerName" placeholder="Nama penuh">
 
-    <div class="totals" id="total-display">Jumlah: RM 0.00</div>
+    <label>Alamat (boleh kosong untuk pickup)</label>
+    <textarea id="customerAddress" rows="2"></textarea>
+
+    <table id="items-table">
+      <thead>
+        <tr><th>Produk</th><th>Unit (RM)</th><th>Qty</th><th>Subtotal (RM)</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h3 id="total-display">Jumlah: RM 0.00</h3>
 
     <div class="controls">
-      <button class="btn ghost" id="download-pdf">Download PDF</button>
-      <button class="btn primary" id="refresh-from-storage">Refresh</button>
-      <button class="btn whatsapp" id="submit-order">Submit Order (WhatsApp)</button>
-      <button class="btn cancel" id="cancel-btn">Kembali ke Laman Utama</button>
-      <button class="btn close" id="close-btn">Tutup Halaman</button>
+      <button class="btn ghost" id="refresh">Refresh</button>
+      <button class="btn primary" id="pdf">Download PDF</button>
+      <button class="btn whatsapp" id="submit">Submit Order (WhatsApp)</button>
+      <button class="btn cancel" id="back">Kembali ke Laman Utama</button>
+      <button class="btn close" id="close">Tutup</button>
     </div>
-
-    <p class="small" style="margin-top:12px">
-      Nota: PDF akan dimuat turun automatik ke peranti anda. Aplikasi web tidak boleh melampirkan fail terus ke WhatsApp — selepas WhatsApp terbuka, sila lampirkan PDF jika perlu atau hantar mesej terus.
-    </p>
   </div>
 
 <script>
-const WHATSAPP_NUMBER = '601121243407';
 const CART_KEY = 'pipah_cart_v3';
 const ORDER_KEY = 'pipah_reseller_order';
-function formatCurrency(n){ return Number(n).toFixed(2); }
+const WHATSAPP_NUMBER = '601121243407';
 
-function loadOrderFromStorage(){
-  const raw = localStorage.getItem(ORDER_KEY);
-  if(raw){ try { return JSON.parse(raw); } catch(e){ console.error('invalid order json', e); } }
-  return { orderId: getNextOrderNumber(), name: '', address: '', date: new Date().toISOString(), items: [] };
+// 🧮 Number formatter
+function formatRM(n){ return Number(n).toFixed(2); }
+
+// 🧾 Generate new order ID
+function nextOrderId(){
+  let last = parseInt(localStorage.getItem('orderCounter')||'0');
+  last++;
+  localStorage.setItem('orderCounter', last);
+  return 'PC' + String(last).padStart(5,'0');
 }
 
-function renderOrder(){
-  const order = loadOrderFromStorage();
-  document.getElementById('orderId').value = order.orderId || getNextOrderNumber();
+// 📦 Load order/cart
+function loadOrder(){
+  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+  let order = JSON.parse(localStorage.getItem(ORDER_KEY) || '{}');
+  if(!order.items || order.items.length===0){
+    order.items = cart;
+  }
+  if(!order.orderId) order.orderId = nextOrderId();
+  localStorage.setItem(ORDER_KEY, JSON.stringify(order));
+  return order;
+}
+
+// 🖋️ Render order
+function render(){
+  const order = loadOrder();
+  document.getElementById('orderId').value = order.orderId;
   document.getElementById('customerName').value = order.name || '';
   document.getElementById('customerAddress').value = order.address || '';
   const tbody = document.querySelector('#items-table tbody');
   tbody.innerHTML = '';
   let total = 0;
-  (order.items || []).forEach(it => {
-    const sub = (it.unitPrice || 0) * (it.qty || 0);
+  (order.items || []).forEach(it=>{
+    const sub = it.unitPrice * it.qty;
     total += sub;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${it.name}</td><td>RM ${formatCurrency(it.unitPrice)}</td><td>${it.qty}</td><td>RM ${formatCurrency(sub)}</td>`;
-    tbody.appendChild(tr);
+    tbody.innerHTML += `<tr>
+      <td>${it.name}</td>
+      <td>${formatRM(it.unitPrice)}</td>
+      <td>${it.qty}</td>
+      <td>${formatRM(sub)}</td>
+    </tr>`;
   });
-  document.getElementById('total-display').textContent = 'Jumlah: RM ' + formatCurrency(total);
+  document.getElementById('total-display').textContent = 'Jumlah: RM ' + formatRM(total);
+}
+render();
+
+// 💾 Save form data
+function saveForm(){
+  const order = loadOrder();
+  order.name = document.getElementById('customerName').value;
+  order.address = document.getElementById('customerAddress').value;
+  localStorage.setItem(ORDER_KEY, JSON.stringify(order));
+  return order;
 }
 
-function getNextOrderNumber(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); return 'PC' + String(last+1).padStart(8,'0'); }
-function incrementOrderCounter(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); localStorage.setItem('orderCounter', String(last+1)); }
+// 🔄 Refresh button
+document.getElementById('refresh').addEventListener('click', render);
 
-function gatherOrderFromForm(){
-  const base = loadOrderFromStorage();
-  return {
-    orderId: document.getElementById('orderId').value || base.orderId,
-    date: new Date().toISOString(),
-    name: document.getElementById('customerName').value.trim(),
-    address: document.getElementById('customerAddress').value.trim(),
-    items: base.items
-  };
-}
+// 💬 WhatsApp submit
+document.getElementById('submit').addEventListener('click', ()=>{
+  const order = saveForm();
+  if(!order.name){ alert('Sila isi nama penuh'); return; }
 
-// 📄 Generate beautiful beige PDF
-document.getElementById('download-pdf').addEventListener('click', async ()=>{
-  const order = gatherOrderFromForm();
+  let msg = `PipahCookies — Pesanan Baru%0A`;
+  msg += `No. Pesanan: ${order.orderId}%0A`;
+  msg += `Nama: ${order.name}%0A`;
+  if(order.address) msg += `Alamat: ${order.address}%0A%0A`;
+  msg += `Senarai Produk:%0A`;
+  let total = 0;
+  order.items.forEach(it=>{
+    const sub = it.unitPrice * it.qty;
+    total += sub;
+    msg += `• ${it.name} (${it.qty} x RM${formatRM(it.unitPrice)}) = RM${formatRM(sub)}%0A`;
+  });
+  msg += `%0A🔸 Jumlah: RM${formatRM(total)}%0A`;
+  msg += `%0ATerima kasih atas pesanan anda 💛`;
+
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+
+  // Move to next order ID after submit
+  localStorage.removeItem(CART_KEY);
+  localStorage.removeItem(ORDER_KEY);
+  render();
+});
+
+// 🧾 PDF download
+document.getElementById('pdf').addEventListener('click', async ()=>{
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  doc.setFillColor(255, 248, 242);
-  doc.rect(0, 0, 210, 297, "F"); // beige background
-  const logo = "https://pipahcookies.github.io/com/images/logo.png";
-  const img = await fetch(logo).then(r=>r.blob()).then(b=>new Promise(res=>{
-    const reader=new FileReader(); reader.onload=()=>res(reader.result); reader.readAsDataURL(b);
-  }));
-  doc.addImage(img, "PNG", 20, 10, 25, 25);
-  doc.setFontSize(18);
-  doc.setTextColor(166, 119, 52);
-  doc.text("PipahCookies — Ringkasan Pesanan", 50, 25);
-  doc.setTextColor(60, 40, 20);
+  const order = saveForm();
+
+  // beige background
+  doc.setFillColor(255,248,242);
+  doc.rect(0,0,210,297,"F");
+
+  // logo
+  const imgUrl = 'https://pipahcookies.github.io/com/images/logo.png';
+  const img = await loadImage(imgUrl);
+  doc.addImage(img, 'PNG', 20, 10, 25, 25);
+
+  doc.setFontSize(16);
+  doc.setTextColor(166,119,52);
+  doc.text("PipahCookies - Ringkasan Pesanan", 50, 25);
+
   doc.setFontSize(12);
-  doc.text(`No. Pesanan: ${order.orderId}`, 20, 45);
-  doc.text(`Nama: ${order.name}`, 20, 52);
-  if(order.address) doc.text(`Alamat: ${order.address}`, 20, 59);
-  let y = 75, total = 0;
+  doc.setTextColor(60,40,20);
+  doc.text(`No. Pesanan: ${order.orderId}`, 20, 50);
+  doc.text(`Nama: ${order.name}`, 20, 58);
+  if(order.address) doc.text(`Alamat: ${order.address}`, 20, 66);
+
+  let y = 80;
   doc.setFontSize(13);
-  doc.text("Senarai Produk:", 20, 68);
   order.items.forEach(it=>{
-    const sub = (it.unitPrice||0)*(it.qty||0);
-    total += sub;
-    doc.text(`${it.name}  |  ${it.qty} x RM${formatCurrency(it.unitPrice)} = RM${formatCurrency(sub)}`, 20, y);
+    const sub = it.unitPrice * it.qty;
+    doc.text(`${it.name} — ${it.qty} x RM${formatRM(it.unitPrice)} = RM${formatRM(sub)}`, 20, y);
     y += 8;
   });
-  doc.setFontSize(14);
-  doc.text(`Jumlah: RM ${formatCurrency(total)}`, 20, y+10);
+  doc.text(`Jumlah: RM${formatRM(order.items.reduce((t,i)=>t+i.unitPrice*i.qty,0))}`, 20, y+8);
+
   doc.save(`${order.orderId}.pdf`);
 });
 
-// 💬 WhatsApp submit
-document.getElementById('submit-order').addEventListener('click', ()=>{
-  const order = gatherOrderFromForm();
-  if(!order.name){ alert('Sila isi nama penuh sebelum hantar pesanan.'); return; }
-
-  const lines = [
-    `PipahCookies — Pesanan Baru`,
-    `No. Pesanan: ${order.orderId}`,
-    `Nama: ${order.name}`,
-    order.address ? `Alamat: ${order.address}` : '',
-    '',
-    'Senarai Produk:'
-  ];
-  let total = 0;
-  order.items.forEach(it=>{
-    const sub = (it.unitPrice||0)*(it.qty||0);
-    total += sub;
-    lines.push(`- ${it.name} (${it.qty} x RM${formatCurrency(it.unitPrice)}) = RM${formatCurrency(sub)}`);
+function loadImage(url){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = ()=>resolve(img);
+    img.src = url;
   });
-  lines.push('');
-  lines.push(`Jumlah: RM ${formatCurrency(total)}`);
-  lines.push('');
-  lines.push('Terima kasih atas pesanan anda 💛');
-  const text = encodeURIComponent(lines.join('\n'));
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
+}
 
-  incrementOrderCounter();
-  localStorage.removeItem(CART_KEY);
-  localStorage.setItem(ORDER_KEY, JSON.stringify(order));
-});
-
-// 🔄 Refresh
-document.getElementById('refresh-from-storage').addEventListener('click', renderOrder);
-
-// 🚪 Cancel and Close buttons
-document.getElementById('cancel-btn').addEventListener('click', ()=>{
-  window.location.href = 'index.html'; // go back to main page
-});
-document.getElementById('close-btn').addEventListener('click', ()=>{
-  window.close();
-});
-
-renderOrder();
+// 🔙 Back and Close
+document.getElementById('back').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
+document.getElementById('close').addEventListener('click', ()=>{ window.close(); });
 </script>
 </body>
 </html>
