@@ -1,247 +1,198 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ringkasan Pesanan — PipahCookies</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ringkasan Pesanan Reseller</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    :root {
-      --primary: #A67734;
-      --bg: #fff8f2;
-      --card: #ffffff;
-      --muted: #6b6b6b;
-      --whatsapp: #25d366;
-    }
     body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f5e9da;
       margin: 0;
-      font-family: Poppins, Arial, sans-serif;
-      background: var(--bg);
-      color: #333;
-      padding: 18px;
-    }
-    .wrap {
-      max-width: 900px;
-      margin: 0 auto;
-      background: var(--card);
-      border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
-    h1 {
-      color: var(--primary);
+    .summary-box {
+      background: #fff8f0;
+      border: 1px solid #e6d3b3;
+      padding: 20px;
+      max-width: 450px;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #6b4f32;
+      margin-bottom: 10px;
+    }
+    .details {
+      font-size: 14px;
+      color: #333;
+    }
+    .items {
+      border-top: 1px dashed #c8a97e;
+      margin-top: 10px;
+      padding-top: 10px;
+    }
+    .item-row {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 5px;
     }
-    h1 img { height: 36px; border-radius: 8px; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
-    th, td {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-    }
-    .controls {
-      margin-top: 16px;
+    .total {
+      border-top: 1px solid #c8a97e;
+      font-weight: bold;
+      margin-top: 10px;
+      padding-top: 10px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+      justify-content: space-between;
     }
-    .btn {
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
+    .btn-area {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px;
       border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
     }
-    .btn.primary { background: var(--primary); color: #fff; }
-    .btn.whatsapp { background: var(--whatsapp); color: #fff; }
-    .btn.ghost { background: #eee; color: #333; }
-    .btn.cancel { background: #888; color: #fff; }
-    .btn.close { background: #ff5c5c; color: #fff; }
-    input, textarea {
-      width: 100%;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      padding: 8px;
-      margin-bottom: 8px;
+    .whatsapp {
+      background-color: #25d366;
+      color: white;
+    }
+    .pdf {
+      background-color: #c49a6c;
+      color: white;
+    }
+    .cancel {
+      background-color: #ffb3b3;
+      color: #6b3b3b;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1><img src="https://pipahcookies.github.io/com/images/logo.png"> Ringkasan Pesanan</h1>
 
-    <label>No. Pesanan</label>
-    <input type="text" id="orderId" readonly>
-
-    <label>Nama Penuh</label>
-    <input type="text" id="customerName" placeholder="Nama penuh">
-
-    <label>Alamat (boleh kosong untuk pickup)</label>
-    <textarea id="customerAddress" rows="2"></textarea>
-
-    <table id="items-table">
-      <thead>
-        <tr><th>Produk</th><th>Unit (RM)</th><th>Qty</th><th>Subtotal (RM)</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <h3 id="total-display">Jumlah: RM 0.00</h3>
-
-    <div class="controls">
-      <button class="btn ghost" id="refresh">Refresh</button>
-      <button class="btn primary" id="pdf">Download PDF</button>
-      <button class="btn whatsapp" id="submit">Submit Order (WhatsApp)</button>
-      <button class="btn cancel" id="back">Kembali ke Laman Utama</button>
-      <button class="btn close" id="close">Tutup</button>
+  <div class="summary-box" id="orderSummary">
+    <h2>Ringkasan Pesanan</h2>
+    <div class="details" id="orderDetails"></div>
+    <div class="btn-area">
+      <button class="whatsapp" id="sendWhatsApp">Hantar ke WhatsApp</button>
+      <button class="pdf" id="downloadPDF">Muat Turun PDF</button>
+      <button class="cancel" onclick="window.location.href='index.html'">Tutup / Kembali</button>
     </div>
   </div>
 
-<script>
-const CART_KEY = 'pipah_cart_v3';
-const ORDER_KEY = 'pipah_reseller_order';
-const WHATSAPP_NUMBER = '601121243407';
+  <script>
+    const order = JSON.parse(localStorage.getItem('pipah_reseller_order')) || {};
+    const orderBox = document.getElementById('orderDetails');
 
-// 🧮 Number formatter
-function formatRM(n){ return Number(n).toFixed(2); }
+    // Get or initialize order number counter
+    let orderCount = parseInt(localStorage.getItem('pipah_order_counter')) || 1;
 
-// 🧾 Generate new order ID
-function nextOrderId(){
-  let last = parseInt(localStorage.getItem('orderCounter')||'0');
-  last++;
-  localStorage.setItem('orderCounter', last);
-  return 'PC' + String(last).padStart(5,'0');
-}
+    // If order has no ID, assign next available
+    if (!order.orderId) {
+      order.orderId = "ORD" + orderCount.toString().padStart(3, '0');
+    }
 
-// 📦 Load order/cart
-function loadOrder(){
-  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-  let order = JSON.parse(localStorage.getItem(ORDER_KEY) || '{}');
-  if(!order.items || order.items.length===0){
-    order.items = cart;
-  }
-  if(!order.orderId) order.orderId = nextOrderId();
-  localStorage.setItem(ORDER_KEY, JSON.stringify(order));
-  return order;
-}
+    // Display order details
+    if (!order.items || order.items.length === 0) {
+      orderBox.innerHTML = '<p>Tiada pesanan dijumpai.</p>';
+    } else {
+      let html = `
+        <p><b>Nama:</b> ${order.name}</p>
+        <p><b>Alamat:</b> ${order.address}</p>
+        <p><b>ID Pesanan:</b> ${order.orderId}</p>
+        <div class="items">
+      `;
 
-// 🖋️ Render order
-function render(){
-  const order = loadOrder();
-  document.getElementById('orderId').value = order.orderId;
-  document.getElementById('customerName').value = order.name || '';
-  document.getElementById('customerAddress').value = order.address || '';
-  const tbody = document.querySelector('#items-table tbody');
-  tbody.innerHTML = '';
-  let total = 0;
-  (order.items || []).forEach(it=>{
-    const sub = it.unitPrice * it.qty;
-    total += sub;
-    tbody.innerHTML += `<tr>
-      <td>${it.name}</td>
-      <td>${formatRM(it.unitPrice)}</td>
-      <td>${it.qty}</td>
-      <td>${formatRM(sub)}</td>
-    </tr>`;
-  });
-  document.getElementById('total-display').textContent = 'Jumlah: RM ' + formatRM(total);
-}
-render();
+      let total = 0;
+      order.items.forEach(item => {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+        html += `
+          <div class="item-row">
+            <span>${item.name} x ${item.quantity}</span>
+            <span>RM ${subtotal.toFixed(2)}</span>
+          </div>
+        `;
+      });
 
-// 💾 Save form data
-function saveForm(){
-  const order = loadOrder();
-  order.name = document.getElementById('customerName').value;
-  order.address = document.getElementById('customerAddress').value;
-  localStorage.setItem(ORDER_KEY, JSON.stringify(order));
-  return order;
-}
+      html += `
+        <div class="total">
+          <span>Jumlah Keseluruhan</span>
+          <span>RM ${total.toFixed(2)}</span>
+        </div>
+      </div>`;
+      orderBox.innerHTML = html;
+    }
 
-// 🔄 Refresh button
-document.getElementById('refresh').addEventListener('click', render);
+    // WhatsApp Button Function
+    document.getElementById('sendWhatsApp').addEventListener('click', () => {
+      // Increment order count when order submitted
+      orderCount++;
+      localStorage.setItem('pipah_order_counter', orderCount);
 
-// 💬 WhatsApp submit
-document.getElementById('submit').addEventListener('click', ()=>{
-  const order = saveForm();
-  if(!order.name){ alert('Sila isi nama penuh'); return; }
+      const message = encodeURIComponent(
+        `📦 *Pesanan Baru Reseller*\n\n` +
+        `Nama: ${order.name}\nAlamat: ${order.address}\nID Pesanan: ${order.orderId}\n\n` +
+        order.items.map(i => `${i.name} x ${i.quantity} = RM${(i.price * i.quantity).toFixed(2)}`).join('\n') +
+        `\n\n💰 Jumlah: RM${order.items.reduce((a,i)=>a+(i.price*i.quantity),0).toFixed(2)}`
+      );
 
-  let msg = `PipahCookies — Pesanan Baru%0A`;
-  msg += `No. Pesanan: ${order.orderId}%0A`;
-  msg += `Nama: ${order.name}%0A`;
-  if(order.address) msg += `Alamat: ${order.address}%0A%0A`;
-  msg += `Senarai Produk:%0A`;
-  let total = 0;
-  order.items.forEach(it=>{
-    const sub = it.unitPrice * it.qty;
-    total += sub;
-    msg += `• ${it.name} (${it.qty} x RM${formatRM(it.unitPrice)}) = RM${formatRM(sub)}%0A`;
-  });
-  msg += `%0A🔸 Jumlah: RM${formatRM(total)}%0A`;
-  msg += `%0ATerima kasih atas pesanan anda 💛`;
+      // 🟢 Put your real WhatsApp number here
+      const phone = "601121243407"; 
+      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    });
 
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+    // PDF Download Function
+    document.getElementById('downloadPDF').addEventListener('click', () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: [80, 200] // thermal size
+      });
 
-  // Move to next order ID after submit
-  localStorage.removeItem(CART_KEY);
-  localStorage.removeItem(ORDER_KEY);
-  render();
-});
+      let y = 10;
+      doc.setFontSize(12);
+      doc.text("PipahCookies", 10, y);
+      doc.setFontSize(8);
+      y += 6;
+      doc.text(`ID Pesanan: ${order.orderId}`, 10, y);
+      y += 4;
+      doc.text(`Nama: ${order.name}`, 10, y);
+      y += 4;
+      doc.text(`Alamat: ${order.address}`, 10, y);
+      y += 6;
+      doc.text("------------------------------------------", 10, y);
+      y += 6;
 
-// 🧾 PDF download
-document.getElementById('pdf').addEventListener('click', async ()=>{
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const order = saveForm();
+      order.items.forEach(item => {
+        doc.text(`${item.name} x${item.quantity}`, 10, y);
+        doc.text(`RM ${(item.price * item.quantity).toFixed(2)}`, 55, y);
+        y += 5;
+      });
 
-  // beige background
-  doc.setFillColor(255,248,242);
-  doc.rect(0,0,210,297,"F");
+      y += 4;
+      doc.text("------------------------------------------", 10, y);
+      y += 6;
+      const total = order.items.reduce((a, i) => a + (i.price * i.quantity), 0);
+      doc.setFontSize(10);
+      doc.text(`Jumlah Keseluruhan: RM ${total.toFixed(2)}`, 10, y);
+      y += 10;
+      doc.setFontSize(8);
+      doc.text("Terima kasih atas pesanan anda!", 10, y);
 
-  // logo
-  const imgUrl = 'https://pipahcookies.github.io/com/images/logo.png';
-  const img = await loadImage(imgUrl);
-  doc.addImage(img, 'PNG', 20, 10, 25, 25);
+      doc.save(`Pesanan_${order.orderId}.pdf`);
+    });
+  </script>
 
-  doc.setFontSize(16);
-  doc.setTextColor(166,119,52);
-  doc.text("PipahCookies - Ringkasan Pesanan", 50, 25);
-
-  doc.setFontSize(12);
-  doc.setTextColor(60,40,20);
-  doc.text(`No. Pesanan: ${order.orderId}`, 20, 50);
-  doc.text(`Nama: ${order.name}`, 20, 58);
-  if(order.address) doc.text(`Alamat: ${order.address}`, 20, 66);
-
-  let y = 80;
-  doc.setFontSize(13);
-  order.items.forEach(it=>{
-    const sub = it.unitPrice * it.qty;
-    doc.text(`${it.name} — ${it.qty} x RM${formatRM(it.unitPrice)} = RM${formatRM(sub)}`, 20, y);
-    y += 8;
-  });
-  doc.text(`Jumlah: RM${formatRM(order.items.reduce((t,i)=>t+i.unitPrice*i.qty,0))}`, 20, y+8);
-
-  doc.save(`${order.orderId}.pdf`);
-});
-
-function loadImage(url){
-  return new Promise((resolve)=>{
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = ()=>resolve(img);
-    img.src = url;
-  });
-}
-
-// 🔙 Back and Close
-document.getElementById('back').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
-document.getElementById('close').addEventListener('click', ()=>{ window.close(); });
-</script>
 </body>
 </html>
