@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery Grid</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f5f5f5;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .gallery-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 20px;
+  }
+
+  .gallery-container img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 10px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .gallery-container img.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Overlay for zoom */
+  .overlay {
+    position: fixed;
+    display: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  .overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+    animation: zoomIn 0.3s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes zoomIn {
+    from { transform: scale(0.7); }
+    to { transform: scale(1); }
+  }
+
+  /* Text buttons */
+  .gallery-btn {
+    display: inline-block;
+    margin: 10px auto 30px auto;
+    font-size: 18px;
+    font-weight: 600;
+    color: #A67734;
+    cursor: pointer;
+    background: none;
+    border: none;
+    outline: none;
+    text-align: center;
+    transition: color 0.3s ease, letter-spacing 0.3s ease;
+  }
+
+  .gallery-btn:hover {
+    color: #ff5722;
+    letter-spacing: 1px;
+  }
+
+  .btn-container {
+    text-align: center;
+  }
+  /* Header Section */
+.gallery-header {
+  text-align: center;
+  padding: 40px 20px 10px;
+}
+
+.gallery-header h1 {
+  font-size: 32px;
+  color: #A67734;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.gallery-header p {
+  font-size: 16px;
+  color: #555;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+  @media (max-width: 768px) {
+  .gallery-header h1 {
+    font-size: 26px;
+  }
+  .gallery-header p {
+    font-size: 15px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Header Section -->
+<div class="gallery-header">
+  <h1>PipahCookies Gallery</h1>
+  <p>
+    Lihat koleksi gambar eksklusif PipahCookies — setiap cookies buatan tangan kami dibuat dengan penuh kasih sayang, 
+    menggunakan bahan berkualiti dan rasa yang memikat. Sesuai untuk dijadikan hadiah atau jualan semula!
+  </p>
+</div>
+
+<div class="gallery-container" id="gallery"></div>
+<body>
+  
+
+<div class="gallery-container" id="gallery"></div>
+
+<div class="btn-container">
+  <button class="gallery-btn" id="seeMoreBtn">See More</button>
+  <button class="gallery-btn" id="seeLessBtn" style="display:none;">See Less</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <img src="" id="overlay-img" alt="Zoomed Image">
+</div>
+
+<script>
+  const allImages = [
+    'images/pic31.jpg',
+    'images/pic10.jpg',
+    'images/pic29.jpg',
+    'images/pic28.jpg',
+    'images/pic27.jpg',
+    'images/pic26.jpg',
+    'images/pic25.jpg',
+    'images/pic21.jpg',
+    'images/pic11.jpg',
+    'images/pic13.jpg',
+    'images/ss1.jpg',
+    'images/ss2.jpg',
+    'images/ss3.jpg',
+    'images/ch1.jpg',
+    'images/ch2.jpg',
+    'images/ch3.jpg',
+    'images/bc1.jpg',
+    'images/bc2.jpg',
+    'images/bc3.jpg',
+    'images/dc1.jpg',
+    'images/dc2.jpg',
+    'images/dc3.jpg',
+    'images/rv1.jpg',
+    'images/rv2.jpg',
+    'images/rv3.jpg'
+  ];
+
+  const gallery = document.getElementById('gallery');
+  const seeMoreBtn = document.getElementById('seeMoreBtn');
+  const seeLessBtn = document.getElementById('seeLessBtn');
+  const overlay = document.getElementById('overlay');
+  const overlayImg = document.getElementById('overlay-img');
+
+  const initialLayers = 5; // 5 rows x 4 images = 20 images
+  let isExpanded = false;
+
+  function renderGallery(count) {
+    gallery.innerHTML = '';
+    for (let i = 0; i < count && i < allImages.length; i++) {
+      const img = document.createElement('img');
+      img.src = allImages[i];
+      img.alt = 'Gallery Image';
+      gallery.appendChild(img);
+      setTimeout(() => img.classList.add('show'), i * 50); // stagger fade-in
+    }
+    adjustHeight();
+  }
+
+  function adjustHeight() {
+    if (window.parent) {
+      setTimeout(() => {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({ galleryHeight: height }, '*');
+      }, 300);
+    }
+  }
+
+  // Initial load
+  renderGallery(initialLayers * 4);
+
+  seeMoreBtn.addEventListener('click', () => {
+    renderGallery(allImages.length);
+    seeMoreBtn.style.display = 'none';
+    seeLessBtn.style.display = 'inline-block';
+    isExpanded = true;
+  });
+
+  seeLessBtn.addEventListener('click', () => {
+    renderGallery(initialLayers * 4);
+    seeLessBtn.style.display = 'none';
+    seeMoreBtn.style.display = 'inline-block';
+    isExpanded = false;
+  });
+
+  // Image zoom
+  gallery.addEventListener('click', e => {
+    if(e.target.tagName === 'IMG') {
+      overlayImg.src = e.target.src;
+      overlay.style.display = 'flex';
+    }
+  });
+
+  overlay.addEventListener('click', () => {
+    overlay.style.display = 'none';
+  });
+</script>
+
+</body>
+</html>
