@@ -239,8 +239,8 @@ const products = [
     oldPrice: 22,
     tiers: [
       { max: 5, price: 19 },
-      { max: 9, price: 18 },
-      { max: Infinity, price: 17 }
+      { max: 49, price: 11 },
+      { max: Infinity, price: 10 }
     ]
   },
   {
@@ -330,7 +330,7 @@ function renderProducts(){
       </div>
       <div class="qty-control">
         <button class="qty-btn" data-action="minus" data-id="${prod.id}">−</button>
-        <input id="qty-${prod.id}" class="qty-input" type="number" value="1" min="1">
+        <input id="qty-${prod.id}" class="qty-input" type="number" value="0" min="0">
         <button class="qty-btn" data-action="plus" data-id="${prod.id}">+</button>
       </div>
       <div style="margin-bottom:8px">
@@ -382,8 +382,8 @@ function onQtyButton(e){
   const id = e.currentTarget.dataset.id;
   const action = e.currentTarget.dataset.action;
   const inp = document.getElementById('qty-'+id);
-  let val = Math.max(1, parseInt(inp.value||'1'));
-  val = action === 'plus' ? val+1 : Math.max(1, val-1);
+  let val = Math.max(0, parseInt(inp.value||'0'));
+  val = action === 'plus' ? val+1 : Math.max(0, val-1);
   inp.value = val;
   updateUnitPriceDisplay(id, val);
 }
@@ -391,7 +391,7 @@ function onQtyButton(e){
 function onQtyInput(e){
   const id = e.currentTarget.id.replace('qty-','');
   let v = parseInt(e.currentTarget.value||'1');
-  if(isNaN(v)||v<1) v=1;
+  if(isNaN(v)||v<0) v=0;
   e.currentTarget.value=v;
   updateUnitPriceDisplay(id,v);
 }
@@ -490,7 +490,7 @@ function formatOrderId(num){ return 'RS'+num.toString().padStart(8,'0'); }
 function getNextOrderNumber(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); return formatOrderId(last+1); }
 function incrementOrderCounter(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); localStorage.setItem('orderCounter', (last+1).toString()); }
 
-   // ===== UTIL =====
+// ===== UTIL =====
 function escapeHtml(text){ return String(text).replace(/[&<>"]/, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 </script>
    <script>
@@ -513,4 +513,3 @@ function escapeHtml(text){ return String(text).replace(/[&<>"]/, m=>({'&':'&amp;
  </script>
 </body>
 </html>
-
