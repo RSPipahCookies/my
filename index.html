@@ -106,7 +106,7 @@
 
   <!-- ========== HEADER ========== -->
   <header class="site-header">
-    <img src="images/rshd.png" alt="Pipah Cookies" class="header-img">
+    <img src="images/rsheader.png" alt="Pipah Cookies" class="header-img">
   </header>
 
   <!-- ========== NAV ========== -->
@@ -140,6 +140,18 @@
         <!-- Product cards will be injected by JS for easier maintenance -->
       </div>
     </section>
+     
+     <!-- GALLERY -->
+  <!-- Gallery Section -->
+<section id="gallery">
+  <iframe 
+      src="gambar2reseller.html" 
+      width="100%" 
+      style="border:none;" 
+      id="galleryIframe" 
+      scrolling="no">
+  </iframe>
+</section>
 
     <section id="contact" class="section fade-up">
       <h2>Hubungi Kami</h2>
@@ -226,8 +238,8 @@ const products = [
     images: ['images/bc1.jpg','images/bc2.jpg','images/bc3.jpg'],
     oldPrice: 22,
     tiers: [
-      { max: 9, price: 12 },
-      { max: 49, price: 11 },
+      { max: 5, price: 19 },
+      { max: 9, price: 18 },
       { max: Infinity, price: 10 }
     ]
   },
@@ -237,9 +249,9 @@ const products = [
     images: ['images/rv1.jpg','images/rv2.jpg','images/rv3.jpg'],
     oldPrice: 22,
     tiers: [
-      { max: 9, price: 11 },
-      { max: 49, price: 10 },
-      { max: Infinity, price: 9 }
+      { max: 4, price: 20 },
+      { max: 9, price: 19},
+      { max: Infinity, price: 18 }
     ]
   },
   {
@@ -248,9 +260,9 @@ const products = [
     images: ['images/dc1.jpg','images/dc2.jpg','images/dc3.jpg'],
     oldPrice: 22,
     tiers: [
-      { max: 9, price: 11 },
-      { max: 49, price: 10 },
-      { max: Infinity, price: 9 }
+      { max: 4, price: 19 },
+      { max: 9, price: 18 },
+      { max: Infinity, price: 17 }
     ]
   }
 ];
@@ -283,7 +295,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       items: cart
     };
     localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
-    window.open('reseller-checkout.html', '_blank');
+    window.open('reseller-summary.html', '_blank');
   });
 });
 
@@ -481,6 +493,8 @@ function incrementOrderCounter(){ let last = parseInt(localStorage.getItem('orde
 // ===== UTIL =====
 function escapeHtml(text){ return String(text).replace(/[&<>"]/, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 </script>
-
-</body>
-</html>
+   <script>
+  // Listen to messages from iframe (gallery.html)
+  window.addEventListener('message', function(e) {
+    if (e.data.galleryHeight) {
+      con
