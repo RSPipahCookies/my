@@ -511,7 +511,7 @@ function escapeHtml(text){ return String(text).replace(/[&<>"]/, m=>({'&':'&amp;
     }
   });
  </script>
-  <style>
+ <style>
     /* --- 1. THEME COLORS & FONT --- */
     :root {
         --elegant-beige: #F5F5DC;  /* Soft Beige/Cookie Base */
@@ -561,7 +561,7 @@ function escapeHtml(text){ return String(text).replace(/[&<>"]/, m=>({'&':'&amp;
     
     /* The 'C' icon */
     #fab-button::after {
-        content: '🧮';
+        content: 'C';
         font-size: 28px;
         line-height: 1;
     }
@@ -657,5 +657,201 @@ function escapeHtml(text){ return String(text).replace(/[&<>"]/, m=>({'&':'&amp;
     }
 
     .calc-btn {
+        padding: 15px 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.15s, transform 0.1s;
+        color: var(--dark-brown);
+        background-color: #EFEFEF;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+    }
+
+    /* Button Press Animation */
+    .calc-btn:active {
+        transform: translateY(2px);
+        box-shadow: none;
+    }
+
+    /* Number Buttons (Standard) */
+    .number-btn {
+        background-color: white;
+    }
+    
+    /* Operator Buttons (Accent Gold) */
+    .operator-btn {
+        background-color: var(--accent-gold);
+        color: white;
+        font-weight: bold;
+    }
+    
+    /* Clear/Delete (Neutral) */
+    .clear-btn {
+        background-color: #D3D3D3;
+    }
+    
+    /* Equals Button (Accent Gold, wider) */
+    .equals-btn {
+        grid-column: span 2;
+        background-color: var(--dark-brown);
+        color: white;
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+</style>
+
+<div id="fab-button" onclick="toggleCalculator()"></div>
+
+<div id="calc-modal">
+    <div class="modal-header">
+        <span>Reseller Quick Count | Dual Screen</span>
+        <button id="close-btn" onclick="toggleCalculator()">&times;</button>
+    </div>
+
+    <div class="display-container">
+        <div id="display-top" class="calc-display">0</div>
+        <div id="display-main" class="calc-display">0</div>
+    </div>
+
+    <div class="buttons-grid">
+        <button class="calc-btn clear-btn" onclick="clearDisplay()">AC</button>
+        <button class="calc-btn clear-btn" onclick="deleteLast()">DEL</button>
+        <button class="calc-btn operator-btn" onclick="appendOperator('/')">&div;</button>
+        <button class="calc-btn operator-btn" onclick="appendOperator('*')">&times;</button>
+
+        <button class="calc-btn number-btn" onclick="appendNumber('7')">7</button>
+        <button class="calc-btn number-btn" onclick="appendNumber('8')">8</button>
+        <button class="calc-btn number-btn" onclick="appendNumber('9')">9</button>
+        <button class="calc-btn operator-btn" onclick="appendOperator('-')">-</button>
+
+        <button class="calc-btn number-btn" onclick="appendNumber('4')">4</button>
+        <button class="calc-btn number-btn" onclick="appendNumber('5')">5</button>
+        <button class="calc-btn number-btn" onclick="appendNumber('6')">6</button>
+        <button class="calc-btn operator-btn" onclick="appendOperator('+')">+</button>
+
+        <button class="calc-btn number-btn" onclick="appendNumber('1')">1</button>
+        <button class="calc-btn number-btn" onclick="appendNumber('2')">2</button>
+        <button class="calc-btn number-btn" onclick="appendNumber('3')">3</button>
+        
+        <button class="calc-btn number-btn" onclick="appendNumber('0')">0</button>
+        <button class="calc-btn number-btn" onclick="appendNumber('.')">.</button>
+        <button class="calc-btn equals-btn" onclick="calculateResult()">=</button>
+
+    </div>
+</div>
+
+<script>
+    const displayMain = document.getElementById('display-main');
+    const displayTop = document.getElementById('display-top');
+    const modal = document.getElementById('calc-modal');
+    const fab = document.getElementById('fab-button');
+    
+    let currentInput = '0';
+    let previousExpression = '';
+    
+    // --- MODAL TOGGLE LOGIC ---
+    function toggleCalculator() {
+        const isActive = modal.classList.contains('active');
+        if (isActive) {
+            modal.classList.remove('active');
+            fab.style.display = 'flex'; 
+        } else {
+            modal.classList.add('active');
+            fab.style.display = 'none'; 
+        }
+    }
+
+    // --- CALCULATOR LOGIC ---
+
+    function updateDisplay() {
+        // Update the main (bottom) display with current input
+        displayMain.textContent = currentInput;
+        // Update the top display with the previous expression (if applicable)
+        displayTop.textContent = previousExpression || '0';
+    }
+
+    function clearDisplay() {
+        currentInput = '0';
+        previousExpression = '';
+        updateDisplay();
+    }
+
+    function deleteLast() {
+        if (currentInput.length > 1) {
+            currentInput = currentInput.slice(0, -1);
+        } else {
+            currentInput = '0';
+        }
+        updateDisplay();
+    }
+
+    function appendNumber(number) {
+        // If the current display is '0' and the input is not '.', replace '0'
+        if (currentInput === '0' && number !== '.') {
+            currentInput = number;
+        } 
+        // If the current display is the result of a previous calculation, start a new calculation
+        else if (previousExpression.endsWith('=')) {
+            currentInput = number;
+            previousExpression = '';
+        }
+        // Standard append logic
+        else {
+            // Prevent multiple decimal points in a number segment
+            if (number === '.' && currentInput.match(/\./g) && !currentInput.match(/[+\-*/]([^+\-*/]*\.[^+\-*/]*)$/)) {
+                return;
+            }
+            currentInput += number;
+        }
+        updateDisplay();
+    }
+
+    function appendOperator(op) {
+        // If the current display is a result, move the result to input and continue
+        if (previousExpression.endsWith('=')) {
+            previousExpression = '';
+        }
+        
+        // Check if the last character is an operator and replace it
+        const lastChar = currentInput.slice(-1);
+        if (['+', '-', '*', '/'].includes(lastChar)) {
+            currentInput = currentInput.slice(0, -1) + op;
+        } else {
+            currentInput += op;
+        }
+        updateDisplay();
+    }
+
+    function calculateResult() {
+        try {
+            // Remove trailing operator if it exists before evaluation
+            let expression = currentInput.replace(/([+\-*/]+)$/, ''); 
+            
+            // Use a safe calculation mechanism (using Function is generally safe for simple math)
+            const result = new Function('return ' + expression)(); 
+            
+            if (result === Infinity || isNaN(result)) {
+                currentInput = 'Error';
+                previousExpression = '';
+            } else {
+                // Store the full expression in the top display
+                previousExpression = currentInput + ' =';
+                // Format result to a fixed number of decimal places for clean display
+                currentInput = result.toFixed(8).replace(/\.?0+$/, ''); 
+            }
+
+        } catch (error) {
+            currentInput = 'Error';
+            previousExpression = '';
+        }
+        updateDisplay();
+    }
+
+    // Initialize display
+    updateDisplay();
+</script>
+  
 </body>
 </html>
