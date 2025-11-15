@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reseller Admin Panel (Conceptual)</title>
+    <style>
+        /* Styling remains the same as your original file */
+        body { font-family: sans-serif; padding: 20px; background: #fff5e1; }
+        .admin-box { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #b45309; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
+        .user-list div { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .user-list div:last-child { border-bottom: none; }
+        .block-btn { background-color: #cc0000; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+        .unblock-btn { background-color: #008000; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+        .block-btn:hover, .unblock-btn:hover { opacity: 0.8; }
+        .user-details small { margin-left: 10px; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="admin-box">
+    <h2>Senarai Reseller Berdaftar</h2>
+    <p>Ini adalah panel admin konseptual untuk mengurus akses reseller.</p>
+    <div id="user-list" class="user-list">
+        </div>
+    <p style="margin-top: 20px; font-size: 0.8rem; color: #b45309;">*Data diambil terus dari Local Storage Pelayar. Panel ini hanya untuk demonstrasi logik.</p>
+</div>
+
+<script>
+    // **New unique Local Storage key**
+    const USERS_KEY = 'pipah_rs_creds_v2_data'; 
+
+    // Base64 encoding/decoding functions
+    const base64Encode = (str) => btoa(encodeURIComponent(str));
+    const base64Decode = (str) => {
+        try {
+            return decodeURIComponent(atob(str));
+        } catch (e) {
+            return "{}"; 
+        }
+    };
+
+    function getRegisteredUsers() {
+        const encodedData = localStorage.getItem(USERS_KEY);
+        if (!encodedData) return {};
+        const decodedString = base64Decode(encodedData);
+        try {
+            return JSON.parse(decodedString);
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveRegisteredUsers(users) {
+        const jsonString = JSON.stringify(users);
+        const encodedData = base64Encode(jsonString);
+        localStorage.setItem(USERS_KEY, encodedData);
+    }
+
+    function loadUsers() {
+        const listEl = document.getElementById('user-list');
+        listEl.innerHTML = ''; 
+
+        const users = getRegisteredUsers();
+        const userKeys = Object.keys(users).sort((a,b) => users[a].name.localeCompare(users[b].name));
+        
+        if (userKeys.length === 0) {
+            listEl.innerHTML = '<p style="text-align: center; color: #cc0000;">Tiada Reseller Berdaftar Ditemui.</p>';
+            return;
+        }
+
+        userKeys.forEach(phone => {
+            const user = users[phone];
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <div class="user-details">
+                    <strong>${user.name}</strong> 
+                    <small>Tel: ${phone} | PIN: ${user.accessCode}</small>
+                    <span style="color:${user.isBlocked ? 'red' : 'green'}; margin-left: 15px; font-weight: bold;">
+                        ${user.isBlocked ? 'DISEKAT' : 'AKTIF'}
+                    </span>
+                </div>
+                <button class="${user.isBlocked ? 'unblock-btn' : 'block-btn'}" 
+                        onclick="toggleBlock('${phone}', ${user.isBlocked})">
+                    ${user.isBlocked ? 'Nyah Sekat' : 'Sekat Akses'}
+                </button>
+            `;
+            listEl.appendChild(div);
+        });
+    }
+
+    // Global function for buttons
+    window.toggleBlock = function(phone, isCurrentlyBlocked) {
+        let users = getRegisteredUsers();
+        if (users[phone]) {
+            users[phone].isBlocked = !isCurrentlyBlocked;
+            saveRegisteredUsers(users);
+            loadUsers(); // Refresh the list
+            alert(`${users[phone].name} kini ${isCurrentlyBlocked ? 'Nyah Sekat' : 'Disekat'}.`);
+        }
+    }
+
+    // Initialize on load
+    loadUsers();
+</script>
+</body>
+</html>

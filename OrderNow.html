@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Borang Pesanan Cepat - PipahCookies</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Updated Soft Beige Theme for Trust */
+    :root{
+      --primary: #A67734; /* Rich Brown/Gold Accent */
+      --primary-dark: #6C4920; /* Darker Brown for Text/Headers */
+      --accent: #F4EAE0; /* Soft Beige/Cream Background */
+      --whatsapp: #25d366;
+      --bg: #F9F7F5; /* Very Light Beige Background */
+      --card: #ffffff;
+    }
+    body{margin:0;font-family:'Inter', sans-serif;background:var(--bg);color:#333}
+    .container{max-width:600px;margin:20px auto;padding:20px;background:var(--card);border-radius:18px;box-shadow:0 15px 35px rgba(0,0,0,0.1);border-top:5px solid var(--primary);}
+    .form-input{padding:12px;border:1px solid #ddd;border-radius:8px;width:100%;box-sizing:border-box;}
+    .product-card{border:1px solid #eee;border-radius:12px;padding:15px;margin-bottom:15px;background:#fefefe;display:flex;gap:15px;align-items:center;}
+    .product-card img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
+    .qty-control{display:flex;align-items:center;margin-left:auto;}
+    .qty-btn{background:var(--primary);color:white;border:none;width:30px;height:30px;border-radius:4px;font-size:1.1rem;cursor:pointer;}
+    .qty-display{width:40px;text-align:center;}
+    .submit-btn{background:var(--whatsapp);color:white;padding:15px;border-radius:10px;font-weight:700;font-size:1.1rem;width:100%;border:none;margin-top:20px;cursor:pointer;}
+    .fixed{position:fixed;transition:all 0.3s;}
+    .product-info { flex-grow: 1; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1 class="text-2xl font-bold text-center text-primary-dark mb-4">Borang Pesanan Cepat</h1>
+  <p class="text-center text-sm text-gray-500 mb-6">Sila isi maklumat anda dan kuantiti yang dikehendaki. Semua harga ditetapkan oleh Reseller anda.</p>
+
+  <form id="order-form">
+    <div class="bg-accent p-4 rounded-lg mb-6">
+      <h2 class="text-xl font-semibold text-primary-dark mb-3"><i class="fas fa-user-circle"></i> Maklumat Pelanggan</h2>
+      <input type="text" id="customerName" class="form-input mb-3" placeholder="Nama Penuh" required>
+      <input type="tel" id="customerPhone" class="form-input mb-3" placeholder="Nombor WhatsApp (cth: 60123456789)" required>
+      <textarea id="customerAddress" class="form-input" rows="3" placeholder="Alamat Penuh Penghantaran" required></textarea>
+    </div>
+
+    <h2 class="text-xl font-semibold text-primary-dark mb-3"><i class="fas fa-cookie-bite"></i> Pilih Produk</h2>
+    <div id="product-list-container">
+      </div>
+    
+    <div class="bg-accent p-4 rounded-lg mt-6">
+      <div class="flex justify-between font-bold text-lg pt-2 mt-2">
+        <span>JUMLAH KESELURUHAN:</span>
+        <span id="grand-total" class="text-primary">RM 0.00</span>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">*Tiada caj penghantaran dikenakan.</p>
+    </div>
+
+    <input type="hidden" id="reseller-whatsapp" value=""> 
+    <button type="submit" class="submit-btn"><i class="fab fa-whatsapp"></i> Hantar Pesanan ke WhatsApp Reseller</button>
+  </form>
+</div>
+
+<script>
+  // **CONFIGURATION**
+  // Products definition (used for images and names only)
+  const PRODUCTS_BASE = [
+    { id: 'choco-pecan', name: 'Chocolate Pecan', images: 'choco-pecan-1.jpg' },
+    { id: 'almond-london', name: 'Almond London', images: 'almond-london-1.jpg' },
+    { id: 'red-velvet', name: 'Red Velvet', images: 'red-velvet-1.jpg' },
+    { id: 'semperit-dahlia', name: 'Semperit Dahlia', images: 'semperit-dahlia-1.jpg' },
+  ];
+  
+  // --- Utility Functions ---
+  
+  // Function to read URL parameters
+  function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    const results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+  };
+  
+  // Function to get price map from URL
+  function getCustomPrices() {
+    const idsString = getUrlParameter('p_ids'); // e.g., 'choco-pecan,almond-london'
+    const pricesString = getUrlParameter('p_prices'); // e.g., '22.00,28.00'
+
+    const ids = idsString ? idsString.split(',') : [];
+    const prices = pricesString ? pricesString.split(',').map(p => parseFloat(p)) : [];
+    
+    const priceMap = {};
+    ids.forEach((id, index) => {
+        if (prices[index] && !isNaN(prices[index])) {
+            priceMap[id] = prices[index];
+        }
+    });
+    return priceMap;
+  }
+
+  function renderProducts(priceMap) {
+    const container = document.getElementById('product-list-container');
+    container.innerHTML = '';
+    let foundProducts = false;
+
+    PRODUCTS_BASE.forEach(product => {
+        const customPrice = priceMap[product.id];
+        
+        // ONLY render products that have a custom price set by the reseller
+        if (customPrice) {
+            foundProducts = true;
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <img src="${product.images}" alt="${product.name}">
+                <div class="product-info">
+                    <span class="font-semibold">${product.name}</span>
+                    <p class="text-sm text-primary">RM ${customPrice.toFixed(2)}/unit</p>
+                </div>
+                <div class="qty-control">
+                    <button type="button" class="qty-btn" onclick="updateQuantity('${product.id}', -1)"><i class="fas fa-minus"></i></button>
+                    <span id="qty-${product.id}" class="qty-display" data-price="${customPrice}">0</span>
+                    <button type="button" class="qty-btn" onclick="updateQuantity('${product.id}', 1)"><i class="fas fa-plus"></i></button>
+                </div>
+            `;
+            container.appendChild(card);
+        }
+    });
+
+    if (!foundProducts) {
+        container.innerHTML = '<p class="text-center text-red-500">Tiada produk atau harga yang ditetapkan dalam pautan ini. Sila hubungi Reseller anda.</p>';
+    }
+
+    updateTotals();
+  }
+
+  window.updateQuantity = function(id, delta) {
+    const qtyEl = document.getElementById(`qty-${id}`);
+    if (!qtyEl) return;
+    
+    let currentQty = parseInt(qtyEl.textContent);
+    let newQty = currentQty + delta;
+    
+    if (newQty < 0) newQty = 0;
+    
+    qtyEl.textContent = newQty;
+    updateTotals();
+  }
+
+  function updateTotals() {
+    let grandTotal = 0;
+    const priceMap = getCustomPrices();
+
+    PRODUCTS_BASE.forEach(product => {
+        const qtyEl = document.getElementById(`qty-${product.id}`);
+        if (qtyEl) {
+            const qty = parseInt(qtyEl.textContent);
+            const price = priceMap[product.id] || 0; // Use price from map
+            grandTotal += qty * price;
+        }
+    });
+
+    document.getElementById('grand-total').textContent = `RM ${grandTotal.toFixed(2)}`;
+  }
+
+  // --- Submission Logic ---
+  document.getElementById('order-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const resellerWhatsapp = document.getElementById('reseller-whatsapp').value;
+    const customerName = document.getElementById('customerName').value.trim();
+    const customerPhone = document.getElementById('customerPhone').value.trim();
+    const customerAddress = document.getElementById('customerAddress').value.trim();
+    
+    if (!resellerWhatsapp) { alert('Ralat: Nombor WhatsApp Reseller tidak dijumpai.'); return; }
+    if (!customerName || !customerPhone || !customerAddress) { alert('Sila lengkapkan semua maklumat pelanggan.'); return; }
+
+    let totalOrderValue = 0;
+    let orderSummary = '';
+    let totalItems = 0;
+    const priceMap = getCustomPrices();
+
+    PRODUCTS_BASE.forEach(product => {
+        const qtyEl = document.getElementById(`qty-${product.id}`);
+        if (qtyEl) {
+            const qty = parseInt(qtyEl.textContent);
+            const price = priceMap[product.id];
+            
+            if (qty > 0) {
+                const itemTotal = qty * price;
+                totalOrderValue += itemTotal;
+                totalItems += qty;
+                orderSummary += `\n- ${product.name}: ${qty} unit @ RM ${price.toFixed(2)} = RM ${itemTotal.toFixed(2)}`;
+            }
+        }
+    });
+    
+    if (totalItems === 0) {
+      alert('Sila pilih sekurang-kurangnya satu produk untuk dipesan.');
+      return;
+    }
+    
+    // WhatsApp message template (NO DELIVERY FEE)
+    const message = `*PESANAN BARU (TIADA CAJ HANTAR)*\n` +
+                    `----------------------------------\n` +
+                    `*Maklumat Pelanggan*\n` +
+                    `Nama: ${customerName}\n` +
+                    `Tel: ${customerPhone}\n` +
+                    `Alamat: ${customerAddress}\n\n` +
+                    `*Butiran Pesanan (Harga Ditetapkan Reseller)*\n` +
+                    orderSummary + 
+                    `\n----------------------------------\n` +
+                    `*JUMLAH KESELURUHAN: RM ${totalOrderValue.toFixed(2)}*\n\n` +
+                    `Mohon sahkan pesanan ini segera. Terima kasih!`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${resellerWhatsapp}?text=${encodedMessage}`;
+
+    window.open(whatsappUrl, '_blank');
+    
+    // Custom confirmation message
+    const tempConfirm = document.createElement('div');
+    tempConfirm.className = 'fixed inset-0 bg-green-500 text-white flex items-center justify-center p-4 z-50 text-xl font-bold';
+    tempConfirm.textContent = '✅ Pesanan Dihantar! Sila sahkan di WhatsApp.';
+    document.body.appendChild(tempConfirm);
+    setTimeout(() => {
+        document.body.removeChild(tempConfirm);
+    }, 3000);
+  });
+  
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', () => {
+    // Read the reseller's WhatsApp number from the URL parameter 'rs_wa'
+    const resellerWa = getUrlParameter('rs_wa');
+    document.getElementById('reseller-whatsapp').value = resellerWa;
+    
+    const customPrices = getCustomPrices();
+    renderProducts(customPrices);
+  });
+</script>
+</body>
+</html>
