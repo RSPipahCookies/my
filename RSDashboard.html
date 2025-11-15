@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PipahCookies — Multi-Product Reseller Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Updated Soft Beige Theme */
+    :root{
+      --primary: #A67734; /* Rich Brown/Gold Accent */
+      --primary-dark: #6C4920; /* Darker Brown for Text/Headers */
+      --accent: #F4EAE0; /* Soft Beige/Cream Background */
+      --whatsapp: #25d366;
+      --bg: #F9F7F5; /* Very Light Beige Background */
+      --card: #ffffff;
+      --muted: #888888;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter', sans-serif;background:var(--bg);color:#333;-webkit-font-smoothing:antialiased}
+    h1,h2,h3{font-family:'Inter', sans-serif;color:var(--primary-dark);margin:0 0 12px;font-weight:700}
+    a{color:inherit}
+
+    .site-header{display:block}
+    .header-img{width:100%;height:auto;display:block;object-fit:cover;max-height:300px;border-radius:0 0 18px 18px;box-shadow:0 12px 25px rgba(0,0,0,0.1);animation:fadeUp .9s both}
+    .site-nav{position:sticky;top:0;background:var(--primary);z-index:1000;box-shadow:0 2px 4px rgba(0,0,0,0.1);padding:10px 0}
+    .nav-list{display:flex;justify-content:space-around;max-width:1000px;margin:0 auto;list-style:none;padding:0}
+    .nav-list a{text-decoration:none;color:var(--accent);padding:10px 15px;border-radius:6px;transition:background-color .2s;font-weight:600;}
+    .nav-list a:hover{background-color:rgba(255,255,255,0.2)}
+
+    .container{max-width:1200px;margin:30px auto;padding:0 20px}
+    .section{padding:40px 0;border-bottom:1px solid rgba(0,0,0,0.08)}
+    
+    /* Responsive Product Grid */
+    .products, .generator-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+        gap: 20px;
+        justify-content: center;
+    }
+    @media (min-width: 768px) {
+        .products {
+            grid-template-columns: repeat(3, 1fr); /* 3 columns on tablet */
+        }
+        .generator-grid {
+            grid-template-columns: repeat(3, 1fr); /* 3 columns on tablet */
+        }
+    }
+    @media (min-width: 1024px) {
+        .products {
+            grid-template-columns: repeat(4, 1fr); /* 4 columns on desktop */
+        }
+        .generator-grid {
+            grid-template-columns: repeat(4, 1fr); /* 4 columns on desktop */
+        }
+    }
+
+    .card{background:var(--card);padding:20px;border-radius:12px;box-shadow:0 6px 15px rgba(0,0,0,0.05);transition:transform .3s;text-align:center;}
+    .card:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,0.1);}
+    
+    /* Specific Card for Generator */
+    .generator-card {
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        position: relative;
+    }
+    .generator-card.selected {
+        border-color: var(--whatsapp);
+        box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
+    }
+    .card-checkbox {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        z-index: 10;
+        accent-color: var(--whatsapp); /* Style the checkbox itself */
+    }
+
+    .btn{display:inline-block;padding:12px 25px;border-radius:8px;text-decoration:none;font-weight:600;transition:all .2s;text-align:center;border:none;}
+    .primary-btn{background:var(--primary);color:#fff}
+    .secondary-btn{background:var(--primary-dark);color:#fff}
+    .whatsapp-btn{background:var(--whatsapp);color:#fff}
+    .input-group{margin-bottom:15px}
+    .input-group label{display:block;margin-bottom:5px;font-weight:600;color:var(--primary-dark);font-size:0.95em;}
+    .input-group input, .input-group select{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:1em;color:#444}
+    
+    /* Profit Calculator FAB Styles */
+    .fab-container{position:fixed;bottom:20px;right:20px;z-index:1001}
+    .fab-btn{background:var(--primary);color:#fff;border:none;border-radius:50%;width:56px;height:56px;font-size:1.5em;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;transition:background-color .2s}
+    .fab-btn:hover{background-color:var(--primary-dark)}
+    .calculator-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1002;align-items:center;justify-content:center}
+    .calculator-content{background:var(--card);padding:30px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);width:90%;max-width:400px;transform:translateY(20px);opacity:0;transition:all .3s ease-out}
+    .calculator-modal.open .calculator-content{transform:translateY(0);opacity:1}
+    .profit-result span{font-size:1.8em;font-weight:700;color:var(--whatsapp);display:block;margin-top:5px;}
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <img src="https://placehold.co/1200x300/F4EAE0/6C4920?text=Pipah+Cookies+Reseller+Portal+%7C+Jana+Keuntungan" alt="Header Image" class="header-img">
+  </header>
+
+  <nav class="site-nav">
+    <ul class="nav-list">
+      <li><a href="#products">Produk</a></li>
+      <li><a href="#bulk">Tiers Harga</a></li>
+      <li><a href="#generator">Jana Jualan</a></li>
+      <li><a href="#contact">Hubungi Kami</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+
+    <section id="products" class="section">
+      <h2 class="text-center text-3xl mb-8">Senarai Produk & Harga Runcit Disyorkan (RRP)</h2>
+      <div id="product-list" class="products">
+        <!-- Products will be dynamically loaded here -->
+      </div>
+    </section>
+
+    <section id="bulk" class="section">
+      <h2 class="text-center text-3xl">Struktur Tiers Harga Reseller (Kos Anda)</h2>
+      <div id="tier-info" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center max-w-5xl mx-auto">
+        <!-- Tier information will be dynamically generated here -->
+      </div>
+      <p class="text-center text-gray-500 mt-6 text-sm">Sila gunakan Kalkulator Keuntungan untuk mengira kos sebenar anda.</p>
+    </section>
+    
+    <!-- MULTI-PRODUCT SALES LINK GENERATOR SECTION -->
+    <section id="generator" class="section bg-accent p-8 rounded-2xl shadow-xl">
+      <h2 class="text-center text-3xl" style="color:var(--whatsapp);"><i class="fas fa-share-alt"></i> Jana Pautan Jualan Anda</h2>
+      <p class="text-center text-gray-600 mb-8">
+        1. Pilih produk, 2. Tetapkan harga runcit anda, 3. Jana pautan.
+      </p>
+
+      <div class="max-w-4xl mx-auto">
+        <div class="input-group">
+          <label for="whatsappNumber">Nombor WhatsApp Anda (e.g. 60123456789)</label>
+          <input type="tel" id="whatsappNumber" placeholder="Sila masukkan nombor WhatsApp penuh" value="60123456789" class="shadow-sm">
+        </div>
+
+        <hr class="my-6 border-primary/20">
+        
+        <h3 class="text-xl font-semibold text-center mb-4 text-primary-dark">Pilih Produk & Tetapkan Harga Jualan Runcit (RM)</h3>
+        
+        <!-- Combined Product Selection and Price Setting Grid -->
+        <div id="generator-product-grid" class="generator-grid">
+            <!-- Product cards for generator will be dynamically loaded here -->
+        </div>
+
+        <div class="text-center my-8">
+          <button onclick="generateLink()" class="btn whatsapp-btn text-lg w-full py-4 shadow-lg hover:shadow-xl">
+            <i class="fas fa-link"></i> Jana & Salin Pautan Jualan Sekarang
+          </button>
+        </div>
+
+        <div id="generatedLinkContainer" class="hidden mt-6 bg-white p-5 rounded-lg border-l-4 border-whatsapp shadow-inner">
+          <p class="font-bold text-green-700 mb-3 text-center">Pautan Jualan Anda Berjaya Dijana & Disalin! (OrderNow.html-...)</p>
+          <input type="text" id="salesLink" readonly class="w-full p-3 border-dashed border-gray-400 rounded-md text-sm text-center cursor-pointer bg-gray-50" onclick="copyLink()">
+          <a id="testLink" href="#" target="_blank" class="block mt-4 text-center text-sm text-primary hover:underline font-medium">Cuba Pautan Ini Dalam Tab Baru <i class="fas fa-external-link-alt"></i></a>
+        </div>
+      </div>
+    </section>
+    <!-- END SALES LINK GENERATOR SECTION -->
+
+    <section id="contact" class="section">
+      <h2 class="text-center text-3xl">Hubungi Ibu Pejabat</h2>
+      <p class="text-center text-gray-600 mb-6">Jika anda memerlukan bantuan, bertanya tentang stok, atau menghadapi isu teknikal.</p>
+      <div class="text-center">
+        <a href="https://wa.me/6019XXXXXXX" class="btn whatsapp-btn text-lg shadow-md" target="_blank">
+          <i class="fab fa-whatsapp"></i> WhatsApp HQ Support
+        </a>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- FLOATING PROFIT CALCULATOR FAB START -->
+  <div class="fab-container">
+    <button class="fab-btn shadow-xl" onclick="toggleCalculator()">
+      <i class="fas fa-calculator"></i>
+    </button>
+  </div>
+
+  <div id="calculatorModal" class="calculator-modal" onclick="closeModal(event)">
+    <div class="calculator-content" onclick="event.stopPropagation()">
+      <h3 class="text-center text-2xl mb-5">Kalkulator Keuntungan Reseller</h3>
+
+      <div class="input-group">
+        <label for="calcProduct">Pilih Produk</label>
+        <select id="calcProduct" onchange="calculateProfit()">
+          <!-- Options loaded dynamically -->
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="calcRetailPrice">Harga Jualan Runcit Anda (RM)</label>
+        <input type="number" id="calcRetailPrice" step="0.50" min="1" value="25.00" oninput="calculateProfit()" class="text-xl font-bold text-primary-dark">
+      </div>
+
+      <div class="input-group">
+        <label for="calcQuantity">Kuantiti (Unit)</label>
+        <input type="number" id="calcQuantity" min="1" value="10" oninput="calculateProfit()">
+      </div>
+      
+      <div class="my-5 p-5 rounded-xl border-2 border-primary-dark bg-accent/70">
+        <p class="text-sm text-gray-700 mb-3">Kos Reseller Per Unit (Tier Diskaun: <strong id="calcDiscountTierName">-</strong>): <strong id="calcCostPerUnit">RM 0.00</strong></p>
+        <p class="text-xl font-semibold text-primary-dark">Keuntungan Kasar Total:</p>
+        <div class="profit-result">
+            <span id="calcProfit">RM 0.00</span>
+        </div>
+      </div>
+      <button class="close-btn" onclick="toggleCalculator()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5em;color:var(--muted);"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+  <!-- FLOATING PROFIT CALCULATOR FAB END -->
+
+  <script>
+   // --- PRODUCT DATA DEFINITION (Single Source of Truth) ---
+   // Note: The structure is changed to include 'tiers' for the calculator and 'oldPrice' as RRP
+    const PRODUCTS_DATA = [
+      {
+        id: 'P1',
+        name: 'Seasalt Cookies (65pcs)',
+        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=SS',
+        rrp: 16.00,
+        tiers: [
+          { max: 4, price: 16, name: 'Tier 1 (1-4 units)' },
+          { max: 9, price: 15, name: 'Tier 2 (5-9 units)' },
+          { max: Infinity, price: 14, name: 'Tier 3 (10+ units)' }
+        ]
+      },
+      {
+        id: 'P2',
+        name: 'ChocHazelnut Button (38pcs)',
+        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=CH',
+        rrp: 22.00,
+        tiers: [
+          { max: 4, price: 22, name: 'Tier 1 (1-4 units)' },
+          { max: 9, price: 21, name: 'Tier 2 (5-9 units)' },
+          { max: Infinity, price: 20, name: 'Tier 3 (10+ units)' }
+        ]
+      },
+      {
+        id: 'P3',
+        name: 'Brownies Cookies (70pcs)',
+        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=BC',
+        rrp: 17.00,
+        tiers: [
+          { max: 4, price: 17, name: 'Tier 1 (1-4 units)' },
+          { max: 9, price: 16, name: 'Tier 2 (5-9 units)' },
+          { max: Infinity, price: 15, name: 'Tier 3 (10+ units)' }
+        ]
+      },
+      {
+        id: 'P4',
+        name: 'Black Cookies (80pcs)',
+        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=BL',
+        rrp: 22.00,
+        tiers: [
+          { max: 5, price: 19, name: 'Tier 1 (1-5 units)' },
+          { max: 49, price: 11, name: 'Tier 2 (6-49 units)' },
+          { max: Infinity, price: 10, name: 'Tier 3 (50+ units)' }
+        ]
+      },
+      {
+        id: 'P5',
+        name: 'RedVelvet Button',
+        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=RV',
+        rrp: 22.00,
+        tiers: [
+          { max: 4, price: 20, name: 'Tier 1 (1-4 units)' },
+          { max: 9, price: 19, name: 'Tier 2 (5-9 units)' },
+          { max: Infinity, price: 18, name: 'Tier 3 (10+ units)' }
+        ]
+      },
+      {
+        id: 'P6',
+        name: 'DarkChoc Cookies (70pcs)',
+        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=DC',
+        rrp: 22.00,
+        tiers: [
+          { max: 4, price: 19, name: 'Tier 1 (1-4 units)' },
+          { max: 9, price: 18, name: 'Tier 2 (5-9 units)' },
+          { max: Infinity, price: 17, name: 'Tier 3 (10+ units)' }
+        ]
+      }
+    ];
+
+    // Helper function to get the base reseller cost for a product and quantity
+    function getResellerCost(product, quantity) {
+        if (quantity < 1) return { cost: product.rrp, name: 'No Quantity' };
+
+        for (const tier of product.tiers) {
+            if (quantity <= tier.max) {
+                return { cost: tier.price, name: tier.name };
+            }
+        }
+        // Fallback to highest tier if somehow quantity exceeds max tier max
+        return { cost: product.tiers[product.tiers.length - 1].price, name: product.tiers[product.tiers.length - 1].name };
+    }
+    
+    // --- UI SETUP ---
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProductList();
+      loadGeneratorGrid();
+      loadCalculatorOptions();
+      loadTierInfo();
+      calculateProfit(); // Initial calculation for FAB
+    });
+
+    // Loads product cards (for info section)
+    function loadProductList() {
+      const container = document.getElementById('product-list');
+      container.innerHTML = PRODUCTS_DATA.map(p => `
+        <div class="card flex flex-col items-center">
+          <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-24 h-24 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
+          <h3 class="text-lg text-center">${p.name}</h3>
+          <p class="text-sm text-gray-700">RRP: <strong style="color:var(--primary); font-size:1.1em;">RM ${p.rrp.toFixed(2)}</strong></p>
+          <p class="text-xs mt-2 text-gray-500">Kos Minima: RM ${getResellerCost(p, 100).cost.toFixed(2)}</p>
+        </div>
+      `).join('');
+    }
+
+    // Loads tier details into the Bulk section
+    function loadTierInfo() {
+        const container = document.getElementById('tier-info');
+        // We'll map through products to show the tiers for the first 3 products as examples
+        const exampleProducts = PRODUCTS_DATA.slice(0, 3); 
+
+        container.innerHTML = exampleProducts.map(p => `
+            <div class="card text-left p-4 bg-white border border-primary/20">
+                <h4 class="text-lg font-semibold text-primary-dark">${p.name}</h4>
+                <p class="text-xs text-gray-500 mb-3">RRP: RM ${p.rrp.toFixed(2)}</p>
+                <ul class="list-none p-0">
+                    ${p.tiers.map(t => `
+                        <li class="flex justify-between text-sm py-1 border-b border-dashed border-gray-100 last:border-b-0">
+                            <span class="font-medium">${t.name.split('(')[0].trim()} (${t.max === Infinity ? t.max + '+' : '1-' + t.max} unit)</span>
+                            <span class="font-bold text-green-600">RM ${t.price.toFixed(2)}</span>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        `).join('');
+    }
+
+
+    // Loads the combined product selection and price setting grid
+    function loadGeneratorGrid() {
+      const container = document.getElementById('generator-product-grid');
+      container.innerHTML = PRODUCTS_DATA.map((p, index) => `
+        <div id="card_${p.id}" class="generator-card card ${index < 3 ? 'selected' : ''}">
+            <input type="checkbox" id="check_${p.id}" value="${p.id}" ${index < 3 ? 'checked' : ''} class="card-checkbox" onchange="toggleCardSelection('${p.id}')">
+            
+            <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/60x60/A67734/ffffff?text=P';" class="w-16 h-16 object-cover rounded-full mb-3 mx-auto shadow-md border-2 border-accent" alt="${p.name}">
+            
+            <h4 class="text-md text-center font-semibold mb-1">${p.name}</h4>
+            <p class="text-xs text-gray-500 mb-3">RRP: RM ${p.rrp.toFixed(2)}</p>
+
+            <div class="input-group">
+                <label for="price_${p.id}" class="text-xs font-medium text-primary-dark text-left">Harga Jual Anda (RM)</label>
+                <input type="number" id="price_${p.id}" step="0.50" min="1" value="${p.rrp.toFixed(2)}" class="w-full text-center p-2 text-lg font-bold">
+            </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleCardSelection(productId) {
+        const card = document.getElementById(`card_${productId}`);
+        const checkbox = document.getElementById(`check_${productId}`);
+        if (checkbox.checked) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+    }
+    
+    // --- SALES LINK GENERATOR LOGIC ---
+    function generateLink() {
+      const whatsapp = document.getElementById('whatsappNumber').value.trim();
+      const linkContainer = document.getElementById('generatedLinkContainer');
+      const salesLinkInput = document.getElementById('salesLink');
+      const testLink = document.getElementById('testLink');
+      
+      if (!whatsapp || whatsapp.length < 8) {
+        showTemporaryAlert('❌ Ralat: Sila masukkan Nombor WhatsApp yang sah.', 'bg-red-500');
+        return;
+      }
+
+      let params = `w=${whatsapp}`;
+      let selectedProductIds = [];
+
+      PRODUCTS_DATA.forEach(p => {
+        const checkbox = document.getElementById(`check_${p.id}`);
+        if (checkbox && checkbox.checked) {
+            selectedProductIds.push(p.id);
+            
+            const priceInput = document.getElementById(`price_${p.id}`);
+            let price = parseFloat(priceInput.value);
+            if (isNaN(price) || price < 0.01) {
+              price = p.rrp; // Use RRP as fallback if price is invalid
+            }
+            // Add product ID and custom price to URL parameters
+            params += `&${p.id}=${price.toFixed(2)}`;
+        }
+      });
+      
+      if (selectedProductIds.length === 0) {
+          showTemporaryAlert('❌ Ralat: Sila pilih sekurang-kurangnya satu produk.', 'bg-red-500');
+          return;
+      }
+      
+      // Add comma-separated list of selected products to parameters
+      params += `&p=${selectedProductIds.join(',')}`;
+
+      const customerFormFile = 'OrderNow.html'; 
+      
+      const fullLink = `${customerFormFile}?${params}`;
+      const displayLink = `OrderNow.html-...`;
+
+      // Construct the full absolute URL for the OrderNow file
+      // Assumes OrderNow.html is in the same directory as RSDashboard.html
+      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+      const fullUrl = `${baseUrl}${customerFormFile}?${params}`;
+
+      salesLinkInput.value = displayLink;
+      testLink.href = fullUrl;
+      linkContainer.classList.remove('hidden');
+
+            // Copy to clipboard
+      copyLink(fullUrl);
+    }
+
+    function copyLink(linkToCopy) {
+      const tempInput = document.createElement('input');
+      tempInput.value = linkToCopy;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      tempInput.setSelectionRange(0, 99999); 
+      
+      let copied = false;
+      try {
+        copied = document.execCommand('copy');
+      } catch (err) {
+        console.error('Could not copy text: ', err);
+      } finally {
+        document.body.removeChild(tempInput);
+      }
+      
+      if (copied) {
+        const container = document.getElementById('generatedLinkContainer');
+        const pElement = container.querySelector('p');
+        pElement.textContent = 'Pautan telah disalin ke papan keratan! ✅';
+        setTimeout(() => {
+          pElement.textContent = 'Pautan Jualan Anda Berjaya Dijana & Disalin! (OrderNow.html-...)';
+        }, 3000);
+      } else {
+        showTemporaryAlert('❌ Gagal menyalin. Sila salin manual.', 'bg-red-500');
+      }
+    }
+
+    function showTemporaryAlert(message, className) {
+        const tempAlert = document.createElement('div');
+        tempAlert.className = `fixed inset-0 ${className} text-white flex items-center justify-center p-4 z-50 text-xl font-bold`;
+        tempAlert.textContent = message;
+        document.body.appendChild(tempAlert);
+        setTimeout(() => document.body.removeChild(tempAlert), 3000);
+    }
+
+    
+    // --- PROFIT CALCULATOR LOGIC ---
+    function loadCalculatorOptions() {
+        const select = document.getElementById('calcProduct');
+        select.innerHTML = PRODUCTS_DATA.map(p => 
+            `<option value="${p.id}">${p.name} (RRP: RM ${p.rrp.toFixed(2)})</option>`
+        ).join('');
+        // Set initial RRP on load
+        document.getElementById('calcRetailPrice').value = PRODUCTS_DATA[0].rrp.toFixed(2);
+    }
+
+    function calculateProfit() {
+        const productId = document.getElementById('calcProduct').value;
+        const retailPrice = parseFloat(document.getElementById('calcRetailPrice').value);
+        const quantity = parseInt(document.getElementById('calcQuantity').value);
+        
+        const product = PRODUCTS_DATA.find(p => p.id === productId);
+
+        if (!product || isNaN(retailPrice) || isNaN(quantity) || quantity < 1 || retailPrice < 1) {
+            document.getElementById('calcProfit').textContent = 'RM 0.00';
+            document.getElementById('calcCostPerUnit').textContent = 'RM 0.00';
+            document.getElementById('calcDiscountTierName').textContent = '-';
+            return;
+        }
+
+        // Use the new tiered cost lookup function
+        const { cost: costPerUnit, name: discountName } = getResellerCost(product, quantity);
+        
+        // Profit is calculated using the Reseller's own set retailPrice
+        const profit = (retailPrice - costPerUnit) * quantity;
+        
+        document.getElementById('calcCostPerUnit').textContent = `RM ${costPerUnit.toFixed(2)}`;
+        document.getElementById('calcDiscountTierName').textContent = discountName;
+        document.getElementById('calcProfit').textContent = `RM ${profit.toFixed(2)}`;
+    }
+
+    function toggleCalculator() {
+        const modal = document.getElementById('calculatorModal');
+        modal.classList.toggle('open');
+        if (modal.classList.contains('open')) {
+            modal.style.display = 'flex';
+            calculateProfit(); 
+        } else {
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+    }
+
+    function closeModal(event) {
+        if (event.target.id === 'calculatorModal') {
+            toggleCalculator();
+        }
+    }
+  </script>
+</body>
+</html>
+
