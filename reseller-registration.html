@@ -5,180 +5,123 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PipahCookies Reseller Registration</title>
 <style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(180deg, #fff5e1 0%, #ffe6c9 100%);
-    margin: 0;
-    padding: 0;
-    color: #333;
-  }
-
-  header {
-    text-align: center;
-    padding: 2rem 1rem 1rem;
-  }
-
-  header img {
-    width: 120px;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-
-  header h1 {
-    margin-top: 1rem;
-    font-size: 1.8rem;
-    color: #b45309;
-  }
-
-  .form-container {
-    max-width: 500px;
-    background: #fff;
-    margin: 1rem auto 3rem;
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  }
-
-  .form-container h2 {
-    text-align: center;
-    color: #c96a00;
-    margin-bottom: 1.5rem;
-  }
-
-  label {
-    display: block;
-    margin-top: 1rem;
-    font-weight: 500;
-  }
-
-  input, select, textarea {
-    width: 100%;
-    padding: 0.8rem;
-    margin-top: 0.4rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    box-sizing: border-box;
-  }
-
-  textarea {
-    resize: vertical;
-  }
-
-  button {
-    margin-top: 1.5rem;
-    width: 100%;
-    background: #c96a00;
-    color: #fff;
-    padding: 0.9rem;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-
-  button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-  }
-
-  button:hover:not(:disabled) {
-    background: #a65400;
-  }
-
-  footer {
-    text-align: center;
-    padding: 1rem;
-    font-size: 0.9rem;
-    color: #777;
-  }
-
-  @media(max-width:600px){
-    header h1 { font-size: 1.5rem; }
-    .form-container { margin: 1rem; padding: 1.5rem; }
-  }
+  /* Styling remains the same as your original file */
+  body { font-family: 'Poppins', sans-serif; background: linear-gradient(180deg, #fff5e1 0%, #ffe6c9 100%); margin: 0; padding: 0; color: #333; }
+  header { text-align: center; padding: 2rem 1rem 1rem; }
+  header img { width: 120px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+  header h1 { margin-top: 1rem; font-size: 1.8rem; color: #b45309; }
+  .form-container { max-width: 500px; background: #fff; margin: 1rem auto 3rem; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+  .form-container h2 { text-align: center; color: #c96a00; margin-bottom: 1.5rem; font-size: 1.4rem; }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #6d4c41; }
+  .form-group input { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; font-size: 1rem; transition: border-color 0.3s; }
+  .form-group input:focus { border-color: #b45309; outline: none; box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.2); }
+  button { width: 100%; padding: 15px; background-color: #b45309; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 700; margin-top: 1.5rem; transition: background-color 0.3s; }
+  button:hover { background-color: #8c4207; }
+  .info-text { margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: #795548; }
 </style>
 </head>
 <body>
 
 <header>
-  <img src="images/Header2.jpg" alt="PipahCookies Logo">
-  <h1>Become a PipahCookies Reseller</h1>
+  <img src="" alt="PipahCookies Logo">
+  <h1>Portal Reseller PipahCookies</h1>
 </header>
 
 <div class="form-container">
-  <h2>Registration Form</h2>
-
-  <form id="resellerForm">
-    <label for="name">Full Name *</label>
-    <input type="text" id="name" placeholder="Enter your full name" required>
-
-    <label for="phone">WhatsApp Number *</label>
-    <input type="tel" id="phone" placeholder="e.g. +60123456789" required>
-
-    <label for="email">Email *</label>
-    <input type="email" id="email" placeholder="Enter your email" required>
-
-    <label for="address">Address *</label>
-    <textarea id="address" rows="3" placeholder="Full address" required></textarea>
-
-    <label for="exp">Do you have experience selling cookies?</label>
-    <select id="exp">
-      <option value="">Choose one (optional)</option>
-      <option>Yes, I have experience</option>
-      <option>No, I’m new</option>
-    </select>
-
-    <label for="motivation">Why do you want to be a reseller?</label>
-    <textarea id="motivation" rows="3" placeholder="Tell us your motivation (optional)"></textarea>
-
-    <button id="submitBtn" type="submit" disabled>Submit & Send via WhatsApp</button>
+  <h2>Borang Pendaftaran Reseller Baru</h2>
+  <form id="registrationForm">
+    <div class="form-group">
+      <label for="name">Nama Penuh</label>
+      <input type="text" id="name" name="name" required>
+    </div>
+    <div class="form-group">
+      <label for="phone">Nombor WhatsApp (cth: 60123456789)</label>
+      <input type="tel" id="phone" name="phone" placeholder="Sila masukkan tanpa simbol '+' atau '-'" required>
+    </div>
+    <div class="form-group">
+      <label for="pin">Cipta PIN Akses (6 Digit)</label>
+      <input type="password" id="pin" name="pin" minlength="6" maxlength="6" required>
+    </div>
+    <button type="submit">Daftar & Hantar WhatsApp</button>
   </form>
+  <p class="info-text">Setelah berjaya, anda akan diarah ke WhatsApp untuk pengesahan kepada Admin.</p>
 </div>
 
-<footer>
-  © 2025 PipahCookies. All rights reserved.
-</footer>
-
 <script>
-  const form = document.getElementById('resellerForm');
-  const submitBtn = document.getElementById('submitBtn');
-  const requiredFields = ['name', 'phone', 'email', 'address'];
+    // **CRITICAL FIX: New unique Local Storage key and PIN disclosure fix**
+    const USERS_KEY = 'pipah_rs_creds_v2_data'; 
+    const ADMIN_WHATSAPP_NUMBER = "601121243407"; // Ganti dengan nombor Admin sebenar
 
-  form.addEventListener('input', () => {
-    const allFilled = requiredFields.every(id => document.getElementById(id).value.trim() !== '');
-    submitBtn.disabled = !allFilled;
-  });
+    // Base64 encoding/decoding functions for 'security by obscurity'
+    const base64Encode = (str) => btoa(encodeURIComponent(str));
+    const base64Decode = (str) => {
+        try {
+            return decodeURIComponent(atob(str));
+        } catch (e) {
+            return "{}"; 
+        }
+    };
 
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
+    function getRegisteredUsers() {
+        const encodedData = localStorage.getItem(USERS_KEY);
+        if (!encodedData) return {};
+        const decodedString = base64Decode(encodedData);
+        try {
+            return JSON.parse(decodedString);
+        } catch (e) {
+            console.error("Failed to parse user data:", e);
+            return {};
+        }
+    }
 
-    const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const address = document.getElementById('address').value.trim();
-    const exp = document.getElementById('exp').value;
-    const motivation = document.getElementById('motivation').value.trim();
+    function saveRegisteredUsers(users) {
+        const jsonString = JSON.stringify(users);
+        const encodedData = base64Encode(jsonString);
+        localStorage.setItem(USERS_KEY, encodedData);
+    }
 
-    const msg = `🧾 *PipahCookies Reseller Registration* 🧾
----------------------------------
-👤 Name: ${name}
-📱 WhatsApp: ${phone}
-📧 Email: ${email}
-🏠 Address: ${address}
-🍪 Experience: ${exp || '-'}
-💬 Motivation: ${motivation || '-'}
----------------------------------
-🕊️ Thank you for applying to become a PipahCookies Reseller!`;
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    // Replace with your real WhatsApp number (no + symbol)
-    const whatsappNumber = "601121243407";
-    const encodedMsg = encodeURIComponent(msg);
-    const waLink = `https://wa.me/${whatsappNumber}?text=${encodedMsg}`;
-    window.open(waLink, "_blank");
-  });
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, ''); // Clean phone number
+        const pin = document.getElementById('pin').value.trim();
+
+        if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+            alert('PIN akses mesti 6 digit nombor.');
+            return;
+        }
+
+        let registeredUsers = getRegisteredUsers();
+
+        // 🛑 FIX: Check if phone is already registered (NO PIN DISCLOSURE)
+        if (registeredUsers[phone]) {
+            alert(`Nombor ${phone} sudah berdaftar. Sila gunakan PIN sedia ada anda untuk log masuk.`);
+            return; 
+        } else {
+            // SAVE NEW USER DATA
+            const userData = {
+                name: name,
+                phone: phone,
+                isBlocked: false, 
+                accessCode: pin
+            };
+            
+            registeredUsers[phone] = userData;
+            saveRegisteredUsers(registeredUsers);
+
+            alert(`Pendaftaran Berjaya! PIN unik anda (6-digit) telah disimpan. Anda kini boleh log masuk.`);
+        }
+
+        // PREPARE WHATSAPP MESSAGE
+        const msg = `🧾 *PipahCookies Reseller Registration* 🧾\n---------------------------------\n👤 Nama: ${name}\n📱 WhatsApp: ${phone}\n🔑 PIN AKSES ANDA: [PIN 6-digit yang anda cipta]\n---------------------------------\nSila gunakan Nombor WhatsApp dan PIN ini di portal login.\nTerima kasih!`;
+
+        const encodedMsg = encodeURIComponent(msg);
+        const waLink = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodedMsg}`;
+
+        window.open(waLink, '_blank');
+    });
 </script>
-
 </body>
 </html>
