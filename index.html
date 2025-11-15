@@ -302,9 +302,27 @@
 
   // ===== LOGIN LOGIC (from Reseller Portal.html) =====
   let resellerWaNumber = null;
+  
+  // Base64 Utility Functions (Copied from reseller-registration.html)
+  const base64Encode = (str) => btoa(encodeURIComponent(str));
+  const base64Decode = (str) => {
+      try {
+          return decodeURIComponent(atob(str));
+      } catch (e) {
+          return "{}"; 
+      }
+  };
 
   function getRegisteredUsers() {
-    return JSON.parse(localStorage.getItem(RESELLERS_KEY) || '{}');
+      const encodedData = localStorage.getItem(RESELLERS_KEY);
+      if (!encodedData) return {};
+      const decodedString = base64Decode(encodedData); // <--- DECODE HERE
+      try {
+          return JSON.parse(decodedString);
+      } catch (e) {
+          console.error("Failed to parse user data:", e);
+          return {};
+      }
   }
 
   function login() {
@@ -339,6 +357,9 @@
       alert('Nombor WhatsApp atau PIN Akses tidak sah.');
     }
   }
+  // ===== RSDASHBOARD LOGIC (from RSDashboard.html) =====
+    
+    
   // ===== RSDASHBOARD LOGIC (from RSDashboard.html) =====
 
   function initDashboard(){
