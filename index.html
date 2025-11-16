@@ -1,693 +1,511 @@
 <!doctype html>
-<html lang="en">
+<html lang="ms">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PipahCookies — Reseller Portal (Gabungan)</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  
+  <title>PipahCookies — Reseller Portal (Demo)</title>
+
+  <link rel="apple-touch-icon" href="Images/icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#A67734">
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(() => console.log('✅ Service Worker Registered'))
+    .catch(err => console.error('❌ Service Worker Failed', err));
+}
+  </script>
+
   <style>
-    /* --- General Styles (from index (8).html) --- */
-    :root{
-      --primary: #A67734; /* Rich Brown/Gold Accent */
-      --primary-dark: #6C4920; /* Darker Brown for Text/Headers (using RSDashboard color) */
-      --accent: #F4EAE0; /* Soft Beige/Cream Background (using RSDashboard color) */
-      --whatsapp:#25d366;
-      --bg:#F9F7F5; /* Very Light Beige Background (using RSDashboard color) */
-      --card:#ffffff;
-      --muted:#888888;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:'Inter', sans-serif;background:var(--bg);color:#333;-webkit-font-smoothing:antialiased}
-    h1,h2,h3{font-family:'Inter', sans-serif;color:var(--primary-dark);margin:0 0 12px;font-weight:700}
-    a{color:inherit}
+ /* Theme variables */
+ :root{
+    --primary:#A67734;
+    --primary-dark:#d4b390;
+    --accent:#fff1e6;
+    --whatsapp:#25d366;
+    --bg:#fff8f2;
+    --card:#ffffff;
+    --muted:#6b6b6b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Fredoka",sans-serif;background:var(--bg);color:#222;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Poppins",sans-serif;color:var(--primary-dark);margin:0 0 8px}
+  a{color:inherit}
 
-    /* --- LOGIN GATE STYLES (from Reseller Portal.html) --- */
-    #login-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: var(--bg); z-index: 9999;
-        display: flex; align-items: center; justify-content: center;
-        text-align: center;
-    }
-    .login-box {
-        background: var(--card); padding: 40px; border-radius: 12px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.15); width: 90%; max-width: 400px;
-        animation: fadeIn 0.5s both;
-    }
-    .login-box input {
-        width: 100%; padding: 12px; margin: 8px 0 15px; border: 1px solid #ddd;
-        border-radius: 8px; font-size: 1em;
-    }
-    .login-box button {
-        width: 100%; background: var(--primary); color: white; padding: 12px;
-        border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
-        transition: background 0.2s;
-    }
-    .login-box button:hover { background: var(--primary-dark); }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* --- RSDASHBOARD & index (8) styles (Combined & Reused) --- */
-    .site-header{display:block}
-    .header-img{width:100%;height:auto;display:block;object-fit:cover;max-height:300px;border-radius:0 0 18px 18px;box-shadow:0 12px 25px rgba(0,0,0,0.1);animation:fadeUp .9s both}
-    .site-nav{position:sticky;top:0;background:var(--primary);z-index:1000;box-shadow:0 2px 4px rgba(0,0,0,0.1);padding:10px 0}
-    .nav-list{display:flex;justify-content:center;max-width:1200px;margin:0 auto;list-style:none;padding:0}
-    .nav-list a{text-decoration:none;color:var(--accent);padding:10px 15px;border-radius:6px;transition:background-color .2s;font-weight:600;}
-    .nav-list a:hover{background-color:rgba(255,255,255,0.2)}
-    
-    .container{max-width:1200px;margin:30px auto;padding:0 20px}
-    .section{padding:40px 0;border-bottom:1px solid rgba(0,0,0,0.08)}
-    .card{background:var(--card);padding:20px;border-radius:12px;box-shadow:0 6px 15px rgba(0,0,0,0.05);transition:transform .3s;text-align:center;}
-    .card:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,0.1);}
-    .input-group{margin-bottom:15px}
-    .input-group label{display:block;margin-bottom:5px;font-weight:600;color:var(--primary-dark);font-size:0.95em;}
-    .input-group input, .input-group select{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:1em;color:#444}
-    
-    /* Cart Styles from index (8) */
-    .products { display:flex;flex-wrap:wrap;gap:20px;justify-content:center }
-    .product-card { flex:0 0 calc(33.333% - 20px); height:420px; background:var(--card); padding:15px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden; text-align:center; display:flex; flex-direction:column; justify-content:space-between }
-    @media (max-width: 900px){ .product-card{flex:0 0 calc(50% - 20px)} }
-    @media (max-width:600px){ .product-card{flex:0 0 calc(100% - 20px)} }
-    
-    /* RSDashboard specific styles (to ensure proper rendering) */
-    .product-checkbox-item { display: flex; align-items: center; margin-bottom: 10px; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; }
-    .product-checkbox-item input[type="checkbox"] { width: 20px; height: 20px; margin-right: 15px; cursor: pointer; }
-    .product-checkbox-item img { width: 45px; height: 45px; object-fit: cover; border-radius: 8px; margin-right: 12px; }
-    .profit-result span{font-size:1.8em;font-weight:700;color:var(--whatsapp);display:block;margin-top:5px;}
+/* Header */
+  .site-header{display:block}
+  .header-img{width:100%;height:auto;display:block;object-fit:cover;max-height:360px;border-radius:0 0 14px 14px;box-shadow:0 8px 18px rgba(0,0,0,0.06);animation:fadeUp .9s both}
+/* Nav */
+  .site-nav{position:sticky;top:0;background:var(--primary);z-index:40;padding:10px 0}
+  .nav-list{list-style:none;margin:0;padding:0;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
+  .nav-list a{color:#fff;text-decoration:none;font-weight:700;padding:8px 12px;border-radius:8px;transition:transform .15s}
+  .nav-list a:hover{transform:translateY(-3px);background:rgba(255,255,255,0.08)}
 
-    .hidden { display: none !important; }
+/* Sections */
+  .section{padding:36px 18px}
+  .lead{max-width:900px;margin:0 auto;color:var(--muted);line-height:1.6}
+
+/* Syarat box */
+.syarat-box{max-width:920px;margin:0 auto;background:linear-gradient(180deg,rgba(255,255,255,0.9),var(--accent));padding:18px;border-radius:12px;box-shadow:0 12px 30px rgba(166,119,52,0.08);border:1px solid rgba(166,119,52,0.06)}
+.syarat-box ul{margin:12px 0 0 18px}
+.syarat-box li{margin-bottom:8px;color:#333}
+
+/* Product Section Layout (FORCED 2-IN-A-ROW ON ALL SCREENS) */
+.products { display:flex;flex-wrap:wrap;gap:20px;justify-content:center }
+.product-card {
+    flex:0 0 calc(50% - 10px); /* 50% width minus half the gap for perfect 2-in-a-row layout */
+    max-width: 400px; /* Limit max width for elegance on large screens */
+    height:420px;
+    background:var(--card);
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    overflow:hidden;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between
+}
+
+/* Slider CSS for swipe functionality */
+.product-slider{position:relative;overflow:hidden;border-radius:10px;}
+.slider-wrapper {
+  display: flex;
+  transition: transform 0.3s ease-out; /* Enable smooth sliding */
+}
+.product-img{
+  width: 100%; /* Each image takes 100% of the slider container width */
+  flex-shrink: 0; /* Prevents images from shrinking */
+  height:240px;
+  object-fit:cover;
+  display:block;
+  border-radius:10px;
+  cursor: zoom-in; /* Indicate interactivity for zoom */
+  pointer-events: auto; /* Ensure events like onclick and drag work */
+}
+
+.slider-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.6);cursor:pointer}
+.dot.active{background:var(--primary-dark)}
+
+.card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 12px 24px rgba(0,0,0,0.06);transition:transform .18s}
+.card:hover{transform:translateY(-8px)}
+.old-price{text-decoration:line-through;color:gray;font-size:14px}
+.price{color:var(--primary-dark);font-weight:700;margin-bottom:6px}
+
+.qty-control{display:flex;justify-content:center;align-items:center;gap:8px;margin:10px 0}
+.qty-btn{background:var(--primary);color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:18px;cursor:pointer;transition:transform .12s}
+.qty-btn:hover{background:var(--primary-dark);transform:scale(1.04)}
+.qty-input{min-width:48px;text-align:center;border-radius:8px;border:1px solid #eee;padding:6px;background:#fff}
+.btn{display:inline-block;padding:10px 14px;border-radius:22px;border:none;cursor:pointer;font-weight:800;transition:transform .14s,box-shadow .14s}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.primary:hover{background:var(--primary-dark);transform:translateY(-3px)}
+.btn.secondary{background:#fff;color:var(--primary);border:2px solid var(--primary)}
+.btn.checkout{background:var(--whatsapp);color:#fff}
+
+.thumbs{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:8px;justify-content:center}
+.thumb{width:72px;height:72px;border-radius:8px;border:2px solid transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.thumb.active{border-color:var(--accent)}
+
+/* Ensure PWA Popups/Buttons have lower Z-index than cart */
+#cart-icon{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;z-index:9998;box-shadow:0 14px 30px rgba(0,0,0,0.16);transition:transform .18s}
+#cart-badge{position:absolute;top:6px;right:6px;background:#ff3b3b;color:#fff;padding:3px 7px;border-radius:50%;font-weight:800;font-size:12px;box-shadow:0 6px 12px rgba(0,0,0,0.12)}
+
+.cart-panel{position:fixed;right:20px;bottom:92px;width:340px;max-height:72vh;overflow:auto;background:#fff;padding:12px;border-radius:12px;box-shadow:0 30px 60px rgba(0,0,0,0.18);z-index:9997;transform:translateY(10px);opacity:0;pointer-events:none}
+.cart-panel.show{transform:translateY(0);opacity:1;pointer-events:auto;animation:slideUp .26s both}
+.cart-header{display:flex;justify-content:space-between;align-items:center}
+.close-cart{background:transparent;border:none;font-size:18px;cursor:pointer}
+.cart-items{list-style:none;padding:0;margin:10px 0;display:flex;flex-direction:column;gap:8px}
+.cart-items li{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fff9f5;border:1px solid #fee6d8}
+.cart-items li button{margin-left:6px;padding:6px 8px;border-radius:6px;border:none;cursor:pointer}
+
+.checkout-form{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.checkout-form input,.checkout-form textarea{padding:8px;border-radius:8px;border:1px solid #eee;font-family:inherit}
+
+.cart-summary{margin-top:6px}
+.cart-actions{margin-top:10px;display:flex;gap:8px;justify-content:space-between}
+.hidden{display:none}
+
+/* CONVERTED PWA Popup CSS */
+#pipahInstallPopup {
+  position: fixed;
+  bottom: -70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,248,242,0.92);
+  border: 1.5px solid var(--primary,#A67734);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 8px 18px;
+  font-family: "Poppins",sans-serif;
+  text-align: center;
+  z-index: 9999;
+  display: none;
+  transition: bottom .4s ease, opacity .4s ease;
+  opacity: 0;
+}
+#pipahInstallPopup.show {
+  display: block;
+  bottom: 20px;
+  opacity: 1;
+}
+#pipahInstallPopup p {
+  color: var(--primary,#A67734);
+  font-weight: 600;
+  margin: 0;
+  cursor: pointer;
+}
+#pipahInstallPopup .closeBtn {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+}
+
+
+/* New CSS for Zoom Modal (Lightbox) */
+.zoom-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: none; /* Hidden by default */
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+.zoom-modal.active {
+  display: flex;
+}
+.zoom-modal-content {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
+  transform: scale(0.9);
+  transition: transform 0.3s ease-out;
+}
+.zoom-modal.active .zoom-modal-content {
+  transform: scale(1);
+}
+.close-zoom {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+.close-zoom:hover {
+  opacity: 1;
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.added{animation:bounce .46s both}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{opacity:0;animation:fadeInUp .9s forwards}
+
   </style>
 </head>
 <body>
 
-  <div id="login-overlay">
-    <div class="login-box">
-      <h2 style="color:var(--primary);">Sistem Log Masuk Reseller</h2>
-      <p style="color:var(--muted); margin-bottom: 20px;">Sila masukkan Nombor WhatsApp dan PIN Akses anda.</p>
-      
-      <label for="login-whatsapp" class="text-left block text-sm font-semibold text-gray-700">Nombor WhatsApp (e.g. 60123456789)</label>
-      <input type="tel" id="login-whatsapp" placeholder="Nombor WhatsApp" required>
-      
-      <label for="login-pin" class="text-left block text-sm font-semibold text-gray-700">PIN Akses 6-Digit</label>
-      <input type="password" id="login-pin" placeholder="6-Digit PIN" maxlength="6" pattern="\d{6}" required>
-      
-      <button onclick="login()">LOG IN</button>
-      
-      <p style="margin-top: 20px; font-size: 0.9em; color: var(--muted);">
-        Belum daftar? Sila daftar di <a href="reseller-registration.html" style="color:var(--primary); font-weight: bold;">reseller-registration.html</a>
-      </p>
-    </div>
-  </div>
+  <header class="site-header">
+    <img src="images/rsheader.png" alt="Pipah Cookies" class="header-img">
+  </header>
 
-  <div id="reseller-dashboard" style="display:none;">
-    
-    <header class="site-header">
-      <img src="images/rsheader.png" alt="Pipah Cookies Reseller Portal" class="header-img">
-    </header>
+  <nav class="site-nav">
+    <ul class="nav-list">
+      <li><a href="#syarat">Syarat</a></li>
+      <li><a href="#products">Produk</a></li>
+      <li><a href="#contact">Hubungi</a></li>
+    </ul>
+  </nav>
 
-    <nav class="site-nav">
-      <ul class="nav-list">
-        <li><a href="#dashboard-tools">Dashboard Tools</a></li>
-        <li><a href="#products">Produk & Tempahan</a></li>
-        <li><a href="#syarat">Syarat Jualan</a></li>
-      </ul>
-    </nav>
-    
-    <div class="container">
-        
-      <section id="dashboard-tools" class="section">
-        <h2 class="text-center text-4xl mb-10">Reseller Dashboard Tools</h2>
-        
-        <section id="bulk" class="mb-10">
-          <h2 class="text-center text-3xl">Struktur Belian Pukal (Stok Reseller)</h2>
-          <div class="flex flex-col md:flex-row gap-6 justify-center max-w-4xl mx-auto">
-            <div class="card md:w-1/2">
-              <h3>Pakej Mini (1 - 29 unit)</h3>
-              <p class="text-lg text-gray-700">Diskaun: <strong class="text-primary-dark">15%</strong> dari RRP</p>
-              <p class="text-sm mt-3 text-gray-500">Kos Reseller: Lihat dalam Kalkulator Keuntungan.</p>
-            </div>
-            <div class="card md:w-1/2">
-              <h3>Pakej Emas (30 unit ke atas)</h3>
-              <p class="text-lg text-gray-700">Diskaun: <strong class="text-primary-dark">20%</strong> dari RRP</p>
-              <p class="text-sm mt-3 text-gray-500">Unit boleh dicampur antara produk untuk mencapai 30 unit.</p>
-            </div>
-          </div>
+  <main>
+    <section class="section" style="padding: 18px; text-align: center; background: var(--accent);">
+        <h3 style="margin-bottom: 12px; color: var(--primary-dark);">Alat Reseller Lain</h3>
+        <a href="RSDashboard.html" class="btn primary" style="padding: 12px 25px; font-size: 1.1em; border-radius: 8px;">
+            <span style="font-size: 0.9em; font-weight: normal;">➡️ </span> 🖥️ RS Dashboard
+        </a>
         </section>
-        
-        <section id="generator" class="section bg-accent p-8 rounded-2xl shadow-xl">
-          <h2 class="text-center text-3xl" style="color:#10b981;"><i class="fas fa-share-alt"></i> Jana Pautan Jualan Multi-Produk</h2>
-          <p class="text-center text-gray-600 mb-8">
-            Tetapkan harga runcit *setiap* produk yang anda ingin jual dan pilih produk yang akan dimasukkan ke dalam pautan.
-          </p>
-
-          <div class="max-w-2xl mx-auto">
-            <div class="input-group">
-              <label for="whatsappNumber">Nombor WhatsApp Anda (e.g. 60123456789)</label>
-              <input type="tel" id="whatsappNumber" placeholder="Sila masukkan nombor WhatsApp penuh" value="" class="shadow-sm" readonly> 
-            </div>
-            <hr class="my-6 border-primary/20">
-            <h3 class="text-xl font-semibold text-center mb-4 text-primary-dark">Tetapkan Harga & Pilih Produk untuk Pautan Jualan</h3>
-            
-            <div id="selectionCheckboxesContainer" class="max-h-80 overflow-y-auto p-3 border border-gray-200 rounded-lg bg-white">
-              </div>
-
-            <div id="priceInputsContainer" class="mt-4 flex flex-col gap-3">
-              </div>
-            
-            <hr class="my-6 border-primary/20">
-            <button class="btn primary-btn w-full" style="background:var(--whatsapp)" onclick="generateLink()">
-              <i class="fas fa-link"></i> Jana & Papar Pautan Jualan
-            </button>
-            <div class="mt-4 bg-gray-100 p-3 rounded-lg flex justify-between items-center hidden" id="generatedLinkContainer">
-              <span id="salesLink" class="text-sm text-gray-700 truncate mr-3"></span>
-              <button onclick="copyLink()" class="btn secondary-btn flex-shrink-0 text-xs py-2 px-3">SALIN</button>
-            </div>
-            <p id="link-output" class="text-sm text-gray-500 mt-2 hidden" style="word-break: break-all;"></p>
-          </div>
-        </section>
-      </section>
-      
-      <hr class="my-8">
-      
-      <main>
-        <section id="syarat" class="section">
-          <h2 style="text-align:center;color:var(--primary-dark);">Syarat - Syarat Tempahan Stok Reseller</h2>
-          <div class="syarat-box" style="max-width:920px;margin:0 auto;background:linear-gradient(180deg,rgba(255,255,255,0.9),var(--accent));padding:18px;border-radius:12px;box-shadow:0 12px 30px rgba(166,119,52,0.08);border:1px solid rgba(166,119,52,0.06)">
-            <p style="margin:0;font-weight:700;color:var(--primary-dark)">Harap baca sebelum membuat pesanan stok:</p>
-            <ul>
-              <li><strong>Deposit:</strong> 50% deposit diperlukan semasa membuat pesanan.</li>
-              <li><strong>Masa Siap:</strong> Freshly baked upon order — biasanya 2–3 hari bergantung kepada kuantiti.</li>
-              <li><strong>Bayaran Penuh:</strong> Bayaran penuh perlu diselesaikan semasa pengambilan.</li>
-              <li><strong>Harga Jualan:</strong> Retail price dikawal bebas oleh reseller.</li>
-              <li><strong>Pembatalan:</strong> Pembatalan selepas 24 jam dari tempahan akan kehilangan deposit.</li>
-            </ul>
-          </div>
-        </section>
-
-        <section id="products" class="section">
-          <h2 style="text-align:center;color:var(--primary-dark);margin-bottom:16px">Pesan Stok Reseller Anda</h2>
-          <div class="products" id="product-grid">
-            </div>
-        </section>
-         
-        <section id="gallery">
-          <iframe 
-              src="gambar2reseller.html" 
-              width="100%" 
-              style="border:none;" 
-              id="galleryIframe" 
-              scrolling="no">
-          </iframe>
-        </section>
-
-        <section id="contact" class="section">
-          <h2>Hubungi Kami</h2>
-          <p class="lead" style="max-width:900px;margin:0 auto;color:var(--muted);line-height:1.6">Untuk pertanyaan stok, hantarkan mesej melalui WhatsApp Admin.</p>
-          <p><a class="btn primary" href="#" onclick="window.open('https://wa.me/601121243407','_blank')" style="display:inline-block;padding:10px 14px;border-radius:22px;border:none;cursor:pointer;font-weight:800;background:var(--primary);color:#fff">Chat Admin di WhatsApp</a></p>
-        </section>
-      </main>
-
-      <button id="cart-icon" aria-label="Troli" onclick="toggleCart()" style="position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;z-index:120;box-shadow:0 14px 30px rgba(0,0,0,0.16)">
-        <span class="icon">🛒</span>
-        <span id="cart-badge" style="position:absolute;top:6px;right:6px;background:#ff3b3b;color:#fff;padding:3px 7px;border-radius:50%;font-weight:800;font-size:12px;box-shadow:0 6px 12px rgba(0,0,0,0.12)">0</span>
-      </button>
-
-      <aside id="cart-panel" class="cart-panel" aria-live="polite" aria-hidden="true" style="position:fixed;right:20px;bottom:92px;width:340px;max-height:72vh;overflow:auto;background:#fff;padding:12px;border-radius:12px;box-shadow:0 30px 60px rgba(0,0,0,0.18);z-index:120;transform:translateY(10px);opacity:0;pointer-events:none">
-        <div class="cart-header" style="display:flex;justify-content:space-between;align-items:center">
-          <h3>Troli Stok Anda</h3>
-          <button class="close-cart" onclick="toggleCart()" style="background:transparent;border:none;font-size:18px;cursor:pointer">✕</button>
-        </div>
-
-        <ul id="cart-items" class="cart-items" style="list-style:none;padding:0;margin:10px 0;display:flex;flex-direction:column;gap:8px"></ul>
-
-        <div class="cart-summary" style="margin-top:6px">
-          <p id="cart-total">Jumlah: RM 0.00</p>
-        </div>
-
-        <div id="checkout-form" class="checkout-form hidden" style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
-          <label for="orderId">No. Pesanan</label>
-          <input type="text" id="orderId" name="orderId" readonly style="background:#f4f4f4;padding:8px;border-radius:8px;border:1px solid #eee;">
-          <input id="full-name" type="text" placeholder="Nama penuh (Reseller)" style="padding:8px;border-radius:8px;border:1px solid #eee;"/>
-          <textarea id="full-address" placeholder="Alamat penuh (optional)" style="padding:8px;border-radius:8px;border:1px solid #eee;"></textarea>
-          <button class="btn checkout" id="go-to-summary" style="background:var(--whatsapp);color:#fff;padding:10px 14px;border-radius:22px;border:none;cursor:pointer;font-weight:800;">Teruskan ke Ringkasan</button>
-        </div>
-
-        <div class="cart-actions" style="margin-top:10px;display:flex;gap:8px;justify-content:space-between">
-          <button class="btn primary" id="open-checkout" onclick="showCheckoutForm()" style="background:var(--primary);color:#fff;padding:10px 14px;border-radius:22px;border:none;cursor:pointer;font-weight:800;">Checkout Stok</button>
-        </div>
-      </aside>
-    </div> <div class="fab-container" style="position:fixed;bottom:20px;right:20px;z-index:1001">
-      <button class="fab-btn" id="calc-fab-btn" onclick="toggleCalculator()" style="background:var(--primary);color:#fff;border:none;border-radius:50%;width:56px;height:56px;font-size:1.5em;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-weight:bold;">
-        RM
-      </button>
-    </div>
-
-    <div id="calculatorModal" class="calculator-modal hidden" onclick="closeModal(event)" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1002;align-items:center;justify-content:center">
-      <div class="calculator-content" style="background:var(--card);padding:30px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);width:90%;max-width:400px;">
-        <h3 class="text-2xl font-bold text-center text-primary-dark mb-4">Kalkulator Keuntungan</h3>
-        
-        <div class="input-group">
-          <label for="calcProduct">Pilih Produk</label>
-          <select id="calcProduct" onchange="calculateProfit()">
-            </select>
-        </div>
-        
-        <div class="input-group">
-          <label for="calcRetailPrice">Harga Jualan Runcit Anda (RM)</label>
-          <input type="number" id="calcRetailPrice" step="0.50" min="1" value="25.00" oninput="calculateProfit()" class="text-xl font-bold text-primary-dark">
-        </div>
-        
-        <div class="input-group">
-          <label for="calcQuantity">Kuantiti (Unit)</label>
-          <input type="number" id="calcQuantity" min="1" value="10" oninput="calculateProfit()">
-        </div>
-        
-        <div class="my-5 p-5 rounded-xl border-2 border-primary-dark bg-accent/70">
-          <p class="text-sm text-gray-700 mb-3">Kos Reseller Per Unit (Diskaun <span id="calcDiscount">15%</span>): <strong id="calcCostPerUnit">RM 21.25</strong></p>
-          <p class="text-xl font-semibold text-primary-dark">Keuntungan Kasar Total:</p>
-          <div class="profit-result">
-            <span id="calcProfit">RM 0.00</span>
-          </div>
-        </div>
-        
-        <button class="close-btn" onclick="toggleCalculator()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5em;color:var(--muted);"><i class="fas fa-times"></i></button>
+    <section id="syarat" class="section fade-up">
+      <h2 style="text-align:center;color:var(--primary-dark);">Syarat - Syarat Reseller</h2>
+      <div class="syarat-box">
+        <p style="margin:0;font-weight:700;color:var(--primary-dark)">Harap baca sebelum membuat pesanan:</p>
+        <ul>
+          <li><strong>Deposit:</strong> 50% deposit diperlukan semasa membuat pesanan.</li>
+          <li><strong>Masa Siap:</strong> Freshly baked upon order — biasanya 2–3 hari bergantung kepada kuantiti.</li>
+          <li><strong>Bayaran Penuh:</strong> Bayaran penuh perlu diselesaikan semasa pengambilan.</li>
+          <li><strong>Harga Jualan:</strong> Retail price dikawal bebas oleh reseller.</li>
+          <li><strong>Pembatalan:</strong> Pembatalan selepas 24 jam dari tempahan akan kehilangan deposit.</li>
+        </ul>
       </div>
-    </div>
-  </div>
+    </section>
+
+    <section id="products" class="section fade-up">
+      <h2 style="text-align:center;color:var(--primary-dark);margin-bottom:16px">Produk</h2>
+
+      <div class="products" id="product-grid">
+        </div>
+    </section>
+     
+     <section id="gallery">
+  <iframe
+      src="gambar2reseller.html"
+      width="100%"
+      style="border:none; width:100%;"
+      id="galleryIframe"
+      scrolling="no">
+  </iframe>
+
   <script>
-  // ===== CONFIG & DATA (Merged from index (8) and RSDashboard.html) =====
-  const ADMIN_WHATSAPP_NUMBER = '601121243407'; 
-  const RESELLERS_KEY = 'pipah_rs_creds_v2_data'; 
-  const CART_KEY = 'pipah_cart_v3'; 
-  
-  // RSDashboard Product Data (For Link Generator & Profit Calculator)
-  const PRODUCTS = [
-    { id: 'P1', name: 'Seasalt Chocolate Cookies', rrp: 25.00, cost_tier1: 21.25, cost_tier2: 20.00, img_url: 'https://placehold.co/150x150/A67734/ffffff?text=Cookies' },
-    { id: 'P2', name: 'Premium Choc Chip Cookies', rrp: 30.00, cost_tier1: 25.50, cost_tier2: 24.00, img_url: 'https://placehold.co/150x150/A67734/ffffff?text=ChocChip' },
-    { id: 'P3', name: 'Almond Crispies', rrp: 18.00, cost_tier1: 15.30, cost_tier2: 14.40, img_url: 'https://placehold.co/150x150/A67734/ffffff?text=Almond' },
-    { id: 'P4', name: 'Peanut Butter Cookies', rrp: 22.00, cost_tier1: 18.70, cost_tier2: 17.60, img_url: 'https://placehold.co/150x150/A67734/ffffff?text=Peanut' },
-    { id: 'P5', name: 'Red Velvet Cookies', rrp: 28.00, cost_tier1: 23.80, cost_tier2: 22.40, img_url: 'https://placehold.co/150x150/A67734/ffffff?text=RedVelvet' },
-    // Add more RSDashboard product data here...
-  ];
-
-  // index (8).html Product Data (For Stock Ordering)
-  const products = [
-    { id: 'p1', title: 'Seasalt Cookies (65pcs)', images: ['images/ss1.jpg','images/ss2.jpg','images/ss3.jpg'], oldPrice: 16,
-      tiers: [ { max: 4, price: 16 }, { max: 9, price: 15 }, { max: Infinity, price: 14 } ] },
-    { id: 'p2', title: 'ChocHazelnut Button (38pcs)', images: ['images/ch1.jpg','images/ch2.jpg','images/ch3.jpg'], oldPrice: 22,
-      tiers: [ { max: 4, price: 22 }, { max: 9, price: 20 }, { max: Infinity, price: 18 } ] },
-    // Add more index (8).html product data here...
-  ];
-
-  // ===== LOGIN LOGIC (from Reseller Portal.html) =====
-  let resellerWaNumber = null;
-  
-  // Base64 Utility Functions (Copied from reseller-registration.html)
-  const base64Encode = (str) => btoa(encodeURIComponent(str));
-  const base64Decode = (str) => {
-      try {
-          return decodeURIComponent(atob(str));
-      } catch (e) {
-          return "{}"; 
+    // Auto‑resize iframe based on content height
+    window.addEventListener("message", function(e){
+      if (e.data && e.data.type === "resizeGallery"){
+        const h = parseInt(e.data.height || 0);
+        if (h > 0) document.getElementById("galleryIframe").style.height = h + "px";
       }
-  };
-
-  function getRegisteredUsers() {
-      const encodedData = localStorage.getItem(RESELLERS_KEY);
-      if (!encodedData) return {};
-      const decodedString = base64Decode(encodedData); // <--- DECODE HERE
-      try {
-          return JSON.parse(decodedString);
-      } catch (e) {
-          console.error("Failed to parse user data:", e);
-          return {};
-      }
-  }
-
-  function login() {
-    const phone = document.getElementById('login-whatsapp').value.trim();
-    const pin = document.getElementById('login-pin').value.trim();
-    const users = getRegisteredUsers();
-
-    if (!phone || !pin) {
-      alert('Sila isi Nombor WhatsApp dan PIN Akses.');
-      return;
-    }
-
-    if (users[phone] && users[phone].accessCode === pin) {
-      if (users[phone].isBlocked) {
-        alert('Akses anda telah disekat oleh Admin. Sila hubungi Admin.');
-        return;
-      }
-      
-      // SUCCESSFUL LOGIN
-      resellerWaNumber = phone;
-      document.getElementById('login-overlay').style.display = 'none';
-      document.getElementById('reseller-dashboard').style.display = 'block';
-      
-      // Run all initializers for the dashboard and portal
-      initDashboard();
-      initPortal();
-
-      // Set the reseller's WhatsApp number in the generator section
-      document.getElementById('whatsappNumber').value = phone;
-
-    } else {
-      alert('Nombor WhatsApp atau PIN Akses tidak sah.');
-    }
-  }
-  // ===== RSDASHBOARD LOGIC (from RSDashboard.html) =====
-    
-    
-  // ===== RSDASHBOARD LOGIC (from RSDashboard.html) =====
-
-  function initDashboard(){
-    loadProductPricesForLinkGenerator();
-    loadSelectionCheckboxes();
-    loadCalculatorOptions(); // Initial load for calculator options
-    calculateProfit(); // Initial calculation for calculator
-  }
-
-  // --- SALES LINK GENERATOR LOGIC ---
-  function loadProductPricesForLinkGenerator() {
-    const container = document.getElementById('priceInputsContainer');
-    container.innerHTML = PRODUCTS.map(p => `
-      <div class="input-group flex items-center justify-between gap-4 bg-white p-3 rounded-lg border border-gray-100">
-        <label for="price_${p.id}" class="mb-0 font-normal text-gray-700 flex-grow">${p.name} (RRP: RM ${p.rrp.toFixed(2)})</label>
-        <input type="number" id="price_${p.id}" step="0.50" min="1" value="${p.rrp.toFixed(2)}" placeholder="RM ${p.rrp.toFixed(2)}" class="w-32 text-right">
-      </div>
-    `).join('');
-  }
-
-  function loadSelectionCheckboxes() {
-    const container = document.getElementById('selectionCheckboxesContainer');
-    container.innerHTML = PRODUCTS.map((p, index) => `
-      <div class="product-checkbox-item">
-        <input type="checkbox" id="check_${p.id}" value="${p.id}" ${index < 3 ? 'checked' : ''}>
-        <img src="${p.img_url}" alt="${p.name}">
-        <label for="check_${p.id}" class="flex-grow font-medium text-gray-700 cursor-pointer">${p.name}</label>
-      </div>
-    `).join('');
-  }
-
-  function generateLink() {
-    const whatsapp = document.getElementById('whatsappNumber').value.trim();
-    if (!whatsapp) { alert('Sila log masuk semula atau masukkan Nombor WhatsApp.'); return; }
-
-    const selectedProducts = PRODUCTS.filter(p => document.getElementById(`check_${p.id}`) && document.getElementById(`check_${p.id}`).checked);
-
-    if (selectedProducts.length === 0) {
-      alert('Sila pilih sekurang-kurangnya satu produk.');
-      return;
-    }
-
-    const productIds = [];
-    const customPrices = [];
-
-    selectedProducts.forEach(p => {
-      const priceInput = document.getElementById(`price_${p.id}`);
-      const price = parseFloat(priceInput.value);
-
-      if (isNaN(price) || price <= 0) {
-        alert(`Harga untuk ${p.name} tidak sah.`);
-        return;
-      }
-      productIds.push(p.id);
-      customPrices.push(price.toFixed(2));
     });
+  </script>
+</section>
 
-    if (productIds.length === 0) return;
+    <section id="contact" class="section fade-up">
+      <h2>Hubungi Kami</h2>
+      <p class="lead">Untuk pesanan atau pertanyaan, hantarkan mesej melalui WhatsApp atau follow & chat di Shopee / TikTok / Facebook kami.</p>
+      <p><a class="btn secondary" href="#" onclick="window.open('https://wa.me/601121243407','_blank')">Chat di WhatsApp</a></p>
+    </section>
+  </main>
 
-    // Structure of the link: OrderNow.html?rs_wa=60xxxxxx&p_ids=id1,id2&p_prices=price1,price2
-    // Use a placeholder domain for local testing. This must be run on a web server for clean links.
-    const currentDomain = window.location.protocol + '//' + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+  <div id="zoom-modal" class="zoom-modal" onclick="closeZoomModal()">
+    <span class="close-zoom">&times;</span>
+    <img id="zoom-image" class="zoom-modal-content" src="" alt="Zoomed Product Image">
+  </div>
 
-    const idsString = productIds.join(',');
-    const pricesString = customPrices.join(',');
-    
-    const generatedLink = `${currentDomain}/OrderNow.html?rs_wa=${whatsapp}&p_ids=${idsString}&p_prices=${pricesString}`;
+  <button id="cart-icon" aria-label="Troli" onclick="toggleCart()">
+    <span class="icon">🛒</span>
+    <span id="cart-badge" class="badge">0</span>
+  </button>
 
-    const linkContainer = document.getElementById('generatedLinkContainer');
-    const salesLinkInput = document.getElementById('salesLink');
-    salesLinkInput.textContent = generatedLink;
-    linkContainer.classList.remove('hidden');
-    
-    alert('Pautan Jualan Multi-Produk telah dijana! Salin dan kongsikan.');
-  }
+  <aside id="cart-panel" class="cart-panel" aria-live="polite" aria-hidden="true">
+    <div class="cart-header">
+      <h3>Troli Anda</h3>
+      <button class="close-cart" onclick="toggleCart()">✕</button>
+    </div>
 
-  function copyLink() {
-    const linkText = document.getElementById('salesLink').textContent;
-    navigator.clipboard.writeText(linkText).then(() => {
-        alert('Pautan telah disalin ke clipboard!');
-    }).catch(() => {
-        alert('Gagal menyalin. Sila salin manual dari kotak di atas.');
-    });
-  }
+    <ul id="cart-items" class="cart-items"></ul>
 
+    <div class="cart-summary">
+      <p id="cart-total">Jumlah: RM 0.00</p>
+    </div>
 
-  // --- PROFIT CALCULATOR LOGIC ---
-  function loadCalculatorOptions() {
-    const select = document.getElementById('calcProduct');
-    select.innerHTML = PRODUCTS.map(p => `<option value="${p.id}">${p.name} (RRP: RM ${p.rrp.toFixed(2)})</option>`).join('');
-  }
+    <div id="checkout-form" class="checkout-form hidden">
+      <label for="orderId">No. Pesanan</label>
+      <input type="text" id="orderId" name="orderId" readonly style="background:#f4f4f4;">
+      <input id="full-name" type="text" placeholder="Nama penuh" />
+      <textarea id="full-address" placeholder="Alamat penuh (boleh kosong untuk pickup)"></textarea>
+      <button class="btn checkout" id="go-to-summary">Teruskan ke Ringkasan</button>
+    </div>
 
-  function calculateProfit() {
-    const productId = document.getElementById('calcProduct').value;
-    const retailPrice = parseFloat(document.getElementById('calcRetailPrice').value);
-    const quantity = parseInt(document.getElementById('calcQuantity').value);
-    
-    const product = PRODUCTS.find(p => p.id === productId);
+    <div class="cart-actions">
+      <button class="btn primary" id="open-checkout" onclick="showCheckoutForm()">Checkout</button>
+    </div>
+  </aside>
 
-    if (!product || isNaN(retailPrice) || retailPrice < 1 || isNaN(quantity) || quantity < 1) {
-      document.getElementById('calcProfit').textContent = 'RM 0.00';
-      document.getElementById('calcCostPerUnit').textContent = 'RM 0.00';
-      document.getElementById('calcDiscount').textContent = '0%';
-      return;
-    }
+<div id="pipahInstallPopup">
+  <span class="closeBtn" onclick="closePipahPopup()">×</span>
+  <p id="pipahInstallText"></p>
+</div>
+<script>
+// ===== CONFIG & PWA VARIABLES =====
+const WHATSAPP_NUMBER = '601121243407';
 
-    let costPerUnit;
-    let discountPercentage;
+// Product configuration.
+const products = [
+  { id: 'p1', title: 'Seasalt Cookies (65pcs)', images: ['images/ss1.jpg','images/ss2.jpg','images/ss3.jpg'], oldPrice: 16, tiers:[{max:4,price:16},{max:9,price:15},{max:Infinity,price:14}] },
+  { id: 'p2', title: 'ChocHazelnut Button (38pcs)', images: ['images/ch1.jpg','images/ch2.jpg','images/ch3.jpg'], oldPrice: 22, tiers:[{max:4,price:22},{max:9,price:21},{max:Infinity,price:20}] },
+  { id: 'p3', title: 'Brownies Cookies (70pcs)', images: ['images/br1.jpg','images/br2.jpg','images/br3.jpg'], oldPrice: 17, tiers:[{max:4,price:17},{max:9,price:16},{max:Infinity,price:15}] },
+  { id: 'p4', title: 'Black Cookies (80pcs)', images: ['images/bc1.jpg','images/bc2.jpg','images/bc3.jpg'], oldPrice: 22, tiers:[{max:5,price:19},{max:49,price:11},{max:Infinity,price:10}] },
+  { id: 'p5', title: 'RedVelvet Button', images: ['images/rv1.jpg','images/rv2.jpg','images/rv3.jpg'], oldPrice: 22, tiers:[{max:4,price:20},{max:9,price:19},{max:Infinity,price:18}] },
+  { id: 'p6', title: 'DarkChoc Cookies (70pcs)', images: ['images/dc1.jpg','images/dc2.jpg','images/dc3.jpg'], oldPrice: 22, tiers:[{max:4,price:19},{max:9,price:18},{max:Infinity,price:17}] }
+];
 
-    if (quantity >= 30) {
-      costPerUnit = product.cost_tier2;
-      discountPercentage = '20%';
-    } else {
-      costPerUnit = product.cost_tier1;
-      discountPercentage = '15%';
-    }
-    
-    const profit = (retailPrice - costPerUnit) * quantity;
-    
-    document.getElementById('calcCostPerUnit').textContent = `RM ${costPerUnit.toFixed(2)}`;
-    document.getElementById('calcDiscount').textContent = discountPercentage;
-    document.getElementById('calcProfit').textContent = `RM ${profit.toFixed(2)}`;
-  }
+// ===== LOCAL STORAGE & INIT (unchanged) =====
+const CART_KEY = 'pipah_reseller_cart_v1';
+let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
 
-  function toggleCalculator() {
-    const modal = document.getElementById('calculatorModal');
-    modal.classList.toggle('open');
-    if (modal.classList.contains('open')) {
-      modal.style.display = 'flex';
-      calculateProfit(); 
-    } else {
-      setTimeout(() => modal.style.display = 'none', 300);
-    }
-  }
+const zoomModal = document.getElementById('zoom-modal');
+const zoomImage = document.getElementById('zoom-image');
+function openZoomModal(src){ zoomImage.src = src; zoomModal.classList.add('active'); zoomImage.onclick = (e)=> e.stopPropagation(); }
+function closeZoomModal(){ zoomModal.classList.remove('active'); zoomImage.src = ''; }
 
-  function closeModal(event) {
-    if (event.target.id === 'calculatorModal') {
-      toggleCalculator();
-    }
-  }
-
-
-  // ===== ORIGINAL PORTAL LOGIC (from index (8).html) =====
-
-  let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-
-  function initPortal(){
-    renderProducts();
-    updateCartUI();
-    // Initialize animations and order number if needed
-    document.querySelectorAll('.fade-up').forEach((el,i)=> el.style.animationDelay = (i*80)+'ms');
-    const orderIdInput = document.getElementById('orderId');
-    if(orderIdInput) orderIdInput.value = getNextOrderNumber();
-    
-    // Add event listener for the "Teruskan ke Ringkasan" button
-    document.getElementById('go-to-summary').addEventListener('click', ()=>{ 
-      const name = document.getElementById('full-name').value.trim();
-      if(!name){ alert('Sila isi nama penuh reseller.'); return; }
-      
-      const order = { 
-        orderId: document.getElementById('orderId').value, 
-        name, 
-        address: document.getElementById('full-address').value.trim(), 
-        date: new Date().toISOString(), 
-        items: cart 
-      };
-      
-      localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
-      window.open('reseller-checkout.html', '_blank'); // Opens the dedicated checkout page
-    });
-  }
-
-  // Helper for generating unique order ID (simple increment counter)
-  function getNextOrderNumber() {
-    let counter = parseInt(localStorage.getItem('order_counter') || '1000');
-    return 'RS-' + (++counter);
-  }
-
-  function getUnitPriceForQty(productId, qty){
-    const prod = products.find(p => p.id === productId);
-    if(!prod || !prod.tiers) return 0;
-    for(const t of prod.tiers){
-      if(qty <= t.max) return t.price;
-    }
-    return prod.tiers[prod.tiers.length - 1].price;
-  } 
-
-  function renderProducts(){
-    const grid = document.getElementById('product-grid');
-    grid.innerHTML = '';
-    products.forEach(prod => {
-      const card = document.createElement('article');
-      card.className = 'card product-card';
-      // ... (rest of the render logic for index (8).html product cards)
-      card.innerHTML = `
-        <div class="product-slider" data-id="${prod.id}">
-          ${prod.images.map((src,i)=>`<img src="${src}" class="product-img ${i===0?'active':''}" alt="${prod.title}" style="width:100%;height:240px;object-fit:cover;">`).join('')}
-          <div class="slider-dots">
-            ${prod.images.map((_,i)=>`<span class="dot ${i===0?'active':''}" data-index="${i}"></span>`).join('')}
-          </div>
-        </div>
-        <h3>${prod.title}</h3>
-        <p class="old-price">RRP: RM ${prod.oldPrice.toFixed(2)}</p>
-        <div style="font-size:14px;color:#444;margin-bottom:6px">
-          Harga per unit (Stok): <strong id="unit-${prod.id}">RM ${getUnitPriceForQty(prod.id, 1).toFixed(2)}</strong>
-        </div>
-        <div class="qty-control">
-          <button class="qty-btn" onclick="updateQty('${prod.id}', -1)">−</button>
-          <input type="number" id="qty-${prod.id}" value="1" min="1" oninput="updatePriceDisplay('${prod.id}')" class="qty-input">
-          <button class="qty-btn" onclick="updateQty('${prod.id}', 1)">+</button>
-        </div>
-        <button class="btn primary w-full" data-id="${prod.id}" onclick="onAddToCart(event)" style="padding:10px 14px;border-radius:22px;border:none;cursor:pointer;font-weight:800;background:var(--primary);color:#fff;">
-          Tambah ke Troli
-        </button>
-      `;
-      grid.appendChild(card);
-    });
-  }
-
-  function updateQty(id, change){
-    const input = document.getElementById('qty-'+id);
-    let qty = parseInt(input.value||'1') + change;
-    if(qty < 1) qty = 1;
-    input.value = qty;
-    updatePriceDisplay(id);
-  }
-
-  function updatePriceDisplay(id){
-    const qty = parseInt(document.getElementById('qty-'+id).value||'1');
-    const el = document.getElementById('unit-'+id);
-    if(!el) return;
-    const price = getUnitPriceForQty(id, qty);
-    el.textContent = 'RM '+price.toFixed(2);
-  }
-
-  function onAddToCart(e){
-    const id = e.currentTarget.dataset.id;
-    const qty = parseInt(document.getElementById('qty-'+id).value||'1');
-    const unit = getUnitPriceForQty(id, qty);
-    const prod = products.find(p=>p.id===id);
-    const existing = cart.find(i=> i.id===id && i.unitPrice===unit);
-    
-    if(existing){
-      existing.qty += qty;
-    } else {
-      cart.push({ id, name:prod.title, unitPrice:unit, qty });
-    } 
-    saveCart();
-    updateCartUI();
-    const icon = document.getElementById('cart-icon');
-    icon.classList.add('added');
-    setTimeout(()=> icon.classList.remove('added'),480);
-  }
-
-  function saveCart(){
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  }
-
-  function updateCartUI(){
-    const list = document.getElementById('cart-items');
-    const totalEl = document.getElementById('cart-total');
-    const badge = document.getElementById('cart-badge');
-    list.innerHTML='';
-    let subtotal=0, count=0;
-    
-    cart.forEach((item,idx)=>{
-      subtotal += item.unitPrice*item.qty;
-      count += item.qty;
-      // ... (rest of the cart item list rendering)
-      const li = document.createElement('li');
-      li.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fff9f5;border:1px solid #fee6d8';
-      li.innerHTML = `
-        <div style="flex:1;">
-          <strong>${item.name}</strong> 
-          <div style="font-size:12px;color:#666">${item.qty} × RM ${item.unitPrice.toFixed(2)} = RM ${(item.unitPrice*item.qty).toFixed(2)}</div>
-        </div>
-        <div>
-          <button onclick="changeCartQty(${idx},-1)" style="margin-left:6px;padding:6px 8px;border-radius:6px;border:none;cursor:pointer;background:#e9ecef">−</button>
-          <span style="font-weight:700;"> ${item.qty} </span>
-          <button onclick="changeCartQty(${idx},1)" style="margin-left:6px;padding:6px 8px;border-radius:6px;border:none;cursor:pointer;background:#e9ecef">+</button>
-        </div>
-        <button onclick="removeItem(${idx})" style="margin-left:10px;padding:6px 8px;border-radius:6px;border:none;cursor:pointer;background:#ffdddd;color:#cc0000;">✕</button>
-      `;
-      list.appendChild(li);
-    });
-
-    totalEl.textContent = `Jumlah: RM ${subtotal.toFixed(2)}`;
-    badge.textContent = count > 99 ? '99+' : count;
-    document.getElementById('open-checkout').disabled = cart.length === 0;
-  }
-
-  function changeCartQty(index, change){
-    cart[index].qty += change;
-    if(cart[index].qty <= 0){
-      removeItem(index);
-    } else {
-      saveCart();
-      updateCartUI();
-    }
-  }
-
-  function removeItem(index){
-    cart.splice(index, 1);
-    saveCart();
-    updateCartUI();
-    document.getElementById('checkout-form').classList.add('hidden');
-  }
-
-  function toggleCart(){
-    document.getElementById('cart-panel').classList.toggle('show');
-  }
-
-  function showCheckoutForm(){
-    if(cart.length === 0) {
-      alert('Troli anda kosong.');
-      return;
-    }
-    document.getElementById('checkout-form').classList.remove('hidden');
-  }
-
-
-  // ===== INIT (Runs on page load) =====
-  document.addEventListener('DOMContentLoaded', ()=>{
-    // Check if the user is already logged in (optional check)
-    // For simplicity, we keep the login overlay active until manual login attempt.
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderProducts(); updateCartUI();
+  document.querySelectorAll('.fade-up').forEach((el,i)=> el.style.animationDelay = (i*80)+'ms');
+  const orderIdInput = document.getElementById('orderId'); if(orderIdInput) orderIdInput.value = getNextOrderNumber();
+  document.getElementById('go-to-summary').addEventListener('click', ()=>{
+    const name = document.getElementById('full-name').value.trim();
+    const address = document.getElementById('full-address').value.trim();
+    if(!name){ alert('Sila isi nama penuh.'); return; }
+    const order = { orderId: document.getElementById('orderId').value, name, address, date: new Date().toISOString(), items: cart };
+    localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
+    window.open('reseller-checkout (1).html', '_blank'); // Adjusted link to match uploaded file name
   });
-  
+});
+
+function getNextOrderNumber(){ const n = localStorage.getItem('pipah_reseller_last_order') || '1000'; const next = parseInt(n)+1; localStorage.setItem('pipah_reseller_last_order', next); return 'RS-'+next; }
+function getUnitPriceForQty(productId, qty){ const prod = products.find(p=>p.id===productId); if(!prod) return 0; for(const t of prod.tiers){ if(qty <= t.max) return t.price; } return prod.tiers[prod.tiers.length-1].price; }
+function renderProducts(){ const grid = document.getElementById('product-grid'); grid.innerHTML=''; products.forEach(prod=>{
+  const card = document.createElement('article'); card.className='card product-card';
+  card.innerHTML = `
+      <div class="product-slider" data-id="${prod.id}">
+        <div class="slider-wrapper">
+          ${prod.images.map((src,i)=>`<img src="${src}" class="product-img" alt="${prod.title}" onclick="openZoomModal(this.src)">`).join('')}
+        </div>
+        <div class="slider-dots">
+          ${prod.images.map((_,i)=>`<span class="dot ${i===0?'active':''}" data-index="${i}"></span>`).join('')}
+        </div>
+      </div>
+      <h3>${prod.title}</h3>
+      <p class="old-price">RM ${prod.oldPrice}</p>
+      <div style="font-size:14px;color:#444;margin-bottom:6px">Harga per unit ikut kuantiti (auto update bila ubah kuantiti)</div>
+      <div class="qty-control">
+        <button class="qty-btn" data-action="minus" data-id="${prod.id}">−</button>
+        <input id="qty-${prod.id}" class="qty-input" type="number" value="0" min="0">
+        <button class="qty-btn" data-action="plus" data-id="${prod.id}">+</button>
+      </div>
+      <div style="margin-bottom:8px">Unit price: <strong id="unit-${prod.id}">RM ${getUnitPriceForQty(prod.id,1).toFixed(2)}</strong></div>
+      <button class="btn primary add-btn" data-id="${prod.id}">Tambah ke Troli</button>
+    `;
+  grid.appendChild(card);
+});
+  document.querySelectorAll('.product-slider').forEach(initSlider);
+  document.querySelectorAll('.qty-btn').forEach(b=> b.addEventListener('click', onQtyButton));
+  document.querySelectorAll('.qty-input').forEach(inp=> inp.addEventListener('input', onQtyInput));
+  document.querySelectorAll('.add-btn').forEach(b=> b.addEventListener('click', onAddToCart));
+}
+function initSlider(container){
+  try{
+    if(!container) return;
+    const wrapper = container.querySelector('.slider-wrapper');
+    if(!wrapper) return;
+    const slides = container.querySelectorAll('.product-img');
+    if(!slides || slides.length===0) return;
+    const dots = container.querySelectorAll('.dot');
+    let idx = 0;
+    function setSizes(){
+      const w = container.offsetWidth || container.getBoundingClientRect().width || window.innerWidth;
+      slides.forEach(s=> s.style.width = w + 'px');
+    }
+    function update(transition = true){
+      wrapper.style.transition = transition ? 'transform 0.3s ease-out' : 'none';
+      wrapper.style.transform = `translateX(${-idx * container.offsetWidth}px)`;
+      dots.forEach((d,i)=> d.classList.toggle('active', i===idx));
+    }
+    setSizes(); update(false);
+    dots.forEach((d,i)=> d.addEventListener('click', ()=>{ idx=i; update(); }));
+    let resizeTimeout = null;
+    window.addEventListener('resize', ()=>{ clearTimeout(resizeTimeout); resizeTimeout = setTimeout(()=>{ setSizes(); update(false); }, 120); });
+  }catch(err){
+    console.warn('initSlider error', err);
+  }
+}
+function onQtyButton(e){ const id = e.currentTarget.dataset.id; const action = e.currentTarget.dataset.action; const inp = document.getElementById('qty-'+id); let val = Math.max(0, parseInt(inp.value||'0')); val = action==='plus' ? val+1 : Math.max(0, val-1); inp.value = val; updateUnitPriceDisplay(id,val); }
+function onQtyInput(e){ const id = e.currentTarget.id.replace('qty-',''); let v = parseInt(e.currentTarget.value||'1'); if(isNaN(v)||v<0) v=0; e.currentTarget.value=v; updateUnitPriceDisplay(id,v); }
+function updateUnitPriceDisplay(id, qty){ const el = document.getElementById('unit-'+id); if(!el) return; const price = getUnitPriceForQty(id, qty); el.textContent = 'RM '+price.toFixed(2); }
+function onAddToCart(e){ const id = e.currentTarget.dataset.id; const qty = parseInt(document.getElementById('qty-'+id).value||'1'); if(qty<=0){ alert('Sila pilih kuantiti lebih dari 0'); return; } const unit = getUnitPriceForQty(id, qty); const prod = products.find(p=>p.id===id); const existing = cart.find(i=> i.id===id && i.unitPrice===unit); if(existing){ existing.qty += qty; } else { cart.push({ id, name:prod.title, unitPrice:unit, qty }); } saveCart(); updateCartUI(); const icon = document.getElementById('cart-icon'); icon.classList.add('added'); setTimeout(()=> icon.classList.remove('added'),480); }
+function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
+function updateCartUI(){ const list = document.getElementById('cart-items'); const totalEl = document.getElementById('cart-total'); const badge = document.getElementById('cart-badge'); list.innerHTML=''; let subtotal=0, count=0; cart.forEach((item,idx)=>{ subtotal += item.unitPrice*item.qty; count += item.qty; const li = document.createElement('li'); const left = document.createElement('div'); left.style.flex='1'; left.innerHTML = `<strong>${escapeHtml(item.name)}</strong><div style="font-size:12px;color:#666">${item.qty} × RM ${item.unitPrice.toFixed(2)} = RM ${(item.unitPrice*item.qty).toFixed(2)}</div>`; const middle = document.createElement('div'); const minus = document.createElement('button'); minus.textContent='−'; minus.onclick = ()=> changeCartQty(idx,-1); const qtySpan = document.createElement('span'); qtySpan.style.margin='0 8px'; qtySpan.textContent = item.qty; const plus = document.createElement('button'); plus.textContent = '+'; plus.onclick = ()=> changeCartQty(idx,1); middle.appendChild(minus); middle.appendChild(qtySpan); middle.appendChild(plus); const right = document.createElement('div'); right.style.marginLeft='8px'; right.innerHTML = `RM ${(item.unitPrice*item.qty).toFixed(2)} <button onclick="removeCartItem(${idx})">x</button>`; li.appendChild(left); li.appendChild(middle); li.appendChild(right); list.appendChild(li); }); badge.textContent = String(count); totalEl.textContent = 'Jumlah: RM ' + subtotal.toFixed(2); }
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c)); }
+function changeCartQty(idx, delta){ cart[idx].qty += delta; if(cart[idx].qty<=0) cart.splice(idx,1); saveCart(); updateCartUI(); }
+function removeCartItem(idx){ cart.splice(idx,1); saveCart(); updateCartUI(); }
+function toggleCart(){ const panel = document.getElementById('cart-panel'); panel.classList.toggle('show'); }
+function showCheckoutForm(){ document.getElementById('checkout-form').classList.toggle('hidden'); }
+function sendOrder(){ const name = document.getElementById('full-name').value.trim(); if(!name){ alert('Sila isi nama.'); return; } const itemsText = cart.map(i=> `${i.qty}x ${i.name} RM${i.unitPrice}`).join('\n'); const total = cart.reduce((s,i)=> s + i.qty*i.unitPrice,0).toFixed(2); const text = `Order ${getNextOrderNumber()}\nName: ${name}\nItems:\n${itemsText}\nTotal: RM${total}`; window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`,'_blank'); }
+   
+// =========================================================================
+// CONVERTED PWA & INSTALL PROMPT LOGIC
+// =========================================================================
+
+let deferredPrompt = null;
+let installReady = false;
+let isInstalled = false;
+
+// ✅ Detect if app already installed
+window.addEventListener("appinstalled", () => {
+  isInstalled = true;
+  localStorage.setItem("pipahInstalled", "true");
+  closePipahPopup();
+});
+if (window.matchMedia('(display-mode: standalone)').matches || localStorage.getItem("pipahInstalled") === "true") {
+  isInstalled = true;
+}
+
+// ✅ Catch browser install prompt
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installReady = true;
+});
+
+// ✅ Update popup text based on device & availability
+function updateInstallText() {
+  const text = document.getElementById("pipahInstallText");
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  if (isIOS) {
+    text.textContent = "Add to Homescreen ⬇️";
+    text.onclick = null;
+  } else if (installReady && deferredPrompt) {
+    // Teks butang yang diubah suai
+    text.textContent = "Install RSPipahCookies now"; 
+    text.onclick = async () => {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        console.log("PWA Installed!");
+        localStorage.setItem("pipahInstalled", "true");
+      }
+      deferredPrompt = null;
+      closePipahPopup();
+    };
+  } else {
+    // Teks butang yang diubah suai
+    text.textContent = "Install RSPipahCookies now"; 
+    text.onclick = () => alert("Use Chrome, Edge, or Brave to install RSPipahCookies.");
+  }
+}
+
+// ✅ Show popup after 5 seconds if not installed
+window.addEventListener("load", () => {
+  if (!isInstalled) {
+    setTimeout(() => {
+      const popup = document.getElementById("pipahInstallPopup");
+      updateInstallText();
+      popup.style.display = "block";
+      setTimeout(() => popup.classList.add("show"), 50);
+    }, 5000);
+  }
+});
+
+// ✅ Close button function
+function closePipahPopup() {
+  const popup = document.getElementById("pipahInstallPopup");
+  popup.classList.remove("show");
+  setTimeout(() => popup.style.display = "none", 400);
+}
 </script>
-  
+
 </body>
 </html>
