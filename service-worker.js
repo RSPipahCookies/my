@@ -2,11 +2,11 @@
 const CACHE_NAME = 'pipah-reseller-cache-v1';
 const ASSETS = [
   '/',
-  '/Reseller Portal.html',
+  '/index.html',
   '/reseller-manifest.json',
   '/images/rsheader.png',
-  '/images/icon-512.png', 
-  '/images/reseller-icon.png', // Tambah ikon PWA ke aset cache
+  '/images/rs512.png', 
+  '/images/rs194.png', // Tambah ikon PWA ke aset cache
   // common product images (if present)
   '/images/ss1.jpg','/images/ss2.jpg','/images/ss3.jpg',
   '/images/ch1.jpg','/images/ch2.jpg','/images/ch3.jpg',
