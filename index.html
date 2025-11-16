@@ -278,7 +278,7 @@
     <section id="contact" class="section fade-up">
       <h2>Hubungi Kami</h2>
       <p class="lead">Untuk pesanan atau pertanyaan, hantarkan mesej melalui WhatsApp atau follow & chat di Shopee / TikTok / Facebook kami.</p>
-      <p><a class="btn secondary" href="#" onclick="window.open('https://wa.me/601121243407','_blank')">Chat di WhatsApp</a></p>
+      <p><a class="btn secondary" href="#" onclick="window.open('https://wa.me/'+window.ORDER_WHATSAPP_NUMBER,'_blank')">Chat di WhatsApp</a></p>
     </section>
   </main>
 
@@ -321,19 +321,25 @@
   <span class="closeBtn" onclick="closePipahPopup()">×</span>
   <p id="pipahInstallText"></p>
 </div>
-<script>
-// ===== CONFIG & PWA VARIABLES =====
-const WHATSAPP_NUMBER = '601121243407';
 
-// Product configuration.
-const products = [
-  { id: 'p1', title: 'Seasalt Cookies (65pcs)', images: ['images/ss1.jpg','images/ss2.jpg','images/ss3.jpg'], oldPrice: 16, tiers:[{max:4,price:16},{max:9,price:15},{max:Infinity,price:14}] },
-  { id: 'p2', title: 'ChocHazelnut Button (38pcs)', images: ['images/ch1.jpg','images/ch2.jpg','images/ch3.jpg'], oldPrice: 22, tiers:[{max:4,price:22},{max:9,price:21},{max:Infinity,price:20}] },
-  { id: 'p3', title: 'Brownies Cookies (70pcs)', images: ['images/br1.jpg','images/br2.jpg','images/br3.jpg'], oldPrice: 17, tiers:[{max:4,price:17},{max:9,price:16},{max:Infinity,price:15}] },
-  { id: 'p4', title: 'Black Cookies (80pcs)', images: ['images/bc1.jpg','images/bc2.jpg','images/bc3.jpg'], oldPrice: 22, tiers:[{max:5,price:19},{max:49,price:11},{max:Infinity,price:10}] },
-  { id: 'p5', title: 'RedVelvet Button', images: ['images/rv1.jpg','images/rv2.jpg','images/rv3.jpg'], oldPrice: 22, tiers:[{max:4,price:20},{max:9,price:19},{max:Infinity,price:18}] },
-  { id: 'p6', title: 'DarkChoc Cookies (70pcs)', images: ['images/dc1.jpg','images/dc2.jpg','images/dc3.jpg'], oldPrice: 22, tiers:[{max:4,price:19},{max:9,price:18},{max:Infinity,price:17}] }
-];
+<script src="pipah-product-config.js"></script>
+
+<script>
+// Data produk kini diambil dari config file (tetapi disalin ke variable 'products' 
+// untuk membolehkan logik sedia ada berfungsi tanpa banyak ubahsuai)
+const WHATSAPP_NUMBER = window.ORDER_WHATSAPP_NUMBER; 
+const products = window.PRODUCTS_DATA.map(p => ({ 
+    id: p.id, 
+    title: p.title, 
+    images: p.images, 
+    oldPrice: p.oldPrice, 
+    tiers: p.tiers 
+}));
+
+// Fungsi untuk mendapatkan harga kini menggunakan fungsi global
+function getUnitPriceForQty(productId, qty){ 
+    return window.getResellerCost(productId, qty).cost; 
+}
 
 // ===== LOCAL STORAGE & INIT (unchanged) =====
 const CART_KEY = 'pipah_reseller_cart_v1';
@@ -354,12 +360,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(!name){ alert('Sila isi nama penuh.'); return; }
     const order = { orderId: document.getElementById('orderId').value, name, address, date: new Date().toISOString(), items: cart };
     localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
-    window.open('reseller-checkout.html', '_blank'); // Adjusted link to match uploaded file name
+    window.open('reseller-checkout.html', '_blank');
   });
 });
 
 function getNextOrderNumber(){ const n = localStorage.getItem('pipah_reseller_last_order') || '1000'; const next = parseInt(n)+1; localStorage.setItem('pipah_reseller_last_order', next); return 'RS-'+next; }
-function getUnitPriceForQty(productId, qty){ const prod = products.find(p=>p.id===productId); if(!prod) return 0; for(const t of prod.tiers){ if(qty <= t.max) return t.price; } return prod.tiers[prod.tiers.length-1].price; }
+// getUnitPriceForQty is now defined above, using global function
+
 function renderProducts(){ const grid = document.getElementById('product-grid'); grid.innerHTML=''; products.forEach(prod=>{
   const card = document.createElement('article'); card.className='card product-card';
   card.innerHTML = `
@@ -372,7 +379,7 @@ function renderProducts(){ const grid = document.getElementById('product-grid');
         </div>
       </div>
       <h3>${prod.title}</h3>
-      <p class="old-price">RM ${prod.oldPrice}</p>
+      <p class="old-price">RM ${prod.oldPrice.toFixed(2)}</p>
       <div style="font-size:14px;color:#444;margin-bottom:6px">Harga per unit ikut kuantiti (auto update bila ubah kuantiti)</div>
       <div class="qty-control">
         <button class="qty-btn" data-action="minus" data-id="${prod.id}">−</button>
@@ -415,10 +422,29 @@ function initSlider(container){
     console.warn('initSlider error', err);
   }
 }
-function onQtyButton(e){ const id = e.currentTarget.dataset.id; const action = e.currentTarget.dataset.action; const inp = document.getElementById('qty-'+id); let val = Math.max(0, parseInt(inp.value||'0')); val = action==='plus' ? val+1 : Math.max(0, val-1); inp.value = val; updateUnitPriceDisplay(id,val); }
+function onQtyButton(e){ const id = e.currentTarget.dataset.id; const action = e.currentTarget.dataset.action; const inp = document.getElementById('qty-'+id); let val = Math.max(0, parseInt(inp.value||'0')); val = action==='plus' ? val+1 : Math.max(0, val-1); inp.value = val; updat
+  eUnitPriceDisplay(id,val); }
 function onQtyInput(e){ const id = e.currentTarget.id.replace('qty-',''); let v = parseInt(e.currentTarget.value||'1'); if(isNaN(v)||v<0) v=0; e.currentTarget.value=v; updateUnitPriceDisplay(id,v); }
 function updateUnitPriceDisplay(id, qty){ const el = document.getElementById('unit-'+id); if(!el) return; const price = getUnitPriceForQty(id, qty); el.textContent = 'RM '+price.toFixed(2); }
-function onAddToCart(e){ const id = e.currentTarget.dataset.id; const qty = parseInt(document.getElementById('qty-'+id).value||'1'); if(qty<=0){ alert('Sila pilih kuantiti lebih dari 0'); return; } const unit = getUnitPriceForQty(id, qty); const prod = products.find(p=>p.id===id); const existing = cart.find(i=> i.id===id && i.unitPrice===unit); if(existing){ existing.qty += qty; } else { cart.push({ id, name:prod.title, unitPrice:unit, qty }); } saveCart(); updateCartUI(); const icon = document.getElementById('cart-icon'); icon.classList.add('added'); setTimeout(()=> icon.classList.remove('added'),480); }
+function onAddToCart(e){ 
+  const id = e.currentTarget.dataset.id; 
+  const qty = parseInt(document.getElementById('qty-'+id).value||'1'); 
+  if(qty<=0){ alert('Sila pilih kuantiti lebih dari 0'); return; } 
+  
+  // Ambil harga semasa dari display, yang telah dikira dengan getUnitPriceForQty
+  const unitPriceText = document.getElementById('unit-'+id).textContent;
+  const unit = parseFloat(unitPriceText.replace('RM ',''));
+  
+  const prod = products.find(p=>p.id===id); 
+  // Cart item kini menyimpan nama sebenar dan harga jualan unit yang dikira 
+  const existing = cart.find(i=> i.id===id && i.unitPrice===unit); 
+  if(existing){ 
+    existing.qty += qty; 
+  } else { 
+    cart.push({ id, name:prod.title, unitPrice:unit, qty }); 
+  } 
+  saveCart(); updateCartUI(); const icon = document.getElementById('cart-icon'); icon.classList.add('added'); setTimeout(()=> icon.classList.remove('added'),480); 
+}
 function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
 function updateCartUI(){ const list = document.getElementById('cart-items'); const totalEl = document.getElementById('cart-total'); const badge = document.getElementById('cart-badge'); list.innerHTML=''; let subtotal=0, count=0; cart.forEach((item,idx)=>{ subtotal += item.unitPrice*item.qty; count += item.qty; const li = document.createElement('li'); const left = document.createElement('div'); left.style.flex='1'; left.innerHTML = `<strong>${escapeHtml(item.name)}</strong><div style="font-size:12px;color:#666">${item.qty} × RM ${item.unitPrice.toFixed(2)} = RM ${(item.unitPrice*item.qty).toFixed(2)}</div>`; const middle = document.createElement('div'); const minus = document.createElement('button'); minus.textContent='−'; minus.onclick = ()=> changeCartQty(idx,-1); const qtySpan = document.createElement('span'); qtySpan.style.margin='0 8px'; qtySpan.textContent = item.qty; const plus = document.createElement('button'); plus.textContent = '+'; plus.onclick = ()=> changeCartQty(idx,1); middle.appendChild(minus); middle.appendChild(qtySpan); middle.appendChild(plus); const right = document.createElement('div'); right.style.marginLeft='8px'; right.innerHTML = `RM ${(item.unitPrice*item.qty).toFixed(2)} <button onclick="removeCartItem(${idx})">x</button>`; li.appendChild(left); li.appendChild(middle); li.appendChild(right); list.appendChild(li); }); badge.textContent = String(count); totalEl.textContent = 'Jumlah: RM ' + subtotal.toFixed(2); }
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c)); }
@@ -429,14 +455,13 @@ function showCheckoutForm(){ document.getElementById('checkout-form').classList.
 function sendOrder(){ const name = document.getElementById('full-name').value.trim(); if(!name){ alert('Sila isi nama.'); return; } const itemsText = cart.map(i=> `${i.qty}x ${i.name} RM${i.unitPrice}`).join('\n'); const total = cart.reduce((s,i)=> s + i.qty*i.unitPrice,0).toFixed(2); const text = `Order ${getNextOrderNumber()}\nName: ${name}\nItems:\n${itemsText}\nTotal: RM${total}`; window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`,'_blank'); }
    
 // =========================================================================
-// CONVERTED PWA & INSTALL PROMPT LOGIC
+// PWA & INSTALL PROMPT LOGIC (UNTOUCHED)
 // =========================================================================
 
 let deferredPrompt = null;
 let installReady = false;
 let isInstalled = false;
 
-// ✅ Detect if app already installed
 window.addEventListener("appinstalled", () => {
   isInstalled = true;
   localStorage.setItem("pipahInstalled", "true");
@@ -446,14 +471,12 @@ if (window.matchMedia('(display-mode: standalone)').matches || localStorage.getI
   isInstalled = true;
 }
 
-// ✅ Catch browser install prompt
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
   installReady = true;
 });
 
-// ✅ Update popup text based on device & availability
 function updateInstallText() {
   const text = document.getElementById("pipahInstallText");
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -462,7 +485,6 @@ function updateInstallText() {
     text.textContent = "Add to Homescreen ⬇️";
     text.onclick = null;
   } else if (installReady && deferredPrompt) {
-    // Teks butang yang diubah suai
     text.textContent = "Install RSPipahCookies now"; 
     text.onclick = async () => {
       deferredPrompt.prompt();
@@ -475,13 +497,11 @@ function updateInstallText() {
       closePipahPopup();
     };
   } else {
-    // Teks butang yang diubah suai
     text.textContent = "Install RSPipahCookies now"; 
     text.onclick = () => alert("Use Chrome, Edge, or Brave to install RSPipahCookies.");
   }
 }
 
-// ✅ Show popup after 5 seconds if not installed
 window.addEventListener("load", () => {
   if (!isInstalled) {
     setTimeout(() => {
@@ -493,7 +513,6 @@ window.addEventListener("load", () => {
   }
 });
 
-// ✅ Close button function
 function closePipahPopup() {
   const popup = document.getElementById("pipahInstallPopup");
   popup.classList.remove("show");
@@ -502,7 +521,7 @@ function closePipahPopup() {
 </script>
   <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
+  navigator.serviceWorker.register('./service-worker.js')
     .then(() => console.log('✅ Service Worker Registered'))
     .catch(err => console.error('❌ Service Worker Failed', err));
 }
