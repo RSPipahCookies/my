@@ -24,7 +24,7 @@
 <body>
 
 <header>
-  <img src="" alt="PipahCookies Logo">
+  <img src="images/Header2.jpg" alt="PipahCookies Logo">
   <h1>Portal Reseller PipahCookies</h1>
 </header>
 
@@ -50,8 +50,10 @@
 
 <script>
     // **CRITICAL FIX: New unique Local Storage key and PIN disclosure fix**
-    const USERS_KEY = 'pipah_rs_creds_v2_data';
-  const ADMIN_WHATSAPP_NUMBER = "601121243407";
+    const USERS_KEY = 'pipah_rs_creds_v2_data'; 
+    const ADMIN_WHATSAPP_NUMBER = "601121243407"; // Ganti dengan nombor Admin sebenar
+
+    // Base64 encoding/decoding functions for 'security by obscurity'
     const base64Encode = (str) => btoa(encodeURIComponent(str));
     const base64Decode = (str) => {
         try {
