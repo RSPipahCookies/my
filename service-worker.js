@@ -52,7 +52,7 @@ self.addEventListener('fetch', (event) => {
       fetch(req).catch(()=> {
         console.log('[Service Worker] Navigation failed, serving offline page.');
         // Fallback to the main HTML page for offline navigation
-        return caches.match('/Reseller Portal.html'); 
+        return caches.match('/index.html'); 
       })
     );
     return;
