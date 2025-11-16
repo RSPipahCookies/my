@@ -209,317 +209,243 @@
       <button class="close-btn" onclick="toggleCalculator()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5em;color:var(--muted);"><i class="fas fa-times"></i></button>
     </div>
   </div>
+  
+  <script src="pipah-product-config.js"></script>
+  
   <script>
-   // --- Configuration Variable: CHANGE THIS URL TO UPDATE YOUR HEADER IMAGE ---
-   const HEADER_IMAGE_URL = 'images/Header2.jpg';
-   // -------------------------------------------------------------------------
    
-   // --- PRODUCT DATA DEFINITION (Single Source of Truth) ---
-   // Note: The structure is changed to include 'tiers' for the calculator and 'oldPrice' as RRP
-    const PRODUCTS_DATA = [
-      {
-        id: 'P1',
-        name: 'Seasalt Cookies (65pcs)',
-        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=SS',
-        rrp: 16.00,
-        tiers: [
-          { max: 4, price: 16, name: 'Tier 1 (1-4 units)' },
-          { max: 9, price: 15, name: 'Tier 2 (5-9 units)' },
-          { max: Infinity, price: 14, name: 'Tier 3 (10+ units)' }
-        ]
-      },
-      {
-        id: 'P2',
-        name: 'ChocHazelnut Button (38pcs)',
-        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=CH',
-        rrp: 22.00,
-        tiers: [
-          { max: 4, price: 22, name: 'Tier 1 (1-4 units)' },
-          { max: 9, price: 21, name: 'Tier 2 (5-9 units)' },
-          { max: Infinity, price: 20, name: 'Tier 3 (10+ units)' }
-        ]
-      },
-      {
-        id: 'P3',
-        name: 'Brownies Cookies (70pcs)',
-        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=BC',
-        rrp: 17.00,
-        tiers: [
-          { max: 4, price: 17, name: 'Tier 1 (1-4 units)' },
-          { max: 9, price: 16, name: 'Tier 2 (5-9 units)' },
-          { max: Infinity, price: 15, name: 'Tier 3 (10+ units)' }
-        ]
-      },
-      {
-        id: 'P4',
-        name: 'Black Cookies (80pcs)',
-        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=BL',
-        rrp: 22.00,
-        tiers: [
-          { max: 5, price: 19, name: 'Tier 1 (1-5 units)' },
-          { max: 49, price: 11, name: 'Tier 2 (6-49 units)' },
-          { max: Infinity, price: 10, name: 'Tier 3 (50+ units)' }
-        ]
-      },
-      {
-        id: 'P5',
-        name: 'RedVelvet Button',
-        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=RV',
-        rrp: 22.00,
-        tiers: [
-          { max: 4, price: 20, name: 'Tier 1 (1-4 units)' },
-          { max: 9, price: 19, name: 'Tier 2 (5-9 units)' },
-          { max: Infinity, price: 18, name: 'Tier 3 (10+ units)' }
-        ]
-      },
-      {
-        id: 'P6',
-        name: 'DarkChoc Cookies (70pcs)',
-        img_url: 'https://placehold.co/100x100/A67734/ffffff?text=DC',
-        rrp: 22.00,
-        tiers: [
-          { max: 4, price: 19, name: 'Tier 1 (1-4 units)' },
-          { max: 9, price: 18, name: 'Tier 2 (5-9 units)' },
-          { max: Infinity, price: 17, name: 'Tier 3 (10+ units)' }
-        ]
-      }
-    ];
+   // --- UI SETUP ---
+   document.addEventListener('DOMContentLoaded', () => {
+     // Set the header image source using the config variable
+     document.getElementById('header-banner').src = window.HEADER_IMAGE_URL; 
+     
+     loadProductList();
+     loadGeneratorGrid();
+     loadCalculatorOptions();
+     loadTierInfo();
+     calculateProfit(); // Initial calculation for FAB
+   });
 
-    // Helper function to get the base reseller cost for a product and quantity
-    function getResellerCost(product, quantity) {
-        if (quantity < 1) return { cost: product.rrp, name: 'No Quantity' };
+   // Loads product cards (for info section)
+   function loadProductList() {
+     const container = document.getElementById('product-list');
+     // Menggunakan window.PRODUCTS_DATA dari fail config
+     container.innerHTML = window.PRODUCTS_DATA.map(p => `
+       <div class="card flex flex-col items-center">
+         <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-24 h-24 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
+         <h3 class="text-lg text-center">${p.name}</h3>
+         <p class="text-sm text-gray-700">RRP: <strong style="color:var(--primary); font-size:1.1em;">RM ${p.rrp.toFixed(2)}</strong></p>
+         <p class="text-xs mt-2 text-gray-500">Kos Minima: RM ${window.getResellerCost(p.id, 100).cost.toFixed(2)}</p>
+       </div>
+     `).join('');
+   }
 
-        for (const tier of product.tiers) {
-            if (quantity <= tier.max) {
-                return { cost: tier.price, name: tier.name };
-            }
-        }
-        // Fallback to highest tier if somehow quantity exceeds max tier max
-        return { cost: product.tiers[product.tiers.length - 1].price, name: product.tiers[product.tiers.length - 1].name };
-    }
-    
-    // --- UI SETUP ---
-    document.addEventListener('DOMContentLoaded', () => {
-      // Set the header image source using the config variable
-      document.getElementById('header-banner').src = HEADER_IMAGE_URL; 
-      
-      loadProductList();
-      loadGeneratorGrid();
-      loadCalculatorOptions();
-      loadTierInfo();
-      calculateProfit(); // Initial calculation for FAB
-    });
+   // Loads tier details into the Bulk section
+   function loadTierInfo() {
+       const container = document.getElementById('tier-info');
+       const exampleProducts = window.PRODUCTS_DATA.slice(0, 3); // Guna 3 produk pertama sebagai contoh
 
-    // Loads product cards (for info section)
-    function loadProductList() {
-      const container = document.getElementById('product-list');
-      container.innerHTML = PRODUCTS_DATA.map(p => `
-        <div class="card flex flex-col items-center">
-          <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-24 h-24 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
-          <h3 class="text-lg text-center">${p.name}</h3>
-          <p class="text-sm text-gray-700">RRP: <strong style="color:var(--primary); font-size:1.1em;">RM ${p.rrp.toFixed(2)}</strong></p>
-          <p class="text-xs mt-2 text-gray-500">Kos Minima: RM ${getResellerCost(p, 100).cost.toFixed(2)}</p>
-        </div>
-      `).join('');
-    }
-
-    // Loads tier details into the Bulk section
-    function loadTierInfo() {
-        const container = document.getElementById('tier-info');
-        // We'll map through products to show the tiers for the first 3 products as examples
-        const exampleProducts = PRODUCTS_DATA.slice(0, 3); 
-
-        container.innerHTML = exampleProducts.map(p => `
-            <div class="card text-left p-4 bg-white border border-primary/20">
-                <h4 class="text-base font-semibold text-primary-dark">${p.name}</h4>
-                <p class="text-xs text-gray-500 mb-3">RRP: RM ${p.rrp.toFixed(2)}</p>
-                <ul class="list-none p-0">
-                    ${p.tiers.map(t => `
-                        <li class="flex justify-between text-xs py-1 border-b border-dashed border-gray-100 last:border-b-0">
-                            <span class="font-medium">${t.name.split('(')[0].trim()} (${t.max === Infinity ? t.max + '+' : '1-' + t.max} unit)</span>
-                            <span class="font-bold text-green-600">RM ${t.price.toFixed(2)}</span>
-                        </li>
-                    `).join('')}
-                </ul>
-            </div>
-        `).join('');
-    }
+       container.innerHTML = exampleProducts.map(p => `
+           <div class="card text-left p-4 bg-white border border-primary/20">
+               <h4 class="text-base font-semibold text-primary-dark">${p.name}</h4>
+               <p class="text-xs text-gray-500 mb-3">RRP: RM ${p.rrp.toFixed(2)}</p>
+               <ul class="list-none p-0">
+                   ${p.tiers.map(t => `
+                       <li class="flex justify-between text-xs py-1 border-b border-dashed border-gray-100 last:border-b-0">
+                           <span class="font-medium">${t.name.split('(')[0].trim()} (${t.max === Infinity ? '100+' : '1-' + t.max} unit)</span>
+                           <span class="font-bold text-green-600">RM ${t.price.toFixed(2)}</span>
+                       </li>
+                   `).join('')}
+               </ul>
+           </div>
+       `).join('');
+   }
 
 
-    // Loads the combined product selection and price setting grid
-    function loadGeneratorGrid() {
-      const container = document.getElementById('generator-product-grid');
-      container.innerHTML = PRODUCTS_DATA.map((p, index) => `
-        <div id="card_${p.id}" class="generator-card card ${index < 3 ? 'selected' : ''}">
-            <input type="checkbox" id="check_${p.id}" value="${p.id}" ${index < 3 ? 'checked' : ''} class="card-checkbox" onchange="toggleCardSelection('${p.id}')">
-            
-            <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/60x60/A67734/ffffff?text=P';" class="w-16 h-16 object-cover rounded-full mb-3 mx-auto shadow-md border-2 border-accent" alt="${p.name}">
-            
-            <h4 class="text-md text-center font-semibold mb-1">${p.name}</h4>
-            <p class="text-xs text-gray-500 mb-3">RRP: RM ${p.rrp.toFixed(2)}</p>
+   // Loads the combined product selection and price setting grid
+   function loadGeneratorGrid() {
+     const container = document.getElementById('generator-product-grid');
+     // Menggunakan window.PRODUCTS_DATA dari fail config
+     container.innerHTML = window.PRODUCTS_DATA.map((p, index) => `
+       <div id="card_${p.id}" class="generator-card card ${index < 3 ? 'selected' : ''}">
+           <input type="checkbox" id="check_${p.id}" value="${p.id}" ${index < 3 ? 'checked' : ''} class="card-checkbox" onchange="toggleCardSelection('${p.id}')">
+           
+           <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/60x60/A67734/ffffff?text=P';" class="w-16 h-16 object-cover rounded-full mb-3 mx-auto shadow-md border-2 border-accent" alt="${p.name}">
+           
+           <h4 class="text-md text-center font-semibold mb-1">${p.name}</h4>
+           <p class="text-xs text-gray-500 mb-3">RRP: RM ${p.rrp.toFixed(2)}</p>
 
-            <div class="input-group">
-                <label for="price_${p.id}" class="text-xs font-medium text-primary-dark text-left">Harga Jual Anda (RM)</label>
-                <input type="number" id="price_${p.id}" step="0.50" min="1" value="${p.rrp.toFixed(2)}" class="w-full text-center p-2 text-lg font-bold">
-            </div>
-        </div>
-      `).join('');
-    }
+           <div class="input-group">
+               <label for="price_${p.id}" class="text-xs font-medium text-primary-dark text-left">Harga Jual Anda (RM)</label>
+               <input type="number" id="price_${p.id}" step="0.50" min="1" value="${p.rrp.toFixed(2)}" class="w-full text-center p-2 text-lg font-bold">
+           </div>
+       </div>
+     `).join('');
+   }
 
-    function toggleCardSelection(productId) {
-        const card = document.getElementById(`card_${productId}`);
-        const checkbox = document.getElementById(`check_${productId}`);
-        if (checkbox.checked) {
-            card.classList.add('selected');
-        } else {
-            card.classList.remove('selected');
-        }
-    }
-    
-    // --- SALES LINK GENERATOR LOGIC ---
-    function generateLink() {
-      const whatsapp = document.getElementById('whatsappNumber').value.trim();
-      const linkContainer = document.getElementById('generatedLinkContainer');
-      const salesLinkInput = document.getElementById('salesLink');
-      const testLink = document.getElementById('testLink');
-      
-      if (!whatsapp || whatsapp.length < 8) {
-        showTemporaryAlert('❌ Ralat: Sila masukkan Nombor WhatsApp yang sah.', 'bg-red-500');
-        return;
-      }
+   function toggleCardSelection(productId) {
+       const card = document.getElementById(`card_${productId}`);
+       const checkbox = document.getElementById(`check_${productId}`);
+       if (checkbox.checked) {
+           card.classList.add('selected');
+       } else {
+           card.classList.remove('selected');
+       }
+   }
+   
+   // --- SALES LINK GENERATOR LOGIC ---
+   function generateLink() {
+     const whatsapp = document.getElementById('whatsappNumber').value.trim();
+     const linkContainer = document.getElementById('generatedLinkContainer');
+     const salesLinkInput = document.getElementById('salesLink');
+     const testLink = document.getElementById('testLink');
+     
+     if (!whatsapp || whatsapp.length < 8) {
+       showTemporaryAlert('❌ Ralat: Sila masukkan Nombor WhatsApp yang sah.', 'bg-red-500');
+       return;
+     }
 
-      let params = `w=${whatsapp}`;
-      let selectedProductIds = [];
+     let selectedIds = [];
+     let selectedPrices = [];
 
-      PRODUCTS_DATA.forEach(p => {
-        const checkbox = document.getElementById(`check_${p.id}`);
-        if (checkbox && checkbox.checked) {
-            selectedProductIds.push(p.id);
-            
-            const priceInput = document.getElementById(`price_${p.id}`);
-            let price = parseFloat(priceInput.value);
-            if (isNaN(price) || price < 0.01) {
-              price = p.rrp; // Use RRP as fallback if price is invalid
-            }
-            // Add product ID and custom price to URL parameters
-            params += `&${p.id}=${price.toFixed(2)}`;
-        }
-      });
-      
-      if (selectedProductIds.length === 0) {
-          showTemporaryAlert('❌ Ralat: Sila pilih sekurang-kurangnya satu produk.', 'bg-red-500');
-          return;
-      }
-      
-      // Add comma-separated list of selected products to parameters
-      params += `&p=${selectedProductIds.join(',')}`;
+     // Menggunakan window.PRODUCTS_DATA dari fail config
+     window.PRODUCTS_DATA.forEach(p => {
+       const checkbox = document.getElementById(`check_${p.id}`);
+       if (checkbox && checkbox.checked) {
+           const priceInput = document.getElementById(`price_${p.id}`);
+           let price = parseFloat(priceInput.value);
+           
+           if (isNaN(price) || price < 0.01) {
+             price = p.rrp; // Use RRP as fallback if price is invalid
+           }
+           
+           selectedIds.push(p.id);
+           selectedPrices.push(price.toFixed(2)); // Ensure price is formatted correctly
+       }
+     });
+     
+     if (selectedIds.length === 0) {
+         showTemporaryAlert('❌ Ralat: Sila pilih sekurang-kurangnya satu produk.', 'bg-red-500');
+         return;
+     }
+     
+     // FORMAT PENTING BARU: rs_wa, p_ids, p_prices 
+     const params = `rs_wa=${whatsapp}&p_ids=${selectedIds.join(',')}&p_prices=${selectedPrices.join(',')}`;
 
-      const customerFormFile = 'OrderNow.html'; 
-      
-      const fullLink = `${customerFormFile}?${params}`;
-      const displayLink = `OrderNow.html-...`;
+     const customerFormFile = 'index.html'; // Pautan ke index.html (portal pelanggan)
+     
+     const fullLink = `${customerFormFile}?${params}`;
+     const displayLink = `index.html-...?rs_wa=${whatsapp}`;
 
-      // Construct the full absolute URL for the OrderNow file
-      // Assumes OrderNow.html is in the same directory as RSDashboard.html
-      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-      const fullUrl = `${baseUrl}${customerFormFile}?${params}`;
+     // Construct the full absolute URL for the customer file
+     const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+     const fullUrl = `${baseUrl}${fullLink}`;
 
-      salesLinkInput.value = displayLink;
-      testLink.href = fullUrl;
-      linkContainer.classList.remove('hidden');
+     // Save Reseller WA and Prices to Local Storage (Fallback for Customer Portal)
+     localStorage.setItem('loggedInResellerWa', whatsapp);
+     
+     const priceMap = {};
+     selectedIds.forEach((id, index) => {
+         priceMap[id] = parseFloat(selectedPrices[index]);
+     });
+     localStorage.setItem('currentResellerPrices', JSON.stringify(priceMap));
 
-            // Copy to clipboard
-      copyLink(fullUrl);
-    }
+     salesLinkInput.value = displayLink;
+     testLink.href = fullUrl;
+     linkContainer.classList.remove('hidden');
 
-    function copyLink(linkToCopy) {
-      const tempInput = document.createElement('input');
-      tempInput.value = linkToCopy;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      tempInput.setSelectionRange(0, 99999); 
-      
-      let copied = false;
-      try {
-        copied = document.execCommand('copy');
-      } catch (err) {
-        console.error('Could not copy text: ', err);
-      } finally {
-        document.body.removeChild(tempInput);
-      }
-      
-      if (copied) {
-        const container = document.getElementById('generatedLinkContainer');
-        const pElement = container.querySelector('p');
-        pElement.textContent = 'Pautan telah disalin ke papan keratan! ✅';
-        setTimeout(() => {
-          pElement.textContent = 'Pautan Jualan Anda Berjaya Dijana & Disalin! (OrderNow.html-...)';
-        }, 3000);
-      } else {
-        showTemporaryAlert('❌ Gagal menyalin. Sila salin manual.', 'bg-red-500');
-      }
-    }
+           // Copy to clipboard
+     copyLink(fullUrl);
+   }
 
-    function showTemporaryAlert(message, className) {
-        const tempAlert = document.createElement('div');
-        tempAlert.className = `fixed inset-0 ${className} text-white flex items-center justify-center p-4 z-50 text-xl font-bold`;
-        tempAlert.textContent = message;
-        document.body.appendChild(tempAlert);
-        setTimeout(() => document.body.removeChild(tempAlert), 3000);
-    }
+   function copyLink(linkToCopy) {
+     const tempInput = document.createElement('input');
+     tempInput.value = linkToCopy;
+     document.body.appendChild(tempInput);
+     tempInput.select();
+     tempInput.setSelectionRange(0, 99999); 
+     
+     let copied = false;
+     try {
+       copied = document.execCommand('copy');
+     } catch (err) {
+       console.error('Could not copy text: ', err);
+     } finally {
+       document.body.removeChild(tempInput);
+     }
+     
+     if (copied) {
+       const container = document.getElementById('generatedLinkContainer');
+       const pElement = container.querySelector('p');
+       pElement.textContent = 'Pautan telah disalin ke papan keratan! ✅';
+       setTimeout(() => {
+         pElement.textContent = 'Pautan Jualan Anda Berjaya Dijana & Disalin! (index.html-...)';
+       }, 3000);
+     } else {
+       showTemporaryAlert('❌ Gagal menyalin. Sila salin manual.', 'bg-red-500');
+     }
+   }
 
-    
-    // --- PROFIT CALCULATOR LOGIC ---
-    function loadCalculatorOptions() {
-        const select = document.getElementById('calcProduct');
-        select.innerHTML = PRODUCTS_DATA.map(p => 
-            `<option value="${p.id}">${p.name} (RRP: RM ${p.rrp.toFixed(2)})</option>`
-        ).join('');
-        // Set initial RRP on load
-        document.getElementById('calcRetailPrice').value = PRODUCTS_DATA[0].rrp.toFixed(2);
-    }
+   function showTemporaryAlert(message, className) {
+       const tempAlert = document.createElement('div');
+       tempAlert.className = `fixed inset-0 ${className} text-white flex items-center justify-center p-4 z-50 text-xl font-bold`;
+       tempAlert.textContent = message;
+       document.body.appendChild(tempAlert);
+       setTimeout(() => document.body.removeChild(tempAlert), 3000);
+   }
 
-    function calculateProfit() {
-        const productId = document.getElementById('calcProduct').value;
-        const retailPrice = parseFloat(document.getElementById('calcRetailPrice').value);
-        const quantity = parseInt(document.getElementById('calcQuantity').value);
-        
-        const product = PRODUCTS_DATA.find(p => p.id === productId);
+   
+   // --- PROFIT CALCULATOR LOGIC ---
+   function loadCalculatorOptions() {
+       const select = document.getElementById('calcProduct');
+       // Menggunakan window.PRODUCTS_DATA dari fail config
+       select.innerHTML = window.PRODUCTS_DATA.map(p => 
+           `<option value="${p.id}">${p.name} (RRP: RM ${p.rrp.toFixed(2)})</option>`
+       ).join('');
+       // Set initial RRP on load
+       document.getElementById('calcRetailPrice').value = window.PRODUCTS_DATA[0].rrp.toFixed(2);
+   }
 
-        if (!product || isNaN(retailPrice) || isNaN(quantity) || quantity < 1 || retailPrice < 1) {
-            document.getElementById('calcProfit').textContent = 'RM 0.00';
-            document.getElementById('calcCostPerUnit').textContent = 'RM 0.00';
-            document.getElementById('calcDiscountTierName').textContent = '-';
-            return;
-        }
+   function calculateProfit() {
+       const productId = document.getElementById('calcProduct').value;
+       const retailPrice = parseFloat(document.getElementById('calcRetailPrice').value);
+       const quantity = parseInt(document.getElementById('calcQuantity').value);
+       
+       const product = window.PRODUCTS_DATA.find(p => p.id === productId);
 
-        // Use the new tiered cost lookup function
-        const { cost: costPerUnit, name: discountName } = getResellerCost(product, quantity);
-        
-        // Profit is calculated using the Reseller's own set retailPrice
-        const profit = (retailPrice - costPerUnit) * quantity;
-        
-        document.getElementById('calcCostPerUnit').textContent = `RM ${costPerUnit.toFixed(2)}`;
-        document.getElementById('calcDiscountTierName').textContent = discountName;
-        document.getElementById('calcProfit').textContent = `RM ${profit.toFixed(2)}`;
-    }
+       if (!product || isNaN(retailPrice) || isNaN(quantity) || quantity < 1 || retailPrice < 1) {
+           document.getElementById('calcProfit').textContent = 'RM 0.00';
+           document.getElementById('calcCostPerUnit').textContent = 'RM 0.00';
+           document.getElementById('calcDiscountTierName').textContent = '-';
+           return;
+       }
 
-    function toggleCalculator() {
-        const modal = document.getElementById('calculatorModal');
-        modal.classList.toggle('open');
-        if (modal.classList.contains('open')) {
-            modal.style.display = 'flex';
-            calculateProfit(); 
-        } else {
-            setTimeout(() => modal.style.display = 'none', 300);
-        }
-    }
+       // Menggunakan fungsi global
+       const { cost: costPerUnit, name: discountName } = window.getResellerCost(productId, quantity);
+       
+       const profit = (retailPrice - costPerUnit) * quantity;
+       
+       document.getElementById('calcCostPerUnit').textContent = `RM ${costPerUnit.toFixed(2)}`;
+       document.getElementById('calcDiscountTierName').textContent = discountName;
+       document.getElementById('calcProfit').textContent = `RM ${profit.toFixed(2)}`;
+   }
 
-    function closeModal(event) {
-        if (event.target.id === 'calculatorModal') {
-            toggleCalculator();
-        }
-    }
+   function toggleCalculator() {
+       const modal = document.getElementById('calculatorModal');
+       modal.classList.toggle('open');
+       if (modal.classList.contains('open')) {
+           modal.style.display = 'flex';
+           calculateProfit(); 
+       } else {
+           setTimeout(() => modal.style.display = 'none', 300);
+       }
+   }
+
+   function closeModal(event) {
+       if (event.target.id === 'calculatorModal') {
+           toggleCalculator();
+       }
+   }
   </script>
 </body>
 </html>
