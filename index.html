@@ -5,16 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PipahCookies — Reseller Portal (Demo)</title>
 
-  <link rel="apple-touch-icon" href="Images/icon.png">
+  <link rel="apple-touch-icon" href="images/rs194.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#A67734">
-  <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js')
-    .then(() => console.log('✅ Service Worker Registered'))
-    .catch(err => console.error('❌ Service Worker Failed', err));
-}
-  </script>
+  
 
   <style>
  /* Theme variables */
@@ -506,6 +500,13 @@ function closePipahPopup() {
   setTimeout(() => popup.style.display = "none", 400);
 }
 </script>
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(() => console.log('✅ Service Worker Registered'))
+    .catch(err => console.error('❌ Service Worker Failed', err));
+}
+  </script>
 
 </body>
 </html>
