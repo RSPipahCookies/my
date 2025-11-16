@@ -65,6 +65,7 @@
   const DEFAULT_RESALER_PRICE_KEY = 'currentResellerPrices';
   const DEFAULT_RESALER_WA_KEY = 'loggedInResellerWa';
 
+  // DIBETULKAN: Pastikan ini sepadan dengan ID dan NAMA dalam RSDashboard.html
   const PRODUCTS_BASE = [
     { id: 'P1', name: 'Chocolate Chip Cookies', img_url: 'images/p1-1.jpg' },
     { id: 'P2', name: 'Sea Salt Caramel Cookies', img_url: 'images/p2-1.jpg' },
@@ -86,6 +87,7 @@
   
   // Function to get price map from URL (Priority 1)
   function getPricesFromUrl() {
+    // Parameter ini kini DIBETULKAN oleh RSDashboard.html
     const idsString = getUrlParameter('p_ids'); 
     const pricesString = getUrlParameter('p_prices'); 
 
@@ -127,6 +129,7 @@
 
   // Function to get Reseller WA: URL > LocalStorage
   function getResellerWa() {
+      // Parameter ini kini DIBETULKAN oleh RSDashboard.html
       const waFromUrl = getUrlParameter('rs_wa');
       if (waFromUrl) return waFromUrl;
       
@@ -194,6 +197,7 @@
         const qtyEl = document.getElementById(`qty-${product.id}`);
         if (qtyEl) {
             const qty = parseInt(qtyEl.textContent);
+            // Must check if the product ID exists in the priceMap (only selected products are there)
             const price = priceMap[product.id] || 0; 
             grandTotal += qty * price;
         }
@@ -229,7 +233,8 @@
             const qty = parseInt(qtyEl.textContent);
             const price = priceMap[product.id];
             
-            if (qty > 0) {
+            // Only process if price exists (meaning product was selected by reseller) and qty > 0
+            if (qty > 0 && price) {
                 const itemTotal = qty * price;
                 totalOrderValue += itemTotal;
                 totalItems += qty;
@@ -283,4 +288,5 @@
   });
 </script>
 </body>
-</html>
+  </html>
+  
