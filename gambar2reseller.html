@@ -118,11 +118,16 @@
     font-size: 15px;
   }
 }
+@media (max-width: 600px) { /* Penambahan untuk susunan 2 lajur pada peranti kecil */
+  .gallery-container {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 10px;
+  }
+}
 </style>
 </head>
 <body>
 
-<!-- Header Section -->
 <div class="gallery-header">
   <h1>PipahCookies Gallery</h1>
   <p>
@@ -195,12 +200,14 @@
     }
     adjustHeight();
   }
-
+  
+  // FUNGSI INI KINI BERFUNGSI UNTUK MELARASKAN KETINGGIAN IFRAME DI PORTAL INDUK
   function adjustHeight() {
     if (window.parent) {
       setTimeout(() => {
         const height = document.body.scrollHeight;
-        window.parent.postMessage({ galleryHeight: height }, '*');
+        // Mesej diselaraskan: Gunakan type: "resizeGallery" dan height: height
+        window.parent.postMessage({ type: "resizeGallery", height: height }, '*');
       }, 300);
     }
   }
