@@ -1,19 +1,26 @@
 // Basic service worker for caching shell assets. Keep it simple and robust.
-const CACHE_NAME = 'pipah-reseller-cache-v1';
+const CACHE_NAME = 'pipah-reseller-cache-v2'; // Increment cache version to force update
 const ASSETS = [
-  './',
-  './index.html',
-  './reseller-manifest.json',
-  './images/rsheader.png',
-  './images/rs512.png', 
-  './images/rs194.png', // Tambah ikon PWA ke aset cache
+  '/', // The root URL is crucial for installed PWA launches
+  '/index.html',
+  '/reseller-manifest.json',
+  
+  // --- Essential HTML Pages for Offline Access ---
+  // Ensure the filenames here match your live files:
+  '/reseller-checkout.html', 
+  '/gambar2reseller.html', 
+
+  // --- Images and other Assets from the original list ---
+  '/images/rsheader.png',
+  '/images/rs512.png', 
+  '/images/rs194.png', 
   // common product images (if present)
-  './images/ss1.jpg','./images/ss2.jpg','./images/ss3.jpg',
-  './images/ch1.jpg','./images/ch2.jpg','./images/ch3.jpg',
-  './images/br1.jpg','./images/br2.jpg','./images/br3.jpg',
-  './images/bc1.jpg','./images/bc2.jpg','./images/bc3.jpg',
-  './images/rv1.jpg','./images/rv2.jpg','./images/rv3.jpg',
-  './images/dc1.jpg','./images/dc2.jpg','./images/dc3.jpg'
+  '/images/ss1.jpg','/images/ss2.jpg','/images/ss3.jpg',
+  '/images/ch1.jpg','/images/ch2.jpg','/images/ch3.jpg',
+  '/images/br1.jpg','/images/br2.jpg','/images/br3.jpg',
+  '/images/bc1.jpg','/images/bc2.jpg','/images/bc3.jpg',
+  '/images/rv1.jpg','/images/rv2.jpg','/images/rv3.jpg',
+  '/images/dc1.jpg','/images/dc2.jpg','/images/dc3.jpg'
 ];
 
 // 1. Install Event: Cache all the defined assets
@@ -24,7 +31,8 @@ self.addEventListener('install', (event) => {
       .then(cache => cache.addAll(ASSETS))
       .catch((err) => console.error('[Service Worker] Caching failed:', err))
   );
-  self.skipWaiting();
+  // Forces the waiting service worker to become the active service worker
+  self.skipWaiting(); 
 });
 
 // 2. Activate Event: Clean up old caches
@@ -32,57 +40,63 @@ self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activate Event: Cleaning old caches.');
   event.waitUntil(
     caches.keys().then(keys => Promise.all(keys.map(k => {
+      // Delete old caches that do not match the current CACHE_NAME
       if(k !== CACHE_NAME) {
         console.log(`[Service Worker] Deleting old cache: ${k}`);
         return caches.delete(k);
       }
     })))
   );
+  // Takes control of the pages as soon as possible
   self.clients.claim();
 });
 
 // 3. Fetch Event: Handle network requests (Core PWA requirement)
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  console.log(`[Service Worker] Fetching: ${req.url}`);
   
   // Strategy: Network-first for navigations, fallback to cache
   if(req.mode === 'navigate'){
     event.respondWith(
-      fetch(req).catch(()=> {
+      fetch(req).catch(async ()=> { 
         console.log('[Service Worker] Navigation failed, serving offline page.');
-        // Fallback to the main HTML page for offline navigation
-        return caches.match('./index.html'); 
+        
+        // **CRITICAL 404 FIX:** Explicitly check for both common start URL keys
+        // The app might request /index.html or the root /
+        let response = await caches.match('/index.html');
+        if (response) return response;
+        
+        // Fallback to the root key
+        response = await caches.match('/');
+        if (response) return response;
+        
+        // Final fallback if neither is found
+        throw new Error('Offline shell not available.');
       })
     );
     return;
   }
 
-  // Strategy: Cache-first for all other assets
+  // Strategy: Cache-first for all other assets (images, CSS, JS)
   event.respondWith(
     caches.match(req).then(cached => {
       // If cached, serve immediately
       if (cached) {
-        console.log('[Service Worker] Serving from cache:', req.url);
         return cached;
       }
 
-      // If not cached, fetch from network
+      // If not cached, fetch from network and dynamically cache
       return fetch(req).then(res => {
         // Only cache successful network responses (status 200)
         if (res.status === 200) {
-          return caches.open(CACHE_NAME).then(cache => { 
-            // Cache the response clone and return the original response
-            cache.put(req, res.clone()); 
-            console.log('[Service Worker] Fetched and cached:', req.url);
-            return res; 
+          // Clone the response because a response body can only be consumed once
+          const resClone = res.clone(); 
+          caches.open(CACHE_NAME).then(cache => { 
+            cache.put(req, resClone); 
           });
         }
-        return res; // Return non-200 responses without caching
+        return res; 
       });
-    }).catch(err => {
-      console.error('[Service Worker] Fetch error for:', req.url, err);
-      // Optional: Add a general offline fallback image/message here
     })
   );
 });
