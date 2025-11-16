@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(!name){ alert('Sila isi nama penuh.'); return; }
     const order = { orderId: document.getElementById('orderId').value, name, address, date: new Date().toISOString(), items: cart };
     localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
-    window.open('reseller-checkout (1).html', '_blank'); // Adjusted link to match uploaded file name
+    window.open('reseller-checkout.html', '_blank'); // Adjusted link to match uploaded file name
   });
 });
 
