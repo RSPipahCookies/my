@@ -8,7 +8,7 @@
 
 // --- 1. GENERAL CONFIGURATION ---
 window.HEADER_IMAGE_URL = 'images/Header2.jpg';
-window.HQ_WHATSAPP_NUMBER = '6019XXXXXXX';      // WhatsApp HQ untuk RSDashboard
+window.HQ_WHATSAPP_NUMBER = '601163962328';      // WhatsApp HQ untuk RSDashboard
 window.ORDER_WHATSAPP_NUMBER = '601121243407'; // WhatsApp untuk Reseller Order Form
 
 // --- 2. PRODUCT DATA DEFINITION (SSOT) ---
@@ -17,7 +17,7 @@ const PRODUCTS_DATA = [
     id: 'P1',
     name: 'Seasalt Cookies', // Nama ringkas untuk dashboard
     title: 'Seasalt Cookies (65pcs)', // Nama penuh untuk portal pelanggan
-    img_url: 'images/p1-1.jpg',
+    img_url: 'images/ss1.jpg',
     images: ['images/ss1.jpg', 'images/ss2.jpg', 'images/ss3.jpg'], // Gambar untuk slider pelanggan
     rrp: 16.00, // Harga Runcit Disyorkan
     oldPrice: 18.00, // Harga lama (jika ada) untuk portal pelanggan
@@ -31,7 +31,7 @@ const PRODUCTS_DATA = [
     id: 'P2',
     name: 'ChocHazelnut Button',
     title: 'ChocHazelnut Button (38pcs)',
-    img_url: 'images/p2-1.jpg',
+    img_url: 'images/ch1.jpg',
     images: ['images/ch1.jpg', 'images/ch2.jpg', 'images/ch3.jpg'],
     rrp: 22.00,
     oldPrice: 25.00,
@@ -45,7 +45,7 @@ const PRODUCTS_DATA = [
     id: 'P3',
     name: 'Brownies Cookies',
     title: 'Brownies Cookies (70pcs)',
-    img_url: 'images/p3-1.jpg',
+    img_url: 'images/br1.jpg',
     images: ['images/br1.jpg', 'images/br2.jpg', 'images/br3.jpg'],
     rrp: 17.00,
     oldPrice: 19.00,
@@ -59,7 +59,7 @@ const PRODUCTS_DATA = [
     id: 'P4',
     name: 'Black Cookies',
     title: 'Black Cookies (80pcs)',
-    img_url: 'images/p4-1.jpg',
+    img_url: 'images/bc1.jpg',
     images: ['images/bc1.jpg', 'images/bc2.jpg', 'images/bc3.jpg'],
     rrp: 22.00,
     oldPrice: 25.00,
@@ -73,7 +73,7 @@ const PRODUCTS_DATA = [
     id: 'P5',
     name: 'RedVelvet Button',
     title: 'RedVelvet Button',
-    img_url: 'images/p5-1.jpg',
+    img_url: 'images/rv1.jpg',
     images: ['images/rv1.jpg', 'images/rv2.jpg', 'images/rv3.jpg'],
     rrp: 22.00,
     oldPrice: 24.00,
@@ -87,7 +87,7 @@ const PRODUCTS_DATA = [
     id: 'P6',
     name: 'DarkChoc Cookies',
     title: 'DarkChoc Cookies (70pcs)',
-    img_url: 'images/p6-1.jpg',
+    img_url: 'images/dc1.jpg',
     images: ['images/dc1.jpg', 'images/dc2.jpg', 'images/dc3.jpg'],
     rrp: 22.00,
     oldPrice: 24.00,
