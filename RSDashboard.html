@@ -29,7 +29,8 @@
     .nav-list a{text-decoration:none;color:var(--accent);padding:10px 15px;border-radius:6px;transition:background-color .2s;font-weight:600;}
     .nav-list a:hover{background-color:rgba(255,255,255,0.2)}
 
-    .container{max-width:1200px;margin:30px auto;padding:0 20px}
+    /* FIX: Changed margin to 0 auto to resolve layout overlap issue */
+    .container{max-width:1200px;margin:0 auto;padding:0 20px}
     .section{padding:40px 0;border-bottom:1px solid rgba(0,0,0,0.08)}
     
     /* Responsive Product Grid */
@@ -101,7 +102,7 @@
 <body>
 
   <header class="site-header">
-    <img src="https://placehold.co/1200x300/F4EAE0/6C4920?text=Pipah+Cookies+Reseller+Portal+%7C+Jana+Keuntungan" alt="Header Image" class="header-img">
+    <img id="header-banner" src="images/Header2.jpg" alt="Header Image" class="header-img">
   </header>
 
   <nav class="site-nav">
@@ -118,19 +119,16 @@
     <section id="products" class="section">
       <h2 class="text-center text-3xl mb-8">Senarai Produk & Harga Runcit Disyorkan (RRP)</h2>
       <div id="product-list" class="products">
-        <!-- Products will be dynamically loaded here -->
-      </div>
+        </div>
     </section>
 
     <section id="bulk" class="section">
       <h2 class="text-center text-3xl">Struktur Tiers Harga Reseller (Kos Anda)</h2>
-      <div id="tier-info" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center max-w-5xl mx-auto">
-        <!-- Tier information will be dynamically generated here -->
-      </div>
+      <div id="tier-info" class="grid grid-cols-3 gap-6 justify-center max-w-5xl mx-auto">
+        </div>
       <p class="text-center text-gray-500 mt-6 text-sm">Sila gunakan Kalkulator Keuntungan untuk mengira kos sebenar anda.</p>
     </section>
     
-    <!-- MULTI-PRODUCT SALES LINK GENERATOR SECTION -->
     <section id="generator" class="section bg-accent p-8 rounded-2xl shadow-xl">
       <h2 class="text-center text-3xl" style="color:var(--whatsapp);"><i class="fas fa-share-alt"></i> Jana Pautan Jualan Anda</h2>
       <p class="text-center text-gray-600 mb-8">
@@ -147,10 +145,8 @@
         
         <h3 class="text-xl font-semibold text-center mb-4 text-primary-dark">Pilih Produk & Tetapkan Harga Jualan Runcit (RM)</h3>
         
-        <!-- Combined Product Selection and Price Setting Grid -->
         <div id="generator-product-grid" class="generator-grid">
-            <!-- Product cards for generator will be dynamically loaded here -->
-        </div>
+            </div>
 
         <div class="text-center my-8">
           <button onclick="generateLink()" class="btn whatsapp-btn text-lg w-full py-4 shadow-lg hover:shadow-xl">
@@ -165,8 +161,6 @@
         </div>
       </div>
     </section>
-    <!-- END SALES LINK GENERATOR SECTION -->
-
     <section id="contact" class="section">
       <h2 class="text-center text-3xl">Hubungi Ibu Pejabat</h2>
       <p class="text-center text-gray-600 mb-6">Jika anda memerlukan bantuan, bertanya tentang stok, atau menghadapi isu teknikal.</p>
@@ -179,7 +173,6 @@
 
   </div>
 
-  <!-- FLOATING PROFIT CALCULATOR FAB START -->
   <div class="fab-container">
     <button class="fab-btn shadow-xl" onclick="toggleCalculator()">
       <i class="fas fa-calculator"></i>
@@ -193,8 +186,7 @@
       <div class="input-group">
         <label for="calcProduct">Pilih Produk</label>
         <select id="calcProduct" onchange="calculateProfit()">
-          <!-- Options loaded dynamically -->
-        </select>
+          </select>
       </div>
 
       <div class="input-group">
@@ -217,9 +209,11 @@
       <button class="close-btn" onclick="toggleCalculator()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5em;color:var(--muted);"><i class="fas fa-times"></i></button>
     </div>
   </div>
-  <!-- FLOATING PROFIT CALCULATOR FAB END -->
-
   <script>
+   // --- Configuration Variable: CHANGE THIS URL TO UPDATE YOUR HEADER IMAGE ---
+   const HEADER_IMAGE_URL = 'images/Header2.jpg';
+   // -------------------------------------------------------------------------
+   
    // --- PRODUCT DATA DEFINITION (Single Source of Truth) ---
    // Note: The structure is changed to include 'tiers' for the calculator and 'oldPrice' as RRP
     const PRODUCTS_DATA = [
@@ -306,6 +300,9 @@
     
     // --- UI SETUP ---
     document.addEventListener('DOMContentLoaded', () => {
+      // Set the header image source using the config variable
+      document.getElementById('header-banner').src = HEADER_IMAGE_URL; 
+      
       loadProductList();
       loadGeneratorGrid();
       loadCalculatorOptions();
@@ -334,11 +331,11 @@
 
         container.innerHTML = exampleProducts.map(p => `
             <div class="card text-left p-4 bg-white border border-primary/20">
-                <h4 class="text-lg font-semibold text-primary-dark">${p.name}</h4>
+                <h4 class="text-base font-semibold text-primary-dark">${p.name}</h4>
                 <p class="text-xs text-gray-500 mb-3">RRP: RM ${p.rrp.toFixed(2)}</p>
                 <ul class="list-none p-0">
                     ${p.tiers.map(t => `
-                        <li class="flex justify-between text-sm py-1 border-b border-dashed border-gray-100 last:border-b-0">
+                        <li class="flex justify-between text-xs py-1 border-b border-dashed border-gray-100 last:border-b-0">
                             <span class="font-medium">${t.name.split('(')[0].trim()} (${t.max === Infinity ? t.max + '+' : '1-' + t.max} unit)</span>
                             <span class="font-bold text-green-600">RM ${t.price.toFixed(2)}</span>
                         </li>
@@ -526,4 +523,3 @@
   </script>
 </body>
 </html>
-
