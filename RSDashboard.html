@@ -13,6 +13,7 @@
       --primary-dark: #6C4920; /* Darker Brown for Text/Headers */
       --accent: #F4EAE0; /* Soft Beige/Cream Background */
       --whatsapp: #25d366;
+      --sea-blue: #0ea5e9; /* New Sea Blue for highlight */
       --bg: #F9F7F5; /* Very Light Beige Background */
       --card: #ffffff;
       --muted: #888888;
@@ -29,31 +30,24 @@
     .nav-list a{text-decoration:none;color:var(--accent);padding:10px 15px;border-radius:6px;transition:background-color .2s;font-weight:600;}
     .nav-list a:hover{background-color:rgba(255,255,255,0.2)}
 
-    /* FIX: Changed margin to 0 auto to resolve layout overlap issue */
     .container{max-width:1200px;margin:0 auto;padding:0 20px}
     .section{padding:40px 0;border-bottom:1px solid rgba(0,0,0,0.08)}
     
-    /* Responsive Product Grid */
-    .products, .generator-grid {
+    /* Responsive Product Grid (General Product List) */
+    .products {
         display: grid;
-        grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+        grid-template-columns: repeat(2, 1fr); 
         gap: 20px;
         justify-content: center;
     }
     @media (min-width: 768px) {
         .products {
-            grid-template-columns: repeat(3, 1fr); /* 3 columns on tablet */
-        }
-        .generator-grid {
-            grid-template-columns: repeat(3, 1fr); /* 3 columns on tablet */
+            grid-template-columns: repeat(3, 1fr); 
         }
     }
     @media (min-width: 1024px) {
         .products {
-            grid-template-columns: repeat(4, 1fr); /* 4 columns on desktop */
-        }
-        .generator-grid {
-            grid-template-columns: repeat(4, 1fr); /* 4 columns on desktop */
+            grid-template-columns: repeat(4, 1fr); 
         }
     }
 
@@ -62,24 +56,128 @@
     
     /* Specific Card for Generator */
     .generator-card {
-        padding: 15px;
         border: 2px solid #e0e0e0;
         position: relative;
     }
     .generator-card.selected {
-        border-color: var(--whatsapp);
-        box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
+        border-color: var(--sea-blue); 
+        box-shadow: 0 0 15px rgba(14, 165, 233, 0.4); 
     }
     .card-checkbox {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 24px;
-        height: 24px;
+        top: 6px; 
+        right: 6px; 
+        width: 20px; 
+        height: 20px;
         cursor: pointer;
         z-index: 10;
-        accent-color: var(--whatsapp); /* Style the checkbox itself */
+        accent-color: var(--sea-blue); 
     }
+
+    /* Grid container for 3-in-row layout */
+    .generator-grid-3-in-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on small screens */
+        gap: 15px; 
+        padding: 10px 0;
+    }
+    @media (min-width: 640px) {
+        .generator-grid-3-in-row {
+            grid-template-columns: repeat(3, 1fr); /* 3 columns on medium screens */
+        }
+    }
+    @media (min-width: 1024px) {
+        .generator-grid-3-in-row {
+            grid-template-columns: repeat(4, 1fr); /* 4 columns on desktop for better scaling */
+        }
+    }
+    
+    /* Compact Card Style for Generator Grid */
+    .generator-card-grid {
+        display: flex;
+        flex-direction: column; 
+        align-items: center;
+        text-align: center;
+        background: var(--card);
+        border-radius: 10px; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        transition: transform .2s;
+        height: 100%; 
+        padding: 12px; 
+    }
+    .generator-card-grid:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,0.1);}
+
+    .generator-card-grid img {
+        width: 55px !important; 
+        height: 55px !important; 
+        margin-bottom: 8px !important;
+        margin-right: 0 !important;
+        margin-top: 5px; 
+    }
+    
+    .generator-card-grid .product-details {
+        flex-grow: 1;
+        min-height: 40px; 
+        margin-bottom: 5px;
+    }
+
+    .generator-card-grid .input-group {
+        margin-top: 5px; 
+        width: 100%;
+        margin-bottom: 0;
+        text-align: center;
+    }
+
+    .generator-card-grid .product-details h4 {
+        font-size: 0.9em; 
+        margin-bottom: 2px;
+    }
+
+    .generator-card-grid .input-group input {
+        text-align: center;
+        padding: 4px !important; 
+        font-size: 1em !important; 
+        font-weight: 700;
+    }
+    
+    .generator-card-grid .input-group label {
+        font-size: 0.7em; 
+        font-weight: 500;
+        color: var(--muted);
+    }
+
+    .generator-card-grid.selected {
+        border-width: 3px; 
+    }
+
+    
+    /* Tier Product Button Style */
+    .tier-product-btn {
+        display: block;
+        padding: 20px 10px;
+        background: #fdfdfd;
+        border-radius: 10px;
+        border: 2px solid var(--accent);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        transition: all 0.2s;
+        transform: perspective(1px) translateZ(0);
+    }
+    .tier-product-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+        border-color: var(--primary);
+    }
+    .tier-product-btn img {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 8px;
+    }
+    .tier-product-btn h4 {
+        font-size: 1em;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    
 
     .btn{display:inline-block;padding:12px 25px;border-radius:8px;text-decoration:none;font-weight:600;transition:all .2s;text-align:center;border:none;}
     .primary-btn{background:var(--primary);color:#fff}
@@ -124,11 +222,25 @@
 
     <section id="bulk" class="section">
       <h2 class="text-center text-3xl">Struktur Tiers Harga Reseller (Kos Anda)</h2>
-      <div id="tier-info" class="grid grid-cols-3 gap-6 justify-center max-w-5xl mx-auto">
+      
+      <div id="tier-product-buttons" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 justify-center max-w-5xl mx-auto">
         </div>
-      <p class="text-center text-gray-500 mt-6 text-sm">Sila gunakan Kalkulator Keuntungan untuk mengira kos sebenar anda.</p>
+      
+      <p class="text-center text-gray-500 mt-6 text-sm">Klik produk di atas untuk melihat struktur tiers harga.</p>
     </section>
     
+    <div id="tierModal" class="calculator-modal" onclick="closeModal(event)">
+        <div class="calculator-content" onclick="event.stopPropagation()" style="max-width: 500px;">
+            <h3 class="text-center text-2xl mb-5" id="tierModalTitle">Struktur Tiers Harga: -</h3>
+
+            <div id="product-tiers-list" class="my-4">
+                </div>
+            
+            <p class="text-sm text-gray-700 mt-5">Sila gunakan Kalkulator Keuntungan untuk mengira kos sebenar anda.</p>
+
+            <button class="close-btn" onclick="closeTierModal()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5em;color:var(--muted);"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
     <section id="generator" class="section bg-accent p-8 rounded-2xl shadow-xl">
       <h2 class="text-center text-3xl" style="color:var(--whatsapp);"><i class="fas fa-share-alt"></i> Jana Pautan Jualan Anda</h2>
       <p class="text-center text-gray-600 mb-8">
@@ -145,7 +257,7 @@
         
         <h3 class="text-xl font-semibold text-center mb-4 text-primary-dark">Pilih Produk & Tetapkan Harga Jualan Runcit (RM)</h3>
         
-        <div id="generator-product-grid" class="generator-grid">
+        <div id="generator-product-grid" class="generator-grid-3-in-row">
             </div>
 
         <div class="text-center my-8">
@@ -155,7 +267,7 @@
         </div>
 
         <div id="generatedLinkContainer" class="hidden mt-6 bg-white p-5 rounded-lg border-l-4 border-whatsapp shadow-inner">
-          <p class="font-bold text-green-700 mb-3 text-center">Pautan Jualan Anda Berjaya Dijana & Disalin! (OrderNow.html-...)</p>
+          <p class="font-bold text-green-700 mb-3 text-center">Pautan Jualan Anda Berjaya Dijana & Disalin! (index.html-...)</p>
           <input type="text" id="salesLink" readonly class="w-full p-3 border-dashed border-gray-400 rounded-md text-sm text-center cursor-pointer bg-gray-50" onclick="copyLink()">
           <a id="testLink" href="#" target="_blank" class="block mt-4 text-center text-sm text-primary hover:underline font-medium">Cuba Pautan Ini Dalam Tab Baru <i class="fas fa-external-link-alt"></i></a>
         </div>
@@ -165,7 +277,7 @@
       <h2 class="text-center text-3xl">Hubungi Ibu Pejabat</h2>
       <p class="text-center text-gray-600 mb-6">Jika anda memerlukan bantuan, bertanya tentang stok, atau menghadapi isu teknikal.</p>
       <div class="text-center">
-        <a href="https://wa.me/6019XXXXXXX" class="btn whatsapp-btn text-lg shadow-md" target="_blank">
+        <a id="hq-whatsapp-link" href="#" class="btn whatsapp-btn text-lg shadow-md" target="_blank">
           <i class="fab fa-whatsapp"></i> WhatsApp HQ Support
         </a>
       </div>
@@ -218,12 +330,13 @@
    document.addEventListener('DOMContentLoaded', () => {
      // Set the header image source using the config variable
      document.getElementById('header-banner').src = window.HEADER_IMAGE_URL; 
+     document.getElementById('hq-whatsapp-link').href = `https://wa.me/${window.HQ_WHATSAPP_NUMBER}`;
      
      loadProductList();
-     loadGeneratorGrid();
+     loadTierProductButtons();
+     loadGeneratorGrid(); 
      loadCalculatorOptions();
-     loadTierInfo();
-     calculateProfit(); // Initial calculation for FAB
+     calculateProfit(); 
    });
 
    // Loads product cards (for info section)
@@ -240,44 +353,67 @@
      `).join('');
    }
 
-   // Loads tier details into the Bulk section
-   function loadTierInfo() {
-       const container = document.getElementById('tier-info');
-       const exampleProducts = window.PRODUCTS_DATA.slice(0, 3); // Guna 3 produk pertama sebagai contoh
-
-       container.innerHTML = exampleProducts.map(p => `
-           <div class="card text-left p-4 bg-white border border-primary/20">
-               <h4 class="text-base font-semibold text-primary-dark">${p.name}</h4>
-               <p class="text-xs text-gray-500 mb-3">RRP: RM ${p.rrp.toFixed(2)}</p>
-               <ul class="list-none p-0">
-                   ${p.tiers.map(t => `
-                       <li class="flex justify-between text-xs py-1 border-b border-dashed border-gray-100 last:border-b-0">
-                           <span class="font-medium">${t.name.split('(')[0].trim()} (${t.max === Infinity ? '100+' : '1-' + t.max} unit)</span>
-                           <span class="font-bold text-green-600">RM ${t.price.toFixed(2)}</span>
-                       </li>
-                   `).join('')}
-               </ul>
-           </div>
+   // Loads product buttons for the Tier Modal
+   function loadTierProductButtons() {
+       const container = document.getElementById('tier-product-buttons');
+       container.innerHTML = window.PRODUCTS_DATA.map(p => `
+           <button class="tier-product-btn text-center" onclick="openTierModal('${p.id}')">
+               <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/60x60/A67734/ffffff?text=IMG';" class="w-16 h-16 object-cover rounded-full mx-auto shadow-md border-2 border-primary/20" alt="${p.name}">
+               <h4>${p.name}</h4>
+               <p class="text-xs text-gray-500 mt-1">RRP: RM ${p.rrp.toFixed(2)}</p>
+           </button>
        `).join('');
    }
+   
+   // Opens the Tier Modal
+   function openTierModal(productId) {
+       const modal = document.getElementById('tierModal');
+       const title = document.getElementById('tierModalTitle');
+       const listContainer = document.getElementById('product-tiers-list');
+       const product = window.PRODUCTS_DATA.find(p => p.id === productId);
 
+       if (!product) return;
 
-   // Loads the combined product selection and price setting grid
+       title.textContent = `Struktur Tiers Harga: ${product.name}`;
+       
+       listContainer.innerHTML = product.tiers.map(t => `
+           <div class="flex justify-between items-center p-3 my-2 rounded-lg ${t.max === Infinity ? 'bg-green-100 border-l-4 border-green-500' : 'bg-white border'}">
+               <div>
+                   <span class="font-bold text-primary-dark">${t.name}</span>
+                   <p class="text-xs text-gray-500">${t.min} - ${t.max === Infinity ? 'Infinity' : t.max} unit</p>
+               </div>
+               <span class="text-xl font-bold text-whatsapp">RM ${t.price.toFixed(2)}</span>
+           </div>
+       `).join('');
+       
+       modal.classList.add('open');
+       modal.style.display = 'flex';
+   }
+   
+   function closeTierModal() {
+       const modal = document.getElementById('tierModal');
+       modal.classList.remove('open');
+       setTimeout(() => modal.style.display = 'none', 300);
+   }
+
+   // Loads the combined product selection and price setting grid (COMPACT)
    function loadGeneratorGrid() {
      const container = document.getElementById('generator-product-grid');
      // Menggunakan window.PRODUCTS_DATA dari fail config
      container.innerHTML = window.PRODUCTS_DATA.map((p, index) => `
-       <div id="card_${p.id}" class="generator-card card ${index < 3 ? 'selected' : ''}">
+       <div id="card_${p.id}" class="generator-card generator-card-grid ${index < 3 ? 'selected' : ''}">
            <input type="checkbox" id="check_${p.id}" value="${p.id}" ${index < 3 ? 'checked' : ''} class="card-checkbox" onchange="toggleCardSelection('${p.id}')">
            
-           <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/60x60/A67734/ffffff?text=P';" class="w-16 h-16 object-cover rounded-full mb-3 mx-auto shadow-md border-2 border-accent" alt="${p.name}">
+           <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/55x55/A67734/ffffff?text=IMG';" class="w-14 h-14 object-cover rounded-full shadow-md border-2 border-accent" alt="${p.name}">
            
-           <h4 class="text-md text-center font-semibold mb-1">${p.name}</h4>
-           <p class="text-xs text-gray-500 mb-3">RRP: RM ${p.rrp.toFixed(2)}</p>
+           <div class="product-details">
+                <h4 class="font-semibold">${p.name}</h4>
+                <p class="text-xs text-gray-500">RRP: RM ${p.rrp.toFixed(2)}</p>
+           </div>
 
            <div class="input-group">
-               <label for="price_${p.id}" class="text-xs font-medium text-primary-dark text-left">Harga Jual Anda (RM)</label>
-               <input type="number" id="price_${p.id}" step="0.50" min="1" value="${p.rrp.toFixed(2)}" class="w-full text-center p-2 text-lg font-bold">
+               <label for="price_${p.id}" class="">Harga Jual (RM)</label>
+               <input type="number" id="price_${p.id}" step="0.50" min="1" value="${p.rrp.toFixed(2)}" class="w-full">
            </div>
        </div>
      `).join('');
@@ -293,7 +429,7 @@
        }
    }
    
-   // --- SALES LINK GENERATOR LOGIC ---
+   // --- SALES LINK GENERATOR LOGIC (Unchanged) ---
    function generateLink() {
      const whatsapp = document.getElementById('whatsappNumber').value.trim();
      const linkContainer = document.getElementById('generatedLinkContainer');
@@ -329,7 +465,7 @@
          return;
      }
      
-     // FORMAT PENTING BARU: rs_wa, p_ids, p_prices 
+         // FORMAT PENTING BARU: rs_wa, p_ids, p_prices 
      const params = `rs_wa=${whatsapp}&p_ids=${selectedIds.join(',')}&p_prices=${selectedPrices.join(',')}`;
 
      const customerFormFile = 'index.html'; // Pautan ke index.html (portal pelanggan)
@@ -395,7 +531,7 @@
    }
 
    
-   // --- PROFIT CALCULATOR LOGIC ---
+   // --- PROFIT CALCULATOR LOGIC (Unchanged) ---
    function loadCalculatorOptions() {
        const select = document.getElementById('calcProduct');
        // Menggunakan window.PRODUCTS_DATA dari fail config
@@ -444,6 +580,9 @@
    function closeModal(event) {
        if (event.target.id === 'calculatorModal') {
            toggleCalculator();
+       }
+       if (event.target.id === 'tierModal') {
+           closeTierModal();
        }
    }
   </script>
