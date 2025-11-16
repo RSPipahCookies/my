@@ -1,19 +1,19 @@
 // Basic service worker for caching shell assets. Keep it simple and robust.
 const CACHE_NAME = 'pipah-reseller-cache-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/reseller-manifest.json',
-  '/images/rsheader.png',
-  '/images/rs512.png', 
-  '/images/rs194.png', // Tambah ikon PWA ke aset cache
+  './',
+  './index.html',
+  './reseller-manifest.json',
+  './images/rsheader.png',
+  './images/rs512.png', 
+  './images/rs194.png', // Tambah ikon PWA ke aset cache
   // common product images (if present)
-  '/images/ss1.jpg','/images/ss2.jpg','/images/ss3.jpg',
-  '/images/ch1.jpg','/images/ch2.jpg','/images/ch3.jpg',
-  '/images/br1.jpg','/images/br2.jpg','/images/br3.jpg',
-  '/images/bc1.jpg','/images/bc2.jpg','/images/bc3.jpg',
-  '/images/rv1.jpg','/images/rv2.jpg','/images/rv3.jpg',
-  '/images/dc1.jpg','/images/dc2.jpg','/images/dc3.jpg'
+  './images/ss1.jpg','./images/ss2.jpg','./images/ss3.jpg',
+  './images/ch1.jpg','./images/ch2.jpg','./images/ch3.jpg',
+  './images/br1.jpg','./images/br2.jpg','./images/br3.jpg',
+  './images/bc1.jpg','./images/bc2.jpg','./images/bc3.jpg',
+  './images/rv1.jpg','./images/rv2.jpg','./images/rv3.jpg',
+  './images/dc1.jpg','./images/dc2.jpg','./images/dc3.jpg'
 ];
 
 // 1. Install Event: Cache all the defined assets
@@ -52,7 +52,7 @@ self.addEventListener('fetch', (event) => {
       fetch(req).catch(()=> {
         console.log('[Service Worker] Navigation failed, serving offline page.');
         // Fallback to the main HTML page for offline navigation
-        return caches.match('/index.html'); 
+        return caches.match('./index.html'); 
       })
     );
     return;
