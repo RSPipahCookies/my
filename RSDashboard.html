@@ -205,8 +205,7 @@
 
   <nav class="site-nav">
     <ul class="nav-list">
-      <li><a href="#products">Produk</a></li>
-      <li><a href="#bulk">Tiers Harga</a></li>
+      <li><a href="#products">Produk & Tiers</a></li>
       <li><a href="#generator">Jana Jualan</a></li>
       <li><a href="#contact">Hubungi Kami</a></li>
     </ul>
@@ -216,17 +215,9 @@
 
     <section id="products" class="section">
       <h2 class="text-center text-3xl mb-8">Senarai Produk & Harga Runcit Disyorkan (RRP)</h2>
+      <p class="text-center text-gray-500 mb-6 text-sm">Klik pada produk untuk melihat struktur tiers harga reseller (kos anda).</p>
       <div id="product-list" class="products">
         </div>
-    </section>
-
-    <section id="bulk" class="section">
-      <h2 class="text-center text-3xl">Struktur Tiers Harga Reseller (Kos Anda)</h2>
-      
-      <div id="tier-product-buttons" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 justify-center max-w-5xl mx-auto">
-        </div>
-      
-      <p class="text-center text-gray-500 mt-6 text-sm">Klik produk di atas untuk melihat struktur tiers harga.</p>
     </section>
     
     <div id="tierModal" class="calculator-modal" onclick="closeModal(event)">
@@ -249,8 +240,8 @@
 
       <div class="max-w-4xl mx-auto">
         <div class="input-group">
-          <label for="whatsappNumber">Nombor WhatsApp Anda (e.g. 60123456789)</label>
-          <input type="tel" id="whatsappNumber" placeholder="Sila masukkan nombor WhatsApp penuh" value="60123456789" class="shadow-sm">
+          <label for="whatsappNumber">Nombor WhatsApp Anda (e.g. 01163962328)</label>
+          <input type="tel" id="whatsappNumber" placeholder="Sila masukkan nombor WhatsApp penuh" value="01163962328" class="shadow-sm">
         </div>
 
         <hr class="my-6 border-primary/20">
@@ -330,10 +321,13 @@
    document.addEventListener('DOMContentLoaded', () => {
      // Set the header image source using the config variable
      document.getElementById('header-banner').src = window.HEADER_IMAGE_URL; 
-     document.getElementById('hq-whatsapp-link').href = `https://wa.me/${window.HQ_WHATSAPP_NUMBER}`;
+     
+     // DIUBAH: Menggunakan nombor HQ WhatsApp yang sudah diubah formatnya (tanpa 60)
+     const hqWa = window.HQ_WHATSAPP_NUMBER;
+     const formattedHqWa = hqWa.startsWith('60') ? hqWa.substring(2) : hqWa; 
+     document.getElementById('hq-whatsapp-link').href = `https://wa.me/60${formattedHqWa}`; // WA link requires country code, so we ensure 60 is used here.
      
      loadProductList();
-     loadTierProductButtons();
      loadGeneratorGrid(); 
      loadCalculatorOptions();
      calculateProfit(); 
@@ -344,7 +338,7 @@
      const container = document.getElementById('product-list');
      // Menggunakan window.PRODUCTS_DATA dari fail config
      container.innerHTML = window.PRODUCTS_DATA.map(p => `
-       <div class="card flex flex-col items-center">
+       <div class="card flex flex-col items-center cursor-pointer" onclick="openTierModal('${p.id}')">
          <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-24 h-24 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
          <h3 class="text-lg text-center">${p.name}</h3>
          <p class="text-sm text-gray-700">RRP: <strong style="color:var(--primary); font-size:1.1em;">RM ${p.rrp.toFixed(2)}</strong></p>
@@ -353,18 +347,6 @@
      `).join('');
    }
 
-   // Loads product buttons for the Tier Modal
-   function loadTierProductButtons() {
-       const container = document.getElementById('tier-product-buttons');
-       container.innerHTML = window.PRODUCTS_DATA.map(p => `
-           <button class="tier-product-btn text-center" onclick="openTierModal('${p.id}')">
-               <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/60x60/A67734/ffffff?text=IMG';" class="w-16 h-16 object-cover rounded-full mx-auto shadow-md border-2 border-primary/20" alt="${p.name}">
-               <h4>${p.name}</h4>
-               <p class="text-xs text-gray-500 mt-1">RRP: RM ${p.rrp.toFixed(2)}</p>
-           </button>
-       `).join('');
-   }
-   
    // Opens the Tier Modal
    function openTierModal(productId) {
        const modal = document.getElementById('tierModal');
@@ -429,9 +411,9 @@
        }
    }
    
-   // --- SALES LINK GENERATOR LOGIC (Unchanged) ---
+   // --- SALES LINK GENERATOR LOGIC (DIUBAH) ---
    function generateLink() {
-     const whatsapp = document.getElementById('whatsappNumber').value.trim();
+     let whatsapp = document.getElementById('whatsappNumber').value.trim();
      const linkContainer = document.getElementById('generatedLinkContainer');
      const salesLinkInput = document.getElementById('salesLink');
      const testLink = document.getElementById('testLink');
@@ -441,6 +423,11 @@
        return;
      }
 
+     // Tambah prefix '60' jika nombor tidak bermula dengannya (standard WhatsApp format)
+     if (!whatsapp.startsWith('60') && !whatsapp.startsWith('+60')) {
+        whatsapp = '60' + whatsapp.replace(/^0+/, ''); // Buang '0' di depan dan tambah '60'
+     }
+     
      let selectedIds = [];
      let selectedPrices = [];
 
@@ -475,7 +462,7 @@ const customerFormFile = 'OrderNow.html'; // Pautan ke borang pesanan pelanggan
      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
      const fullUrl = `${baseUrl}${fullLink}`;
 
-     // Save Reseller WA and Prices to Local Storage (Fallback for Customer Portal)
+          // Save Reseller WA and Prices to Local Storage (Fallback for Customer Portal)
      localStorage.setItem('loggedInResellerWa', whatsapp);
      
      const priceMap = {};
@@ -586,5 +573,3 @@ const customerFormFile = 'OrderNow.html'; // Pautan ke borang pesanan pelanggan
   </script>
 </body>
 </html>
-
-         
