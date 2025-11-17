@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="ms">
 <head>
+  <link rel="apple-touch-icon" href="images/rs194.png">
+  <link rel="manifest" href="reseller-manifest.json">
+  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PipahCookies — Reseller Portal (Demo)</title>
-<link rel="apple-touch-icon" href="images/rs194.png">
-  <link rel="manifest" href="reseller-manifest.json">
 
   <style>
  /* Theme variables */
@@ -170,44 +171,7 @@
 @keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 .fade-up{opacity:0;animation:fadeInUp .9s forwards}
 
-/* PWA Install Popup Styles */
-#pipahInstallPopup {
-  position: fixed;
-  bottom: -70px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,248,242,0.92);
-  border: 1.5px solid var(--primary,#A67734);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  padding: 8px 18px;
-  font-family: "Poppins",sans-serif;
-  text-align: center;
-  z-index: 9999;
-  display: none;
-  transition: bottom .4s ease, opacity .4s ease;
-  opacity: 0;
-}
-#pipahInstallPopup.show {
-  display: block;
-  bottom: 20px;
-  opacity: 1;
-}
-#pipahInstallPopup p {
-  color: var(--primary,#A67734);
-  font-weight: 600;
-  margin: 0;
-  cursor: pointer;
-}
-#pipahInstallPopup .closeBtn {
-  position: absolute;
-  top: 2px;
-  right: 8px;
-  font-size: 16px;
-  color: #666;
-  cursor: pointer;
-}
-  </style>
+</style>
 </head>
 <body>
 
@@ -444,6 +408,44 @@ function showCheckoutForm(){ document.getElementById('checkout-form').classList.
 function sendOrder(){ const name = document.getElementById('full-name').value.trim(); if(!name){ alert('Sila isi nama.'); return; } const itemsText = cart.map(i=> `${i.qty}x ${i.name} RM${i.unitPrice}`).join('\n'); const total = cart.reduce((s,i)=> s + i.qty*i.unitPrice,0).toFixed(2); const text = `Order ${getNextOrderNumber()}\nName: ${name}\nItems:\n${itemsText}\nTotal: RM${total}`; window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`,'_blank'); }
    
 </script>
+<style>
+#pipahInstallPopup {
+  position: fixed;
+  bottom: -70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,248,242,0.92);
+  border: 1.5px solid var(--primary,#A67734);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 8px 18px;
+  font-family: "Poppins",sans-serif;
+  text-align: center;
+  z-index: 9999;
+  display: none;
+  transition: bottom .4s ease, opacity .4s ease;
+  opacity: 0;
+}
+#pipahInstallPopup.show {
+  display: block;
+  bottom: 20px;
+  opacity: 1;
+}
+#pipahInstallPopup p {
+  color: var(--primary,#A67734);
+  font-weight: 600;
+  margin: 0;
+  cursor: pointer;
+}
+#pipahInstallPopup .closeBtn {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+}
+</style>
 
 <div id="pipahInstallPopup">
   <span class="closeBtn" onclick="closePipahPopup()">×</span>
@@ -455,18 +457,7 @@ let deferredPrompt = null;
 let installReady = false;
 let isInstalled = false;
 
-// Register the Service Worker - CHANGED TO RELATIVE PATH
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').then(reg => {
-      console.log('Service Worker registered: ', reg);
-    }).catch(err => {
-      console.error('Service Worker registration failed: ', err);
-    });
-  });
-}
-
-// Detect if app already installed
+// ✅ Detect if app already installed
 window.addEventListener("appinstalled", () => {
   isInstalled = true;
   localStorage.setItem("pipahInstalled", "true");
@@ -476,14 +467,14 @@ if (window.matchMedia('(display-mode: standalone)').matches || localStorage.getI
   isInstalled = true;
 }
 
-// Catch browser install prompt
+// ✅ Catch browser install prompt
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
   installReady = true;
 });
 
-// Update popup text based on device & availability
+// ✅ Update popup text based on device & availability
 function updateInstallText() {
   const text = document.getElementById("pipahInstallText");
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -504,12 +495,12 @@ function updateInstallText() {
       closePipahPopup();
     };
   } else {
-    text.textContent = "Install PipahCookies now";
+    text.textContent = "Install RS Portal now";
     text.onclick = () => alert("Use Chrome, Edge, or Brave to install PipahCookies.");
   }
 }
 
-// Show popup after 5 seconds if not installed
+// ✅ Show popup after 5 seconds if not installed
 window.addEventListener("load", () => {
   if (!isInstalled) {
     setTimeout(() => {
@@ -521,7 +512,7 @@ window.addEventListener("load", () => {
   }
 });
 
-// Close button function
+// ✅ Close button function
 function closePipahPopup() {
   const popup = document.getElementById("pipahInstallPopup");
   popup.classList.remove("show");
@@ -529,6 +520,19 @@ function closePipahPopup() {
 }
 </script>
 
+
+<script>
+  // Register the Service Worker - CHANGED TO RELATIVE PATH
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').then(reg => {
+      console.log('Service Worker registered: ', reg);
+    }).catch(err => {
+      console.error('Service Worker registration failed: ', err);
+    });
+  });
+}
+</script>
 
 </body>
 </html>
