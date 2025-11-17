@@ -188,17 +188,18 @@
     updateTotals();
   }
 
-  function updateTotals() {
+    function updateTotals() {
     let grandTotal = 0;
-    // Use the final price map for calculation
-    const priceMap = getFinalPriceMap(); 
-
+    
+    // TIDAK PERLU MEMANGGIL getFinalPriceMap() LAGI.
+    
     PRODUCTS_BASE.forEach(product => {
         const qtyEl = document.getElementById(`qty-${product.id}`);
         if (qtyEl) {
             const qty = parseInt(qtyEl.textContent);
-            // Must check if the product ID exists in the priceMap (only selected products are there)
-            const price = priceMap[product.id] || 0; 
+            // AMBIL HARGA DARIPADA ATRIBUT data-price ELEMENT SPAN KUANTITI
+            const price = parseFloat(qtyEl.getAttribute('data-price')) || 0; 
+            
             grandTotal += qty * price;
         }
     });
