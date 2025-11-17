@@ -1,20 +1,21 @@
 // Basic service worker for caching shell assets. Keep it simple and robust.
-const CACHE_NAME = 'pipah-reseller-cache-v5'; // <--- VERSI DINAiKKAN untuk memaksa pembersihan cache.
+const CACHE_NAME = 'pipah-reseller-cache-v3'; // PENTING: Versi Dinaikkan ke v3 untuk memaksa Service Worker cache semula
 const ASSETS = [
   '/', // The root URL is crucial for installed PWA launches
   '/index.html',
   '/reseller-manifest.json',
   
-  // --- Essential HTML & JS Pages for Offline Access ---
-  '/pipah-product-config.js', // DITAMBAH: Fail konfigurasi penting.
-  '/reseller-checkout.html', 
-  '/gambar2reseller.html', 
-  '/RSDashboard.html',
+  // --- Essential HTML Pages for Offline Access ---
+  '/reseller-checkout.html',
+  '/gambar2reseller.html',
+  
+  // --- KRITIKAL: Tambahkan fail konfigurasi produk yang hilang ---
+  '/pipah-product-config.js',
 
   // --- Images and other Assets from the original list ---
   '/images/rsheader.png',
-  '/images/rs512.png', 
-  '/images/rs194.png', 
+  '/images/rs512.png',
+  '/images/rs194.png',
   // common product images (if present)
   '/images/ss1.jpg','/images/ss2.jpg','/images/ss3.jpg',
   '/images/ch1.jpg','/images/ch2.jpg','/images/ch3.jpg',
@@ -26,63 +27,52 @@ const ASSETS = [
 
 // 1. Install Event: Cache all the defined assets
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Install Event: Caching assets...');
+  console.log('[Service Worker] Install Event: Caching static assets.');
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Pre-caching all assets.');
-      return cache.addAll(ASSETS);
-    }).catch(err => {
-        console.error('[Service Worker] Failed to pre-cache assets:', err);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS))
+      .catch((err) => console.error('[Service Worker] Caching failed:', err))
   );
-  // Forces the waiting service worker to become the active service worker immediately
-  self.skipWaiting(); 
+  // Forces the waiting service worker to become the active service worker
+  self.skipWaiting();
 });
 
 // 2. Activate Event: Clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activate Event: Cleaning old caches...');
-  const cacheWhitelist = [CACHE_NAME];
+  console.log('[Service Worker] Activate Event: Cleaning old caches.');
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            console.log(`[Service Worker] Deleting old cache: ${cacheName}`);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then(keys => Promise.all(keys.map(k => {
+      // Delete old caches that do not match the current CACHE_NAME
+      if(k !== CACHE_NAME) {
+        console.log(`[Service Worker] Deleting old cache: ${k}`);
+        return caches.delete(k);
+      }
+    })))
   );
+  // Takes control of the pages as soon as possible
+  self.clients.claim();
 });
 
-// 3. Fetch Event: Serve assets from cache or network
+// 3. Fetch Event: Handle network requests (Core PWA requirement)
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   
-  // Strategy: Cache-first with Network Fallback for navigations
+  // Strategy: Network-first for navigations, fallback to cache
   if(req.mode === 'navigate'){
     event.respondWith(
-      caches.match(req).then(cachedResponse => {
-        // 1. CUBALAH SERVE DARI CACHE (jika ia adalah laluan yang telah disimpan)
-        if(cachedResponse) return cachedResponse;
+      fetch(req).catch(async ()=> { 
+        console.log('[Service Worker] Navigation failed, serving offline page.');
         
-        // 2. JIKA TIADA DALAM CACHE LALUAN SEMASA, CUBA FETCH DARI NETWORK
-        return fetch(req).catch(async ()=> { 
-            console.log('[Service Worker] Navigation failed, serving offline index.html.');
-            
-            // 3. JIKA NETWORK GAGAL, KEMBALI KEPADA 'index.html' YANG DISIMPAN
-            let response = await caches.match('/index.html');
-            if (response) return response;
-            
-            // Fallback to the root key (just in case index.html was cached as /)
-            response = await caches.match('/');
-            if (response) return response;
-            
-            // Jika tiada juga, throw error (akan menghasilkan 404 dari SW)
-            throw new Error('Offline shell not available.');
-        });
+        // **CRITICAL 404 FIX:** Explicitly check for both common start URL keys
+        let response = await caches.match('/index.html');
+        if (response) return response;
+        
+        // Fallback to the root key
+        response = await caches.match('/');
+        if (response) return response;
+        
+        // Final fallback if neither is found
+        throw new Error('Offline shell not available.');
       })
     );
     return;
@@ -91,19 +81,22 @@ self.addEventListener('fetch', (event) => {
   // Strategy: Cache-first for all other assets (images, CSS, JS)
   event.respondWith(
     caches.match(req).then(cached => {
+      // If cached, serve immediately
       if (cached) {
         return cached;
       }
+
+      // If not cached, fetch from network and dynamically cache
       return fetch(req).then(res => {
+        // Only cache successful network responses (status 200)
         if (res.status === 200) {
-          const resClone = res.clone(); 
+          // Clone the response because a response body can only be consumed once
+          const resClone = res.clone();
           caches.open(CACHE_NAME).then(cache => { 
-            cache.put(req, resClone); 
+            cache.put(req, resClone);
           });
         }
         return res;
-      }).catch(err => {
-        console.log('[Service Worker] Fetch failed and no cache available.');
       });
     })
   );
