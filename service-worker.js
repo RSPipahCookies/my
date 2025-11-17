@@ -1,5 +1,5 @@
 // Basic service worker for caching shell assets. Keep it simple and robust.
-const CACHE_NAME = 'pipah-reseller-cache-v4'; // PENTING: Versi Dinaikkan ke v4 untuk memaksa Service Worker cache semula
+const CACHE_NAME = 'pipah-reseller-cache-v7'; // PENTING: Versi Dinaikkan ke v4 untuk memaksa Service Worker cache semula
 const ASSETS = [
   '/', // The root URL is crucial for installed PWA launches
   '/index.html',
