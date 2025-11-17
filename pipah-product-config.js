@@ -12,7 +12,8 @@ window.HQ_WHATSAPP_NUMBER = '601163962328';      // WhatsApp HQ untuk RSDashboar
 window.ORDER_WHATSAPP_NUMBER = '601121243407'; // WhatsApp untuk Reseller Order Form
 
 // --- 2. PRODUCT DATA DEFINITION (SSOT) ---
-const PRODUCTS_DATA = [
+// *** FIX: Define PRODUCTS_DATA directly on the window object so it is globally accessible. ***
+window.PRODUCTS_DATA = [
   {
     id: 'P1',
     name: 'Seasalt Cookies', // Nama ringkas untuk dashboard
@@ -29,12 +30,12 @@ const PRODUCTS_DATA = [
   },
   {
     id: 'P2',
-    name: 'Chewy Choc Chips',
-    title: 'Chewy Choc Chips (70pcs)',
+    name: 'Choc Chip Cookies', // Nama ringkas
+    title: 'Choc Chip Cookies (65pcs)', // Nama penuh
     img_url: 'images/ch1.jpg',
     images: ['images/ch1.jpg', 'images/ch2.jpg', 'images/ch3.jpg'],
-    rrp: 18.00,
-    // oldPrice: 20.00, // <--- DIBUANG
+    rrp: 20.00,
+    // oldPrice: 22.00, // <--- DIBUANG
     tiers: [
       { max: 4, price: 18, name: 'Tier 1 (1-4 units)' },
       { max: 9, price: 17, name: 'Tier 2 (5-9 units)' },
@@ -43,72 +44,74 @@ const PRODUCTS_DATA = [
   },
   {
     id: 'P3',
-    name: 'Butter Rosettes',
-    title: 'Butter Rosettes (60pcs)',
+    name: 'Brookie',
+    title: 'Brookie (300g)',
     img_url: 'images/br1.jpg',
     images: ['images/br1.jpg', 'images/br2.jpg', 'images/br3.jpg'],
-    rrp: 15.00,
-    // oldPrice: 17.00, // <--- DIBUANG
+    rrp: 25.00,
+    // oldPrice: 28.00, // <--- DIBUANG
     tiers: [
-      { max: 4, price: 15, name: 'Tier 1 (1-4 units)' },
-      { max: 9, price: 14, name: 'Tier 2 (5-9 units)' },
-      { max: Infinity, price: 13, name: 'Tier 3 (10+ units)' }
+      { max: 4, price: 21, name: 'Tier 1 (1-4 units)' },
+      { max: 9, price: 20, name: 'Tier 2 (5-9 units)' },
+      { max: Infinity, price: 19, name: 'Tier 3 (10+ units)' }
     ]
   },
   {
     id: 'P4',
-    name: 'Biscoff Cookies',
-    title: 'Biscoff Cookies (70pcs)',
+    name: 'Brownies Choc',
+    title: 'Brownies Choc (10x10in)',
     img_url: 'images/bc1.jpg',
     images: ['images/bc1.jpg', 'images/bc2.jpg', 'images/bc3.jpg'],
-    rrp: 20.00,
-    // oldPrice: 22.00, // <--- DIBUANG
+    rrp: 30.00,
+    // oldPrice: 32.00, // <--- DIBUANG
     tiers: [
-      { max: 4, price: 17, name: 'Tier 1 (1-4 units)' },
-      { max: 9, price: 16, name: 'Tier 2 (5-9 units)' },
-      { max: Infinity, price: 15, name: 'Tier 3 (10+ units)' }
+      { max: 4, price: 25, name: 'Tier 1 (1-4 units)' },
+      { max: 9, price: 24, name: 'Tier 2 (5-9 units)' },
+      { max: Infinity, price: 23, name: 'Tier 3 (10+ units)' }
     ]
   },
   {
     id: 'P5',
-    name: 'Red Velvet Cookies',
-    title: 'Red Velvet Cookies (60pcs)',
+    name: 'Red Velvet',
+    title: 'Red Velvet (10x10in)',
     img_url: 'images/rv1.jpg',
     images: ['images/rv1.jpg', 'images/rv2.jpg', 'images/rv3.jpg'],
-    rrp: 22.00,
-    // oldPrice: 24.00, // <--- DIBUANG
+    rrp: 32.00,
+    // oldPrice: 35.00, // <--- DIBUANG
     tiers: [
-      { max: 4, price: 20, name: 'Tier 1 (1-4 units)' },
-      { max: 9, price: 19, name: 'Tier 2 (5-9 units)' },
-      { max: Infinity, price: 18, name: 'Tier 3 (10+ units)' }
+      { max: 4, price: 27, name: 'Tier 1 (1-4 units)' },
+      { max: 9, price: 26, name: 'Tier 2 (5-9 units)' },
+      { max: Infinity, price: 25, name: 'Tier 3 (10+ units)' }
     ]
   },
   {
     id: 'P6',
-    name: 'DarkChoc Cookies',
-    title: 'DarkChoc Cookies (70pcs)',
+    name: 'Double Choc',
+    title: 'Double Choc (10x10in)',
     img_url: 'images/dc1.jpg',
     images: ['images/dc1.jpg', 'images/dc2.jpg', 'images/dc3.jpg'],
-    rrp: 22.00,
+    rrp: 30.00,
     // oldPrice: 24.00, // <--- DIBUANG
     tiers: [
-      { max: 4, price: 19, name: 'Tier 1 (1-4 units)' },
-      { max: 9, price: 18, name: 'Tier 2 (5-9 units)' },
-      { max: Infinity, price: 17, name: 'Tier 3 (10+ units)' }
+      { max: 4, price: 25, name: 'Tier 1 (1-4 units)' },
+      { max: 9, price: 24, name: 'Tier 2 (5-9 units)' },
+      { max: Infinity, price: 23, name: 'Tier 3 (10+ units)' }
     ]
   }
 ];
+
 
 // --- 3. BUSINESS LOGIC FUNCTIONS ---
 
 /**
  * Mendapatkan kos Reseller per unit berdasarkan ID produk dan kuantiti.
  * @param {string} productId - ID produk (e.g., 'P1').
- * @param {number} quantity - Kuantiti unit yang ditempah.
+ * @param {number} quantity - Kuantiti unit yang ditempah.\n
  * @returns {{cost: number, name: string}} Objek yang mengandungi kos unit dan nama tier.
  */
 function getResellerCost(productId, quantity) {
-    const product = PRODUCTS_DATA.find(p => p.id === productId);
+    // *** FIX: Reference window.PRODUCTS_DATA which is now global ***
+    const product = window.PRODUCTS_DATA.find(p => p.id === productId);
 
     if (!product) {
         return { cost: 0, name: 'Product Not Found' };
@@ -127,11 +130,10 @@ function getResellerCost(productId, quantity) {
         }
     }
 
-    // Fallback: Return the price of the highest tier
+    // Fallback to the highest tier if quantity exceeds all defined tiers (shouldn't happen with Infinity)
     const lastTier = product.tiers[product.tiers.length - 1];
     return { cost: lastTier.price, name: lastTier.name };
 }
 
-// Attach to window object so it can be called from index.html and RSDashboard.html
-window.PRODUCTS_DATA = PRODUCTS_DATA;
+// Make the function globally accessible
 window.getResellerCost = getResellerCost;
