@@ -1,12 +1,11 @@
 // Basic service worker for caching shell assets. Keep it simple and robust.
-const CACHE_NAME = 'pipah-reseller-cache-v2'; // Increment cache version to force update
+const CACHE_NAME = 'pipah-reseller-cache-v3'; // Increment cache version to force update
 const ASSETS = [
   '/', // The root URL is crucial for installed PWA launches
   '/index.html',
   '/reseller-manifest.json',
   
   // --- Essential HTML Pages for Offline Access ---
-  // Ensure the filenames here match your live files:
   '/reseller-checkout.html', 
   '/gambar2reseller.html', 
 
@@ -61,16 +60,22 @@ self.addEventListener('fetch', (event) => {
       fetch(req).catch(async ()=> { 
         console.log('[Service Worker] Navigation failed, serving offline page.');
         
-        // **CRITICAL 404 FIX:** Explicitly check for both common start URL keys
-        // The app might request /index.html or the root /
-        let response = await caches.match('/index.html');
+        // --- FIX APPLIED HERE ---
+        // A navigation request (PWA launch) often requests the root URL ('/').
+        // We must ensure the cached '/index.html' is returned for both '/' and 'index.html' requests if offline.
+        
+        // 1. Try to match the request exactly (e.g., /reseller-checkout.html)
+        let response = await caches.match(req);
+        if (response) return response;
+
+        // 2. The CRITICAL check: The PWA launch often requests '/' or /index.html
+        response = await caches.match('/index.html'); // Serve the main page
         if (response) return response;
         
-        // Fallback to the root key
+        // 3. Final fallback for the root itself, just in case
         response = await caches.match('/');
         if (response) return response;
         
-        // Final fallback if neither is found
         throw new Error('Offline shell not available.');
       })
     );
