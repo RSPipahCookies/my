@@ -379,8 +379,6 @@ function renderProducts(){ const grid = document.getElementById('product-grid');
         </div>
       </div>
       <h3>${prod.title}</h3>
-      <p class="old-price">RM ${prod.oldPrice.toFixed(2)}</p>
-      <div style="font-size:14px;color:#444;margin-bottom:6px">Harga per unit ikut kuantiti (auto update bila ubah kuantiti)</div>
       <div class="qty-control">
         <button class="qty-btn" data-action="minus" data-id="${prod.id}">−</button>
         <input id="qty-${prod.id}" class="qty-input" type="number" value="0" min="0">
@@ -422,8 +420,7 @@ function initSlider(container){
     console.warn('initSlider error', err);
   }
 }
-function onQtyButton(e){ const id = e.currentTarget.dataset.id; const action = e.currentTarget.dataset.action; const inp = document.getElementById('qty-'+id); let val = Math.max(0, parseInt(inp.value||'0')); val = action==='plus' ? val+1 : Math.max(0, val-1); inp.value = val; updat
-  eUnitPriceDisplay(id,val); }
+function onQtyButton(e){ const id = e.currentTarget.dataset.id; const action = e.currentTarget.dataset.action; const inp = document.getElementById('qty-'+id); let val = Math.max(0, parseInt(inp.value||'0')); val = action==='plus' ? val+1 : Math.max(0, val-1); inp.value = val; updateUnitPriceDisplay(id,val); }
 function onQtyInput(e){ const id = e.currentTarget.id.replace('qty-',''); let v = parseInt(e.currentTarget.value||'1'); if(isNaN(v)||v<0) v=0; e.currentTarget.value=v; updateUnitPriceDisplay(id,v); }
 function updateUnitPriceDisplay(id, qty){ const el = document.getElementById('unit-'+id); if(!el) return; const price = getUnitPriceForQty(id, qty); el.textContent = 'RM '+price.toFixed(2); }
 function onAddToCart(e){ 
@@ -529,4 +526,3 @@ if ('serviceWorker' in navigator) {
 
 </body>
 </html>
-
