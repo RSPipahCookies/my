@@ -20,7 +20,7 @@ const PRODUCTS_DATA = [
     img_url: 'images/ss1.jpg',
     images: ['images/ss1.jpg', 'images/ss2.jpg', 'images/ss3.jpg'], // Gambar untuk slider pelanggan
     rrp: 16.00, // Harga Runcit Disyorkan
-    oldPrice: 18.00, // Harga lama (jika ada) untuk portal pelanggan
+    // oldPrice: 18.00, // <--- DIBUANG
     tiers: [ // Kos Reseller
       { max: 4, price: 16, name: 'Tier 1 (1-4 units)' },
       { max: 9, price: 15, name: 'Tier 2 (5-9 units)' },
@@ -29,26 +29,40 @@ const PRODUCTS_DATA = [
   },
   {
     id: 'P2',
-    name: 'ChocHazelnut Button',
-    title: 'ChocHazelnut Button (38pcs)',
+    name: 'Chewy Choc Chips',
+    title: 'Chewy Choc Chips (70pcs)',
     img_url: 'images/ch1.jpg',
     images: ['images/ch1.jpg', 'images/ch2.jpg', 'images/ch3.jpg'],
-    rrp: 22.00,
-    oldPrice: 25.00,
+    rrp: 18.00,
+    // oldPrice: 20.00, // <--- DIBUANG
     tiers: [
-      { max: 4, price: 22, name: 'Tier 1 (1-4 units)' },
-      { max: 9, price: 21, name: 'Tier 2 (5-9 units)' },
-      { max: Infinity, price: 20, name: 'Tier 3 (10+ units)' }
+      { max: 4, price: 18, name: 'Tier 1 (1-4 units)' },
+      { max: 9, price: 17, name: 'Tier 2 (5-9 units)' },
+      { max: Infinity, price: 16, name: 'Tier 3 (10+ units)' }
     ]
   },
   {
     id: 'P3',
-    name: 'Brownies Cookies',
-    title: 'Brownies Cookies (70pcs)',
+    name: 'Butter Rosettes',
+    title: 'Butter Rosettes (60pcs)',
     img_url: 'images/br1.jpg',
     images: ['images/br1.jpg', 'images/br2.jpg', 'images/br3.jpg'],
-    rrp: 17.00,
-    oldPrice: 19.00,
+    rrp: 15.00,
+    // oldPrice: 17.00, // <--- DIBUANG
+    tiers: [
+      { max: 4, price: 15, name: 'Tier 1 (1-4 units)' },
+      { max: 9, price: 14, name: 'Tier 2 (5-9 units)' },
+      { max: Infinity, price: 13, name: 'Tier 3 (10+ units)' }
+    ]
+  },
+  {
+    id: 'P4',
+    name: 'Biscoff Cookies',
+    title: 'Biscoff Cookies (70pcs)',
+    img_url: 'images/bc1.jpg',
+    images: ['images/bc1.jpg', 'images/bc2.jpg', 'images/bc3.jpg'],
+    rrp: 20.00,
+    // oldPrice: 22.00, // <--- DIBUANG
     tiers: [
       { max: 4, price: 17, name: 'Tier 1 (1-4 units)' },
       { max: 9, price: 16, name: 'Tier 2 (5-9 units)' },
@@ -56,27 +70,13 @@ const PRODUCTS_DATA = [
     ]
   },
   {
-    id: 'P4',
-    name: 'Black Cookies',
-    title: 'Black Cookies (80pcs)',
-    img_url: 'images/bc1.jpg',
-    images: ['images/bc1.jpg', 'images/bc2.jpg', 'images/bc3.jpg'],
-    rrp: 22.00,
-    oldPrice: 25.00,
-    tiers: [
-      { max: 5, price: 19, name: 'Tier 1 (1-5 units)' },
-      { max: 49, price: 11, name: 'Tier 2 (6-49 units)' },
-      { max: Infinity, price: 10, name: 'Tier 3 (50+ units)' }
-    ]
-  },
-  {
     id: 'P5',
-    name: 'RedVelvet Button',
-    title: 'RedVelvet Button',
+    name: 'Red Velvet Cookies',
+    title: 'Red Velvet Cookies (60pcs)',
     img_url: 'images/rv1.jpg',
     images: ['images/rv1.jpg', 'images/rv2.jpg', 'images/rv3.jpg'],
     rrp: 22.00,
-    oldPrice: 24.00,
+    // oldPrice: 24.00, // <--- DIBUANG
     tiers: [
       { max: 4, price: 20, name: 'Tier 1 (1-4 units)' },
       { max: 9, price: 19, name: 'Tier 2 (5-9 units)' },
@@ -90,7 +90,7 @@ const PRODUCTS_DATA = [
     img_url: 'images/dc1.jpg',
     images: ['images/dc1.jpg', 'images/dc2.jpg', 'images/dc3.jpg'],
     rrp: 22.00,
-    oldPrice: 24.00,
+    // oldPrice: 24.00, // <--- DIBUANG
     tiers: [
       { max: 4, price: 19, name: 'Tier 1 (1-4 units)' },
       { max: 9, price: 18, name: 'Tier 2 (5-9 units)' },
@@ -110,21 +110,28 @@ const PRODUCTS_DATA = [
 function getResellerCost(productId, quantity) {
     const product = PRODUCTS_DATA.find(p => p.id === productId);
 
-    if (!product || quantity < 1) {
-        return { cost: 0.00, name: 'N/A' };
+    if (!product) {
+        return { cost: 0, name: 'Product Not Found' };
     }
 
+    if (quantity <= 0) {
+        // Return Tier 1 price if quantity is 0, to show default price on load
+        const tier1 = product.tiers[0];
+        return { cost: tier1.price, name: tier1.name };
+    }
+
+    // Cari tier yang sepadan dengan kuantiti
     for (const tier of product.tiers) {
         if (quantity <= tier.max) {
             return { cost: tier.price, name: tier.name };
         }
     }
-    
-    // Fallback
+
+    // Fallback: Return the price of the highest tier
     const lastTier = product.tiers[product.tiers.length - 1];
     return { cost: lastTier.price, name: lastTier.name };
 }
 
-// --- 4. GLOBAL EXPOSURE ---
+// Attach to window object so it can be called from index.html and RSDashboard.html
 window.PRODUCTS_DATA = PRODUCTS_DATA;
 window.getResellerCost = getResellerCost;
