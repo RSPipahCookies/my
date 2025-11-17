@@ -50,33 +50,32 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// 3. Fetch Event: Handle network requests (Core PWA requirement)
+// service-worker.js - REPLACING the old fetch handler
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   
-  // Strategy: Network-first for navigations, fallback to cache
+  // Strategy: Ensure the PWA shell is always available on navigation failure.
   if(req.mode === 'navigate'){
     event.respondWith(
-      fetch(req).catch(async ()=> { 
-        console.log('[Service Worker] Navigation failed, serving offline page.');
-        
-        // --- FIX APPLIED HERE ---
-        // A navigation request (PWA launch) often requests the root URL ('/').
-        // We must ensure the cached '/index.html' is returned for both '/' and 'index.html' requests if offline.
-        
-        // 1. Try to match the request exactly (e.g., /reseller-checkout.html)
-        let response = await caches.match(req);
-        if (response) return response;
+      fetch(req).catch(async (e)=> { 
+        console.error('[Service Worker] Navigation failed.', e.message);
 
-        // 2. The CRITICAL check: The PWA launch often requests '/' or /index.html
-        response = await caches.match('/index.html'); // Serve the main page
-        if (response) return response;
+        // **CRITICAL FIX:** Directly serve the cached index.html for any navigation
+        // failure when offline. This handles '/', '/index.html', and any other
+        // entry point URL that fails to load from the network.
         
-        // 3. Final fallback for the root itself, just in case
+        let response = await caches.match('/index.html'); 
+        if (response) {
+            console.log('[Service Worker] Serving cached /index.html as shell fallback.');
+            return response;
+        }
+
+        // Fallback to the generic root key if /index.html somehow wasn't found
         response = await caches.match('/');
         if (response) return response;
         
-        throw new Error('Offline shell not available.');
+        // Final fallback if the shell is truly missing
+        throw new Error('Offline PWA shell is missing from cache.');
       })
     );
     return;
@@ -85,16 +84,11 @@ self.addEventListener('fetch', (event) => {
   // Strategy: Cache-first for all other assets (images, CSS, JS)
   event.respondWith(
     caches.match(req).then(cached => {
-      // If cached, serve immediately
       if (cached) {
         return cached;
       }
-
-      // If not cached, fetch from network and dynamically cache
       return fetch(req).then(res => {
-        // Only cache successful network responses (status 200)
         if (res.status === 200) {
-          // Clone the response because a response body can only be consumed once
           const resClone = res.clone(); 
           caches.open(CACHE_NAME).then(cache => { 
             cache.put(req, resClone); 
