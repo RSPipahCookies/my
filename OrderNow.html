@@ -66,28 +66,30 @@
   const DEFAULT_RESALER_WA_KEY = 'loggedInResellerWa';
 
   // DIBETULKAN: Pastikan ini sepadan dengan ID dan NAMA dalam RSDashboard.html
+  // Nota: Data ini harus diselaraskan dengan pipah-product-config.js untuk imej dan ID yang betul
   const PRODUCTS_BASE = [
-    { id: 'P1', name: 'Chocolate Chip Cookies', img_url: 'images/p1-1.jpg' },
-    { id: 'P2', name: 'Sea Salt Caramel Cookies', img_url: 'images/p2-1.jpg' },
-    { id: 'P3', name: 'Premium Brownies Crunch', img_url: 'images/p3-1.jpg' },
-    { id: 'P4', name: 'Oatmeal Raisin Classic', img_url: 'images/p4-1.jpg' },
-    { id: 'P5', name: 'Classic Shortbread', img_url: 'images/p5-1.jpg' },
+    { id: 'P1', name: 'Seasalt Cookies', img_url: 'images/ss1.jpg' },
+    { id: 'P2', name: 'ChocHazelnut Button', img_url: 'images/ch1.jpg' },
+    { id: 'P3', name: 'Brownies Cookies', img_url: 'images/br1.jpg' },
+    { id: 'P4', name: 'Black Cookies', img_url: 'images/bc1.jpg' },
+    { id: 'P5', name: 'RedVelvet Button', img_url: 'images/rv1.jpg' },
+    { id: 'P6', name: 'DarkChoc Cookies', img_url: 'images/dc1.jpg' },
   ];
 
   
   // --- Utility Functions ---
   
-  // Function to read URL parameters
+  // PEMBETULAN UTAMA: Fungsi untuk membaca URL parameters
   function getUrlParameter(name) {
-    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-    const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-    const results = regex.exec(location.search);
-    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      // Regex yang lebih ringkas dan berfungsi dengan pelbagai jenis query string
+      const regex = new RegExp('[?&]' + name + '=([^&#]*)');
+      const results = regex.exec(window.location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
   };
   
   // Function to get price map from URL (Priority 1)
   function getPricesFromUrl() {
-    // Parameter ini kini DIBETULKAN oleh RSDashboard.html
     const idsString = getUrlParameter('p_ids'); 
     const pricesString = getUrlParameter('p_prices'); 
 
@@ -97,6 +99,7 @@
     const priceMap = {};
     let found = false;
     ids.forEach((id, index) => {
+        // Semak jika harga wujud dan adalah nombor yang sah
         if (prices[index] && !isNaN(prices[index])) {
             priceMap[id] = prices[index];
             found = true;
@@ -129,7 +132,6 @@
 
   // Function to get Reseller WA: URL > LocalStorage
   function getResellerWa() {
-      // Parameter ini kini DIBETULKAN oleh RSDashboard.html
       const waFromUrl = getUrlParameter('rs_wa');
       if (waFromUrl) return waFromUrl;
       
@@ -160,7 +162,7 @@
                 </div>
                 <div class="qty-control">
                     <button type="button" class="qty-btn" onclick="updateQuantity('${product.id}', -1)"><i class="fas fa-minus"></i></button>
-                    <span id="qty-${product.id}" class="qty-display" data-price="${customPrice}">0</span>
+                    <span id="qty-${product.id}" class="qty-display" data-price="${customPrice.toFixed(2)}">0</span>
                     <button type="button" class="qty-btn" onclick="updateQuantity('${product.id}', 1)"><i class="fas fa-plus"></i></button>
                 </div>
             `;
@@ -188,16 +190,15 @@
     updateTotals();
   }
 
-    function updateTotals() {
+  function updateTotals() {
     let grandTotal = 0;
     
-    // TIDAK PERLU MEMANGGIL getFinalPriceMap() LAGI.
-    
+    // PEMBETULAN: Loop melalui semua elemen kuantiti yang ada di DOM.
     PRODUCTS_BASE.forEach(product => {
         const qtyEl = document.getElementById(`qty-${product.id}`);
         if (qtyEl) {
             const qty = parseInt(qtyEl.textContent);
-            // AMBIL HARGA DARIPADA ATRIBUT data-price ELEMENT SPAN KUANTITI
+            // AMBIL HARGA DARIPADA ATRIBUT data-price yang telah ditetapkan oleh renderProducts()
             const price = parseFloat(qtyEl.getAttribute('data-price')) || 0; 
             
             grandTotal += qty * price;
@@ -226,16 +227,16 @@
     let totalOrderValue = 0;
     let orderSummary = '';
     let totalItems = 0;
-    const priceMap = getFinalPriceMap();
-
+    
     PRODUCTS_BASE.forEach(product => {
         const qtyEl = document.getElementById(`qty-${product.id}`);
         if (qtyEl) {
             const qty = parseInt(qtyEl.textContent);
-            const price = priceMap[product.id];
+            // AMBIL HARGA JUALAN DARI data-price YANG DISET MASA renderProducts()
+            const price = parseFloat(qtyEl.getAttribute('data-price')) || 0; 
             
             // Only process if price exists (meaning product was selected by reseller) and qty > 0
-            if (qty > 0 && price) {
+            if (qty > 0 && price > 0) {
                 const itemTotal = qty * price;
                 totalOrderValue += itemTotal;
                 totalItems += qty;
@@ -289,5 +290,4 @@
   });
 </script>
 </body>
-  </html>
-  
+</html>
