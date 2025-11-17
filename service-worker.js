@@ -1,5 +1,5 @@
 // Basic service worker for caching shell assets. Keep it simple and robust.
-const CACHE_NAME = 'pipah-reseller-cache-v3'; // PENTING: Versi Dinaikkan ke v3 untuk memaksa Service Worker cache semula
+const CACHE_NAME = 'pipah-reseller-cache-v4'; // PENTING: Versi Dinaikkan ke v4 untuk memaksa Service Worker cache semula
 const ASSETS = [
   '/', // The root URL is crucial for installed PWA launches
   '/index.html',
@@ -56,37 +56,50 @@ self.addEventListener('activate', (event) => {
 // 3. Fetch Event: Handle network requests (Core PWA requirement)
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  const url = new URL(req.url);
-
-  // *** NEW STRATEGY: Cache-First for the installed root page ***
-  // If the request is for the main index page (which is the PWA start_url)
-  // or a navigation request, try the cache first.
-  if (req.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html') {
+  
+  // *** PWA FIX: Strategy: Cache-first for navigations ***
+  // This ensures the installed PWA shell loads instantly, even offline.
+  if (req.mode === 'navigate') {
     event.respondWith(
-      caches.match('/index.html') // Try to match the index file immediately
+      caches.match(req) // Try to match the URL directly
         .then(cachedResponse => {
-          // If we have it, serve it instantly for reliability
           if (cachedResponse) {
-            console.log('[Service Worker] Serving Index (PWA Launch) from cache.');
+            console.log(`[Service Worker] Serving ${req.url} from cache (Navigation).`);
             return cachedResponse;
           }
           
-          // If not in cache, try network (shouldn't happen if install worked)
-          return fetch(req);
-        })
-        .catch(() => {
-          // Fallback if both network and cache failed (e.g., network error and cache broken)
-          console.error('[Service Worker] Critical failure: Cannot load PWA shell.');
-          return caches.match('/'); // Try the root entry as final fallback
+          // If not in cache, fetch from network (for online users)
+          return fetch(req)
+            .catch(() => {
+                // If network fails (i.e., user is offline), serve the main shell
+                console.log('[Service Worker] Network failed, serving index shell.');
+                return caches.match('/index.html');
+            });
         })
     );
     return;
   }
-  
-  // Strategy: Cache-first for all other assets (images, CSS, JS) - THIS REMAINS
+
+  // Strategy: Cache-first for all other assets (images, CSS, JS)
   event.respondWith(
     caches.match(req).then(cached => {
-      // ... (your existing cache-first logic for assets) ...
+      // If cached, serve immediately
+      if (cached) {
+        return cached;
+      }
+
+      // If not cached, fetch from network and dynamically cache
+      return fetch(req).then(res => {
+        // Only cache successful network responses (status 200)
+        if (res.status === 200) {
+          // Clone the response because a response body can only be consumed once
+          const resClone = res.clone();
+          caches.open(CACHE_NAME).then(cache => { 
+            cache.put(req, resClone);
+          });
+        }
+        return res;
+      });
     })
   );
 });
