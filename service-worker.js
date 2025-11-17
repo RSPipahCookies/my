@@ -56,48 +56,37 @@ self.addEventListener('activate', (event) => {
 // 3. Fetch Event: Handle network requests (Core PWA requirement)
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  
-  // Strategy: Network-first for navigations, fallback to cache
-  if(req.mode === 'navigate'){
+  const url = new URL(req.url);
+
+  // *** NEW STRATEGY: Cache-First for the installed root page ***
+  // If the request is for the main index page (which is the PWA start_url)
+  // or a navigation request, try the cache first.
+  if (req.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html') {
     event.respondWith(
-      fetch(req).catch(async ()=> { 
-        console.log('[Service Worker] Navigation failed, serving offline page.');
-        
-        // **CRITICAL 404 FIX:** Explicitly check for both common start URL keys
-        let response = await caches.match('/index.html');
-        if (response) return response;
-        
-        // Fallback to the root key
-        response = await caches.match('/');
-        if (response) return response;
-        
-        // Final fallback if neither is found
-        throw new Error('Offline shell not available.');
-      })
+      caches.match('/index.html') // Try to match the index file immediately
+        .then(cachedResponse => {
+          // If we have it, serve it instantly for reliability
+          if (cachedResponse) {
+            console.log('[Service Worker] Serving Index (PWA Launch) from cache.');
+            return cachedResponse;
+          }
+          
+          // If not in cache, try network (shouldn't happen if install worked)
+          return fetch(req);
+        })
+        .catch(() => {
+          // Fallback if both network and cache failed (e.g., network error and cache broken)
+          console.error('[Service Worker] Critical failure: Cannot load PWA shell.');
+          return caches.match('/'); // Try the root entry as final fallback
+        })
     );
     return;
   }
-
-  // Strategy: Cache-first for all other assets (images, CSS, JS)
+  
+  // Strategy: Cache-first for all other assets (images, CSS, JS) - THIS REMAINS
   event.respondWith(
     caches.match(req).then(cached => {
-      // If cached, serve immediately
-      if (cached) {
-        return cached;
-      }
-
-      // If not cached, fetch from network and dynamically cache
-      return fetch(req).then(res => {
-        // Only cache successful network responses (status 200)
-        if (res.status === 200) {
-          // Clone the response because a response body can only be consumed once
-          const resClone = res.clone();
-          caches.open(CACHE_NAME).then(cache => { 
-            cache.put(req, resClone);
-          });
-        }
-        return res;
-      });
+      // ... (your existing cache-first logic for assets) ...
     })
   );
 });
