@@ -278,7 +278,7 @@
       <p class="text-center text-gray-600 mb-6">Jika anda memerlukan bantuan, bertanya tentang stok, atau menghadapi isu teknikal.</p>
       <div class="text-center">
         <a id="hq-whatsapp-link" href="#" class="btn whatsapp-btn text-lg shadow-md" target="_blank">
-          <i class="fab fa-whatsapp"></i> WhatsApp HQ Support
+          <i class="fab fa-whatsapp"></i> klik for Support
         </a>
       </div>
     </section>
@@ -404,7 +404,7 @@
        <div id="card_${p.id}" class="generator-card generator-card-grid ${index < 3 ? 'selected' : ''}">
            <input type="checkbox" id="check_${p.id}" value="${p.id}" ${index < 3 ? 'checked' : ''} class="card-checkbox" onchange="toggleCardSelection('${p.id}')">
            
-           <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/55x55/A67734/ffffff?text=IMG';" class="w-14 h-14 object-cover rounded-full shadow-md border-2 border-accent" alt="${p.name}">
+           <img src="${p.img_url}" onerror="this.onerror=null; this.src='images/Header2.jpg';" class="w-14 h-14 object-cover rounded-full shadow-md border-2 border-accent" alt="${p.name}">
            
            <div class="product-details">
                 <h4 class="font-semibold">${p.name}</h4>
@@ -467,10 +467,10 @@
         // FORMAT PENTING BARU: rs_wa, p_ids, p_prices 
      const params = `rs_wa=${whatsapp}&p_ids=${selectedIds.join(',')}&p_prices=${selectedPrices.join(',')}`;
 
-     const customerFormFile = 'index (15).html'; // Pautan ke index (15).html (portal pelanggan) - DIKEMASKINI
+     const customerFormFile = 'index.html'; // Pautan ke index (15).html (portal pelanggan) - DIKEMASKINI
      
      const fullLink = `${customerFormFile}?${params}`;
-     const displayLink = `index (15).html-...?rs_wa=${whatsapp}`; // DIKEMASKINI
+     const displayLink = `index.html-...?rs_wa=${whatsapp}`; // DIKEMASKINI
 
      // Construct the full absolute URL for the customer file
      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
