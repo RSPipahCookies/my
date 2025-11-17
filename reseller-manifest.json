@@ -1,12 +1,11 @@
 {
   "name": "PipahCookies Reseller Portal",
-  "short_name": "RSPipahCookies",
-  "description": "Reseller Portal for PipahCookies (Demo)",
-  "start_url": "./index.html",
+  "short_name": "RS Portal",
+  "description": "The official reseller portal for PipahCookies.",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#fff8f2",
   "theme_color": "#A67734",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "images/rs194.png",
@@ -14,10 +13,9 @@
       "type": "image/png"
     },
     {
-      "src": "images/rs194.png",
+      "src": "images/rs512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/png"
     }
   ]
 }
