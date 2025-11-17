@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ms">
 <head>
@@ -5,8 +6,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PipahCookies — Reseller Portal (Demo)</title>
 
-  <link rel="apple-touch-icon" href="images/rs194.png">
-  <link rel="manifest" href="reseller-manifest.json">
+  <link rel="apple-touch-icon" href="./images/rs194.png">
+  <link rel="manifest" href="./reseller-manifest.json">
   <meta name="theme-color" content="#A67734">
   
 
@@ -328,13 +329,7 @@
 // Data produk kini diambil dari config file (tetapi disalin ke variable 'products' 
 // untuk membolehkan logik sedia ada berfungsi tanpa banyak ubahsuai)
 const WHATSAPP_NUMBER = window.ORDER_WHATSAPP_NUMBER; 
-const products = window.PRODUCTS_DATA.map(p => ({ 
-    id: p.id, 
-    title: p.title, 
-    images: p.images, 
-    oldPrice: p.oldPrice, 
-    tiers: p.tiers 
-}));
+let products = []; // *** FIX 1: Define 'products' globally as an empty array ***
 
 // Fungsi untuk mendapatkan harga kini menggunakan fungsi global
 function getUnitPriceForQty(productId, qty){ 
@@ -351,6 +346,21 @@ function openZoomModal(src){ zoomImage.src = src; zoomModal.classList.add('activ
 function closeZoomModal(){ zoomModal.classList.remove('active'); zoomImage.src = ''; }
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  // *** FIX 1: Move data assignment inside DOMContentLoaded ***
+  // Ensure PRODUCTS_DATA is loaded before mapping it.
+  try {
+      products = window.PRODUCTS_DATA.map(p => ({ 
+          id: p.id, 
+          title: p.title, 
+          images: p.images, 
+          oldPrice: p.oldPrice, 
+          tiers: p.tiers 
+      }));
+  } catch(e) {
+      console.error("Error loading product data. Did pipah-product-config.js load correctly?", e);
+      // Optional: Add a visual error message here if products fail to load
+  }
+  
   renderProducts(); updateCartUI();
   document.querySelectorAll('.fade-up').forEach((el,i)=> el.style.animationDelay = (i*80)+'ms');
   const orderIdInput = document.getElementById('orderId'); if(orderIdInput) orderIdInput.value = getNextOrderNumber();
@@ -518,7 +528,7 @@ function closePipahPopup() {
 </script>
   <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js')
+  navigator.serviceWorker.register('./service-worker.js')
     .then(() => console.log('✅ Service Worker Registered'))
     .catch(err => console.error('❌ Service Worker Failed', err));
 }
