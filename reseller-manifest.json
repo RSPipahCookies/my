@@ -2,7 +2,7 @@
   "name": "PipahCookies Reseller Portal",
   "short_name": "RSPipahCookies",
   "description": "Reseller Portal for PipahCookies (Demo)",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#fff8f2",
   "theme_color": "#A67734",
