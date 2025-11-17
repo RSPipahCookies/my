@@ -128,5 +128,3 @@ function getResellerCost(productId, quantity) {
 // --- 4. GLOBAL EXPOSURE ---
 window.PRODUCTS_DATA = PRODUCTS_DATA;
 window.getResellerCost = getResellerCost;
-
-
