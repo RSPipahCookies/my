@@ -195,6 +195,22 @@
     .calculator-content{background:var(--card);padding:30px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);width:90%;max-width:400px;transform:translateY(20px);opacity:0;transition:all .3s ease-out}
     .calculator-modal.open .calculator-content{transform:translateY(0);opacity:1}
     .profit-result span{font-size:1.8em;font-weight:700;color:var(--whatsapp);display:block;margin-top:5px;}
+    
+    /* Global Alert Styling */
+    .temp-alert {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        z-index: 50;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        transition: opacity 0.3s ease-in-out;
+        pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -313,8 +329,79 @@
     </div>
   </div>
   
-  <script src="pipah-product-config.js"></script>
-  
+  <script>
+    window.HEADER_IMAGE_URL = 'https://placehold.co/1200x300/A67734/F4EAE0?text=PipahCookies+Reseller+Portal+Header';
+    window.HQ_WHATSAPP_NUMBER = '60123456789'; // Dummy HQ number
+
+    window.PRODUCTS_DATA = [
+        {
+            id: 'COOKIES_BROWNIE',
+            name: 'Brownie Cookies',
+            rrp: 18.00,
+            img_url: 'https://placehold.co/100x100/A67734/F4EAE0?text=Brownie',
+            tiers: [
+                { name: 'Tier 1', min: 1, max: 9, price: 15.00 },
+                { name: 'Tier 2', min: 10, max: 49, price: 13.50 },
+                { name: 'Tier 3', min: 50, max: 99, price: 12.50 },
+                { name: 'Tier 4', min: 100, max: Infinity, price: 11.00 }
+            ]
+        },
+        {
+            id: 'COOKIES_ALMOND',
+            name: 'Almond Cookies',
+            rrp: 15.00,
+            img_url: 'https://placehold.co/100x100/6C4920/F4EAE0?text=Almond',
+            tiers: [
+                { name: 'Tier 1', min: 1, max: 9, price: 12.00 },
+                { name: 'Tier 2', min: 10, max: 49, price: 10.50 },
+                { name: 'Tier 3', min: 50, max: 99, price: 9.50 },
+                { name: 'Tier 4', min: 100, max: Infinity, price: 8.00 }
+            ]
+        },
+        {
+            id: 'CAKE_REDVELVET',
+            name: 'Red Velvet Cake',
+            rrp: 25.00,
+            img_url: 'https://placehold.co/100x100/F4EAE0/A67734?text=Velvet',
+            tiers: [
+                { name: 'Tier 1', min: 1, max: 4, price: 20.00 },
+                { name: 'Tier 2', min: 5, max: 19, price: 18.50 },
+                { name: 'Tier 3', min: 20, max: 49, price: 17.00 },
+                { name: 'Tier 4', min: 50, max: Infinity, price: 15.00 }
+            ]
+        },
+        {
+            id: 'PREMIX_CHOCO',
+            name: 'Choco Premix',
+            rrp: 10.00,
+            img_url: 'https://placehold.co/100x100/888888/ffffff?text=Premix',
+            tiers: [
+                { name: 'Tier 1', min: 1, max: 19, price: 8.00 },
+                { name: 'Tier 2', min: 20, max: 49, price: 7.00 },
+                { name: 'Tier 3', min: 50, max: Infinity, price: 6.00 }
+            ]
+        }
+    ];
+
+    window.getResellerCost = function(productId, quantity) {
+        const product = window.PRODUCTS_DATA.find(p => p.id === productId);
+        if (!product) return { cost: 0, name: 'Unknown' };
+
+        // Find the lowest tier where the quantity meets the minimum
+        const matchingTier = product.tiers
+            .slice() // create a shallow copy
+            .sort((a, b) => a.min - b.min) // sort by min quantity
+            .find(t => quantity >= t.min);
+
+        if (matchingTier) {
+            return { cost: matchingTier.price, name: matchingTier.name };
+        }
+        
+        // Fallback to the highest price (lowest tier, usually tier 1)
+        const lowestTier = product.tiers.sort((a, b) => a.min - b.min)[0];
+        return lowestTier ? { cost: lowestTier.price, name: lowestTier.name } : { cost: 0, name: 'N/A' };
+    };
+  </script>
   <script>
    
    // --- UI SETUP ---
@@ -378,7 +465,7 @@
        setTimeout(() => modal.style.display = 'none', 300);
    }
 
-   // Loads the combined product selection and price setting grid (COMPACT)
+    // Loads the combined product selection and price setting grid (COMPACT)
    function loadGeneratorGrid() {
      const container = document.getElementById('generator-product-grid');
      // Menggunakan window.PRODUCTS_DATA dari fail config
@@ -500,7 +587,7 @@ const customerFormFile = 'OrderNow.html'; // Pautan ke borang pesanan pelanggan
        const pElement = container.querySelector('p');
        pElement.textContent = 'Pautan telah disalin ke papan keratan! ✅';
        setTimeout(() => {
-         pElement.textContent = 'Pautan Jualan Anda Berjaya Dijana & Disalin!-...)'; // DIKEMASKINI
+         pElement.textContent = 'Pautan Jualan Anda Berjaya Dijana & Disalin! (index.html-...)'; 
        }, 3000);
      } else {
        showTemporaryAlert('❌ Gagal menyalin. Sila salin manual.', 'bg-red-500');
@@ -509,7 +596,7 @@ const customerFormFile = 'OrderNow.html'; // Pautan ke borang pesanan pelanggan
 
    function showTemporaryAlert(message, className) {
        const tempAlert = document.createElement('div');
-       tempAlert.className = `fixed inset-0 ${className} text-white flex items-center justify-center p-4 z-50 text-xl font-bold`;
+       tempAlert.className = `fixed inset-0 ${className} text-white flex items-center justify-center p-4 z-50 text-xl font-bold temp-alert`;
        tempAlert.textContent = message;
        document.body.appendChild(tempAlert);
        setTimeout(() => document.body.removeChild(tempAlert), 3000);
