@@ -121,16 +121,16 @@
         margin-bottom: 5px;
     }
 
+    .generator-card-grid .product-details h4 {
+        font-size: 0.9em; 
+        margin-bottom: 2px;
+    }
+
     .generator-card-grid .input-group {
         margin-top: 5px; 
         width: 100%;
         margin-bottom: 0;
         text-align: center;
-    }
-
-    .generator-card-grid .product-details h4 {
-        font-size: 0.9em; 
-        margin-bottom: 2px;
     }
 
     .generator-card-grid .input-group input {
@@ -149,36 +149,7 @@
     .generator-card-grid.selected {
         border-width: 3px; 
     }
-
     
-    /* Tier Product Button Style */
-    .tier-product-btn {
-        display: block;
-        padding: 20px 10px;
-        background: #fdfdfd;
-        border-radius: 10px;
-        border: 2px solid var(--accent);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        transition: all 0.2s;
-        transform: perspective(1px) translateZ(0);
-    }
-    .tier-product-btn:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 25px rgba(0,0,0,0.1);
-        border-color: var(--primary);
-    }
-    .tier-product-btn img {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 8px;
-    }
-    .tier-product-btn h4 {
-        font-size: 1em;
-        font-weight: 700;
-        margin-bottom: 0;
-    }
-    
-
     .btn{display:inline-block;padding:12px 25px;border-radius:8px;text-decoration:none;font-weight:600;transition:all .2s;text-align:center;border:none;}
     .primary-btn{background:var(--primary);color:#fff}
     .secondary-btn{background:var(--primary-dark);color:#fff}
@@ -206,7 +177,6 @@
   <nav class="site-nav">
     <ul class="nav-list">
       <li><a href="#products">Produk</a></li>
-      <li><a href="#bulk">Tiers Harga</a></li>
       <li><a href="#generator">Jana Jualan</a></li>
       <li><a href="#contact">Hubungi Kami</a></li>
     </ul>
@@ -216,17 +186,10 @@
 
     <section id="products" class="section">
       <h2 class="text-center text-3xl mb-8">Senarai Produk & Harga Runcit Disyorkan (RRP)</h2>
+      <p class="text-center text-gray-600 mb-8">Klik pada mana-mana produk untuk melihat **Struktur Tiers Harga Reseller (Kos Anda)**.</p>
+
       <div id="product-list" class="products">
         </div>
-    </section>
-
-    <section id="bulk" class="section">
-      <h2 class="text-center text-3xl">Struktur Tiers Harga Reseller (Kos Anda)</h2>
-      
-      <div id="tier-product-buttons" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 justify-center max-w-5xl mx-auto">
-        </div>
-      
-      <p class="text-center text-gray-500 mt-6 text-sm">Klik produk di atas untuk melihat struktur tiers harga.</p>
     </section>
     
     <div id="tierModal" class="calculator-modal" onclick="closeModal(event)">
@@ -241,6 +204,7 @@
             <button class="close-btn" onclick="closeTierModal()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5em;color:var(--muted);"><i class="fas fa-times"></i></button>
         </div>
     </div>
+    
     <section id="generator" class="section bg-accent p-8 rounded-2xl shadow-xl">
       <h2 class="text-center text-3xl" style="color:var(--whatsapp);"><i class="fas fa-share-alt"></i> Jana Pautan Jualan Anda</h2>
       <p class="text-center text-gray-600 mb-8">
@@ -249,8 +213,8 @@
 
       <div class="max-w-4xl mx-auto">
         <div class="input-group">
-          <label for="whatsappNumber">Nombor WhatsApp Anda (e.g. 60123456789)</label>
-          <input type="tel" id="whatsappNumber" placeholder="Sila masukkan nombor WhatsApp penuh" value="60123456789" class="shadow-sm">
+          <label for="whatsappNumber">Nombor WhatsApp Anda (e.g. 01163962328)</label>
+          <input type="tel" id="whatsappNumber" placeholder="Sila masukkan nombor WhatsApp penuh" value="01163962328" class="shadow-sm">
         </div>
 
         <hr class="my-6 border-primary/20">
@@ -278,7 +242,7 @@
       <p class="text-center text-gray-600 mb-6">Jika anda memerlukan bantuan, bertanya tentang stok, atau menghadapi isu teknikal.</p>
       <div class="text-center">
         <a id="hq-whatsapp-link" href="#" class="btn whatsapp-btn text-lg shadow-md" target="_blank">
-          <i class="fab fa-whatsapp"></i> WhatsApp HQ Support
+          <i class="fab fa-whatsapp"></i> klik for Support
         </a>
       </div>
     </section>
@@ -330,10 +294,19 @@
    document.addEventListener('DOMContentLoaded', () => {
      // Set the header image source using the config variable
      document.getElementById('header-banner').src = window.HEADER_IMAGE_URL; 
-     document.getElementById('hq-whatsapp-link').href = `https://wa.me/${window.HQ_WHATSAPP_NUMBER}`;
+     
+     // Pastikan nombor HQ WhatsApp berada dalam format antarabangsa (60...) untuk pautan WhatsApp
+     let hqWa = String(window.HQ_WHATSAPP_NUMBER);
+     if (hqWa.startsWith('0')) {
+        hqWa = '60' + hqWa.substring(1); 
+     } else if (!hqWa.startsWith('60')) {
+        hqWa = '60' + hqWa;
+     }
+
+     document.getElementById('hq-whatsapp-link').href = `https://wa.me/${hqWa}`;
      
      loadProductList();
-     loadTierProductButtons();
+     // loadTierProductButtons() DIBUANG
      loadGeneratorGrid(); 
      loadCalculatorOptions();
      calculateProfit(); 
@@ -344,28 +317,18 @@
      const container = document.getElementById('product-list');
      // Menggunakan window.PRODUCTS_DATA dari fail config
      container.innerHTML = window.PRODUCTS_DATA.map(p => `
-       <div class="card flex flex-col items-center">
+       <div class="card flex flex-col items-center cursor-pointer hover:bg-gray-50 transition-colors" onclick="openTierModal('${p.id}')">
          <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-24 h-24 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
          <h3 class="text-lg text-center">${p.name}</h3>
          <p class="text-sm text-gray-700">RRP: <strong style="color:var(--primary); font-size:1.1em;">RM ${p.rrp.toFixed(2)}</strong></p>
-         <p class="text-xs mt-2 text-gray-500">Kos Minima: RM ${window.getResellerCost(p.id, 100).cost.toFixed(2)}</p>
+         <p class="text-xs mt-2 text-gray-500 font-semibold text-sea-blue">Klik untuk lihat Struktur Harga</p>
        </div>
      `).join('');
    }
 
-   // Loads product buttons for the Tier Modal
-   function loadTierProductButtons() {
-       const container = document.getElementById('tier-product-buttons');
-       container.innerHTML = window.PRODUCTS_DATA.map(p => `
-           <button class="tier-product-btn text-center" onclick="openTierModal('${p.id}')">
-               <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/60x60/A67734/ffffff?text=IMG';" class="w-16 h-16 object-cover rounded-full mx-auto shadow-md border-2 border-primary/20" alt="${p.name}">
-               <h4>${p.name}</h4>
-               <p class="text-xs text-gray-500 mt-1">RRP: RM ${p.rrp.toFixed(2)}</p>
-           </button>
-       `).join('');
-   }
+   // loadTierProductButtons() DIHAPUS SEPENUHNYA
    
-   // Opens the Tier Modal
+   // Opens the Tier Modal (Dikekalkan)
    function openTierModal(productId) {
        const modal = document.getElementById('tierModal');
        const title = document.getElementById('tierModalTitle');
@@ -404,7 +367,7 @@
        <div id="card_${p.id}" class="generator-card generator-card-grid ${index < 3 ? 'selected' : ''}">
            <input type="checkbox" id="check_${p.id}" value="${p.id}" ${index < 3 ? 'checked' : ''} class="card-checkbox" onchange="toggleCardSelection('${p.id}')">
            
-           <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/55x55/A67734/ffffff?text=IMG';" class="w-14 h-14 object-cover rounded-full shadow-md border-2 border-accent" alt="${p.name}">
+<img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/60x60/A67734/ffffff?text=IMG';" class="w-14 h-14 object-cover rounded-full shadow-md border-2 border-accent" alt="${p.name}">
            
            <div class="product-details">
                 <h4 class="font-semibold">${p.name}</h4>
@@ -429,9 +392,9 @@
        }
    }
    
-   // --- SALES LINK GENERATOR LOGIC (Unchanged) ---
+   // --- SALES LINK GENERATOR LOGIC ---
    function generateLink() {
-     const whatsapp = document.getElementById('whatsappNumber').value.trim();
+     let whatsapp = document.getElementById('whatsappNumber').value.trim(); // Gunakan 'let'
      const linkContainer = document.getElementById('generatedLinkContainer');
      const salesLinkInput = document.getElementById('salesLink');
      const testLink = document.getElementById('testLink');
@@ -441,6 +404,11 @@
        return;
      }
 
+     // Tukar format nombor tempatan (01...) ke format antarabangsa (60...) untuk URL WhatsApp
+     if (whatsapp.startsWith('0')) {
+        whatsapp = '60' + whatsapp.substring(1); 
+     }
+     
      let selectedIds = [];
      let selectedPrices = [];
 
@@ -464,21 +432,19 @@
          showTemporaryAlert('❌ Ralat: Sila pilih sekurang-kurangnya satu produk.', 'bg-red-500');
          return;
      }
-     
-             // FORMAT PENTING BARU: rs_wa, p_ids, p_prices 
+        // FORMAT PENTING BARU: rs_wa, p_ids, p_prices 
      const params = `rs_wa=${whatsapp}&p_ids=${selectedIds.join(',')}&p_prices=${selectedPrices.join(',')}`;
-
-     const customerFormFile = 'index (15).html'; // Pautan ke index (15).html (portal pelanggan) - DIKEMASKINI
+const customerFormFile = 'OrderNow.html'; // Pautan ke borang pesanan pelanggan
+     
      
      const fullLink = `${customerFormFile}?${params}`;
-     const displayLink = `index (15).html-...?rs_wa=${whatsapp}`; // DIKEMASKINI
-
+       const displayLink = `OrderNow.html-...?rs_wa=${whatsapp}`; 
      // Construct the full absolute URL for the customer file
      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
      const fullUrl = `${baseUrl}${fullLink}`;
 
      // Save Reseller WA and Prices to Local Storage (Fallback for Customer Portal)
-     localStorage.setItem('loggedInResellerWa', whatsapp);
+     localStorage.setItem('loggedInResellerWa', whatsapp); // WA disimpan dalam format 60...
      
      const priceMap = {};
      selectedIds.forEach((id, index) => {
@@ -515,7 +481,7 @@
        const pElement = container.querySelector('p');
        pElement.textContent = 'Pautan telah disalin ke papan keratan! ✅';
        setTimeout(() => {
-         pElement.textContent = 'Pautan Jualan Anda Berjaya Dijana & Disalin! (index (15).html-...)'; // DIKEMASKINI
+         pElement.textContent = 'Pautan Jualan Anda Berjaya Dijana & Disalin!-...)'; // DIKEMASKINI
        }, 3000);
      } else {
        showTemporaryAlert('❌ Gagal menyalin. Sila salin manual.', 'bg-red-500');
