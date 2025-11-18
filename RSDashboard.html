@@ -240,8 +240,8 @@
 
       <div class="max-w-4xl mx-auto">
         <div class="input-group">
-          <label for="whatsappNumber">Nombor WhatsApp Anda (e.g. 01163962328)</label>
-          <input type="tel" id="whatsappNumber" placeholder="Sila masukkan nombor WhatsApp penuh" value="01163962328" class="shadow-sm">
+          <label for="whatsappNumber">Nombor WhatsApp Anda (e.g. 60123456789)</label>
+          <input type="tel" id="whatsappNumber" placeholder="Sila masukkan nombor WhatsApp penuh" value="60123456789" class="shadow-sm">
         </div>
 
         <hr class="my-6 border-primary/20">
@@ -321,13 +321,10 @@
    document.addEventListener('DOMContentLoaded', () => {
      // Set the header image source using the config variable
      document.getElementById('header-banner').src = window.HEADER_IMAGE_URL; 
-     
-     // DIUBAH: Menggunakan nombor HQ WhatsApp yang sudah diubah formatnya (tanpa 60)
-     const hqWa = window.HQ_WHATSAPP_NUMBER;
-     const formattedHqWa = hqWa.startsWith('60') ? hqWa.substring(2) : hqWa; 
-     document.getElementById('hq-whatsapp-link').href = `https://wa.me/60${formattedHqWa}`; // WA link requires country code, so we ensure 60 is used here.
+     document.getElementById('hq-whatsapp-link').href = `https://wa.me/${window.HQ_WHATSAPP_NUMBER}`;
      
      loadProductList();
+     // loadTierProductButtons(); <--- DIKELUARKAN
      loadGeneratorGrid(); 
      loadCalculatorOptions();
      calculateProfit(); 
@@ -339,7 +336,7 @@
      // Menggunakan window.PRODUCTS_DATA dari fail config
      container.innerHTML = window.PRODUCTS_DATA.map(p => `
        <div class="card flex flex-col items-center cursor-pointer" onclick="openTierModal('${p.id}')">
-         <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-16 h-16 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
+         <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-24 h-24 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
          <h3 class="text-lg text-center">${p.name}</h3>
          <p class="text-sm text-gray-700">RRP: <strong style="color:var(--primary); font-size:1.1em;">RM ${p.rrp.toFixed(2)}</strong></p>
          <p class="text-xs mt-2 text-gray-500">Kos Minima: RM ${window.getResellerCost(p.id, 100).cost.toFixed(2)}</p>
@@ -347,6 +344,8 @@
      `).join('');
    }
 
+   // loadTierProductButtons() <--- DIKELUARKAN
+   
    // Opens the Tier Modal
    function openTierModal(productId) {
        const modal = document.getElementById('tierModal');
@@ -411,9 +410,9 @@
        }
    }
    
-   // --- SALES LINK GENERATOR LOGIC (DIUBAH) ---
+   // --- SALES LINK GENERATOR LOGIC (Unchanged) ---
    function generateLink() {
-     let whatsapp = document.getElementById('whatsappNumber').value.trim();
+     const whatsapp = document.getElementById('whatsappNumber').value.trim();
      const linkContainer = document.getElementById('generatedLinkContainer');
      const salesLinkInput = document.getElementById('salesLink');
      const testLink = document.getElementById('testLink');
@@ -423,11 +422,6 @@
        return;
      }
 
-     // Tambah prefix '60' jika nombor tidak bermula dengannya (standard WhatsApp format)
-     if (!whatsapp.startsWith('60') && !whatsapp.startsWith('+60')) {
-        whatsapp = '60' + whatsapp.replace(/^0+/, ''); // Buang '0' di depan dan tambah '60'
-     }
-     
      let selectedIds = [];
      let selectedPrices = [];
 
@@ -462,7 +456,7 @@ const customerFormFile = 'OrderNow.html'; // Pautan ke borang pesanan pelanggan
      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
      const fullUrl = `${baseUrl}${fullLink}`;
 
-  // Save Reseller WA and Prices to Local Storage (Fallback for Customer Portal)
+     // Save Reseller WA and Prices to Local Storage (Fallback for Customer Portal)
      localStorage.setItem('loggedInResellerWa', whatsapp);
      
      const priceMap = {};
