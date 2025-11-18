@@ -14,8 +14,51 @@
   .form-container h2 { text-align: center; color: #c96a00; margin-bottom: 1.5rem; font-size: 1.4rem; }
   .form-group { margin-bottom: 1rem; }
   .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #6d4c41; }
-  .form-group input { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; font-size: 1rem; transition: border-color 0.3s; }
-  .form-group input:focus { border-color: #b45309; outline: none; box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.2); }
+  
+  /* Update styling for all text input types, including textarea */
+  .form-group input[type="text"], 
+  .form-group input[type="tel"], 
+  .form-group textarea { 
+    width: 100%; 
+    padding: 12px; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 8px; 
+    box-sizing: border-box; 
+    font-size: 1rem; 
+    transition: border-color 0.3s; 
+    min-height: 50px; /* Added min-height for textarea */
+  }
+
+  .form-group input:focus, .form-group textarea:focus { border-color: #b45309; outline: none; box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.2); }
+  
+  /* Styling untuk soalan radio baru */
+  .radio-group { 
+    margin-top: 1.5rem; 
+    margin-bottom: 1.5rem; 
+    padding: 15px; 
+    border: 1px solid #ffe0b2; /* Light orange border */
+    border-radius: 8px;
+    background-color: #fff8e1; /* Very light background for contrast */
+  }
+  .radio-group > label { 
+    font-weight: 700; 
+    color: #b45309; 
+    margin-bottom: 10px; 
+    display: block;
+    font-size: 1.05rem;
+  }
+  .radio-group div {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      margin-top: 8px;
+  }
+  .radio-group input[type="radio"] { 
+    /* Reset and custom styling for radio button */
+    margin-right: 5px;
+    width: auto;
+  }
+
   button { width: 100%; padding: 15px; background-color: #b45309; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 700; margin-top: 1.5rem; transition: background-color 0.3s; }
   button:hover { background-color: #8c4207; }
   .info-text { margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: #795548; }
@@ -36,88 +79,101 @@
       <input type="text" id="name" name="name" required>
     </div>
     <div class="form-group">
-      <label for="phone">Nombor WhatsApp (cth: 60123456789)</label>
-      <input type="tel" id="phone" name="phone" placeholder="Sila masukkan tanpa simbol '+' atau '-'" required>
+      <label for="phone">Nombor WhatsApp (cth: 0123456789)</label>
+      <input type="tel" id="phone" name="phone" placeholder="Sila masukkan nombor tempatan anda bermula dengan '0'" required>
     </div>
+    
     <div class="form-group">
-      <label for="pin">Cipta PIN Akses (6 Digit)</label>
-      <input type="password" id="pin" name="pin" minlength="6" maxlength="6" required>
+      <label for="exp">Ada pengalaman menjual online? </label>
+      <textarea id="exp" name="exp" rows="1" required></textarea>
     </div>
+
+    <div class="form-group">
+      <label for="reason">Kenapa ingin menjadi reseller PipahCookies? </label>
+      <textarea id="reason" name="reason" rows="3" required></textarea>
+    </div>
+
+    <div class="radio-group">
+        <label>Anda ingin mula sekarang?</label>
+        <div>
+            <input type="radio" id="start-yes" name="start-now" value="Ya" required>
+            <label for="start-yes">Ya</label>
+        </div>
+        <div>
+            <input type="radio" id="start-later" name="start-now" value="Nanti kemudian">
+            <label for="start-later">Nanti kemudian</label>
+        </div>
+    </div>
+
     <button type="submit">Daftar & Hantar WhatsApp</button>
   </form>
-  <p class="info-text">Setelah berjaya, anda akan diarah ke WhatsApp untuk pengesahan kepada Admin.</p>
+  <p class="info-text">Setelah berjaya, anda akan diberikan link untuk Reseller Portal *tidak boleh disebar,hanya untuk kegunaan reseller berdaftar sahaja, Terima Kasih.*</p>
 </div>
 
 <script>
-    // **CRITICAL FIX: New unique Local Storage key and PIN disclosure fix**
-    const USERS_KEY = 'pipah_rs_creds_v2_data'; 
-    const ADMIN_WHATSAPP_NUMBER = "601121243407"; // Ganti dengan nombor Admin sebenar
+    const ADMIN_WHATSAPP_NUMBER = "601121243407"; // Ganti dengan nombor Admin sebenar (Guna 60xxxx untuk tujuan WhatsApp API)
 
-    // Base64 encoding/decoding functions for 'security by obscurity'
-    const base64Encode = (str) => btoa(encodeURIComponent(str));
-    const base64Decode = (str) => {
-        try {
-            return decodeURIComponent(atob(str));
-        } catch (e) {
-            return "{}"; 
+    // Helper function to format the phone number for display/message
+    function formatPhoneNumber(phone) {
+        // 1. Remove all non-digit characters.
+        let cleanedPhone = phone.replace(/[^0-9]/g, '');
+        
+        // 2. If it starts with '60', remove it to make it start with '0'.
+        if (cleanedPhone.startsWith('60') && cleanedPhone.length > 2) {
+            cleanedPhone = '0' + cleanedPhone.substring(2);
         }
-    };
-
-    function getRegisteredUsers() {
-        const encodedData = localStorage.getItem(USERS_KEY);
-        if (!encodedData) return {};
-        const decodedString = base64Decode(encodedData);
-        try {
-            return JSON.parse(decodedString);
-        } catch (e) {
-            console.error("Failed to parse user data:", e);
-            return {};
+        
+        // 3. If it does NOT start with '0', and assuming it's a Malaysian number without the country code, 
+        //    it might be missing the leading 0 (e.g., 1121243407). We prepend '0' for the message.
+        if (!cleanedPhone.startsWith('0') && cleanedPhone.length > 8) { // Assuming a standard length
+             cleanedPhone = '0' + cleanedPhone;
         }
-    }
 
-    function saveRegisteredUsers(users) {
-        const jsonString = JSON.stringify(users);
-        const encodedData = base64Encode(jsonString);
-        localStorage.setItem(USERS_KEY, encodedData);
+        return cleanedPhone;
     }
 
     document.getElementById('registrationForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const name = document.getElementById('name').value.trim();
-        const phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, ''); // Clean phone number
-        const pin = document.getElementById('pin').value.trim();
+        const rawPhone = document.getElementById('phone').value.trim();
+        const phoneForMessage = formatPhoneNumber(rawPhone); // Format for message display (01x-xxxxxxx)
+        
+        const experience = document.getElementById('exp').value.trim();
+        const reason = document.getElementById('reason').value.trim(); 
+        
+        const startNowElement = document.querySelector('input[name="start-now"]:checked');
+        const startNow = startNowElement ? startNowElement.value : 'Tidak Dijawab';
 
-        if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
-            alert('PIN akses mesti 6 digit nombor.');
+        // Basic validation for new fields
+        if (experience.length < 5) {
+            alert('Sila berikan butiran pengalaman menjual online anda.');
             return;
         }
-
-        let registeredUsers = getRegisteredUsers();
-
-        // 🛑 FIX: Check if phone is already registered (NO PIN DISCLOSURE)
-        if (registeredUsers[phone]) {
-            alert(`Nombor ${phone} sudah berdaftar. Sila gunakan PIN sedia ada anda untuk log masuk.`);
-            return; 
-        } else {
-            // SAVE NEW USER DATA
-            const userData = {
-                name: name,
-                phone: phone,
-                isBlocked: false, 
-                accessCode: pin
-            };
-            
-            registeredUsers[phone] = userData;
-            saveRegisteredUsers(registeredUsers);
-
-            alert(`Pendaftaran Berjaya! PIN unik anda (6-digit) telah disimpan. Anda kini boleh log masuk.`);
+        if (reason.length < 5) {
+            alert('Sila jelaskan mengapa anda ingin menjadi reseller PipahCookies.');
+            return;
         }
-
-        // PREPARE WHATSAPP MESSAGE
-        const msg = `🧾 *PipahCookies Reseller Registration* 🧾\n---------------------------------\n👤 Nama: ${name}\n📱 WhatsApp: ${phone}\n🔑 PIN AKSES ANDA: [PIN 6-digit yang anda cipta]\n---------------------------------\nSila gunakan Nombor WhatsApp dan PIN ini di portal login.\nTerima kasih!`;
+        
+        alert(`Pendaftaran Berjaya! Anda akan diarah ke WhatsApp untuk menghantar maklumat ini kepada Admin.`);
+        
+        // PREPARE WHATSAPP MESSAGE (Using phoneForMessage which starts with '0')
+        const msg = 
+            `🧾 *Permohonan Reseller PipahCookies* 🧾\n` +
+            `---------------------------------\n` +
+            `👤 Nama: ${name}\n` +
+            `📱 WhatsApp: ${phoneForMessage}\n` + // Display as 01x-xxxxxxx
+            `---------------------------------\n` +
+            `*Pengalaman Menjual Online:*\n${experience}\n\n` +
+            `*Sebab Menjadi Reseller:*\n${reason}\n` +
+            `---------------------------------\n` +
+            `🚀 Mula Sekarang?: ${startNow}\n` +
+            `\nTerima kasih!`;
 
         const encodedMsg = encodeURIComponent(msg);
+        
+        // IMPORTANT: The WhatsApp link MUST use the country code (60) for the recipient (ADMIN).
+        // The phone number in the message body is the one that starts with '0'.
         const waLink = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodedMsg}`;
 
         window.open(waLink, '_blank');
