@@ -339,7 +339,7 @@
      // Menggunakan window.PRODUCTS_DATA dari fail config
      container.innerHTML = window.PRODUCTS_DATA.map(p => `
        <div class="card flex flex-col items-center cursor-pointer" onclick="openTierModal('${p.id}')">
-         <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-24 h-24 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
+         <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-16 h-16 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
          <h3 class="text-lg text-center">${p.name}</h3>
          <p class="text-sm text-gray-700">RRP: <strong style="color:var(--primary); font-size:1.1em;">RM ${p.rrp.toFixed(2)}</strong></p>
          <p class="text-xs mt-2 text-gray-500">Kos Minima: RM ${window.getResellerCost(p.id, 100).cost.toFixed(2)}</p>
