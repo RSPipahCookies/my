@@ -78,9 +78,14 @@
       <label for="name">Nama Penuh</label>
       <input type="text" id="name" name="name" required>
     </div>
+    
     <div class="form-group">
       <label for="phone">Nombor WhatsApp (cth: 0123456789)</label>
-      <input type="tel" id="phone" name="phone" placeholder="Sila masukkan no whatsapp anda" required>
+      <input type="tel" id="phone" name="phone" 
+             placeholder="Sila masukkan no whatsapp anda" 
+             pattern="[0-9]{10,11}" 
+             title="Sila masukkan 10 atau 11 digit nombor tanpa sebarang sengkang atau ruang" 
+             required>
     </div>
     
     <div class="form-group">
@@ -105,28 +110,26 @@
         </div>
     </div>
 
-    <button type="submit"> Submit 🍪</button>
+    <button type="submit"> Submit 🚀</button>
   </form>
   <p class="info-text">Setelah berjaya, anda akan diberikan link untuk Reseller Portal *tidak boleh disebar,hanya untuk kegunaan reseller berdaftar sahaja, Terima Kasih.*</p>
 </div>
 
 <script>
-    const ADMIN_WHATSAPP_NUMBER = "601121243407"; // Ganti dengan nombor Admin sebenar (Guna 60xxxx untuk tujuan WhatsApp API)
+    const ADMIN_WHATSAPP_NUMBER = "601121243407"; // Admin's number (Must be in International format: 60xxxx)
 
-    // Helper function to format the phone number for display/message
-    function formatPhoneNumber(phone) {
-        // 1. Remove all non-digit characters.
-        let cleanedPhone = phone.replace(/[^0-9]/g, '');
+    // IMPROVED: Helper function to format the phone number for DISPLAY in the WhatsApp message (e.g., 01x-xxxxxxx)
+    function formatPhoneNumberForDisplay(phone) {
+        let cleanedPhone = phone.replace(/[^0-9]/g, ''); // Remove non-digits
         
-        // 2. If it starts with '60', remove it to make it start with '0'.
+        // If it starts with '60', remove it (e.g., 6012... -> 12...)
         if (cleanedPhone.startsWith('60') && cleanedPhone.length > 2) {
-            cleanedPhone = '0' + cleanedPhone.substring(2);
+            cleanedPhone = cleanedPhone.substring(2);
         }
         
-        // 3. If it does NOT start with '0', and assuming it's a Malaysian number without the country code, 
-        //    it might be missing the leading 0 (e.g., 1121243407). We prepend '0' for the message.
-        if (!cleanedPhone.startsWith('0') && cleanedPhone.length > 8) { // Assuming a standard length
-             cleanedPhone = '0' + cleanedPhone;
+        // Ensure it starts with '0' for local display (e.g., 12... -> 012...)
+        if (!cleanedPhone.startsWith('0')) {
+            cleanedPhone = '0' + cleanedPhone;
         }
 
         return cleanedPhone;
@@ -137,7 +140,8 @@
 
         const name = document.getElementById('name').value.trim();
         const rawPhone = document.getElementById('phone').value.trim();
-        const phoneForMessage = formatPhoneNumber(rawPhone); // Format for message display (01x-xxxxxxx)
+        // Use the improved function
+        const phoneForMessage = formatPhoneNumberForDisplay(rawPhone); 
         
         const experience = document.getElementById('exp').value.trim();
         const reason = document.getElementById('reason').value.trim(); 
@@ -147,19 +151,29 @@
 
         // Basic validation for new fields
         if (experience.length < 5) {
-            alert('Sila berikan butiran pengalaman menjual online anda.');
+            alert('Sila berikan butiran pengalaman menjual online anda (minimum 5 huruf).');
             return;
         }
         if (reason.length < 5) {
-            alert('Sila jelaskan mengapa anda ingin menjadi reseller PipahCookies.');
+            alert('Sila jelaskan mengapa anda ingin menjadi reseller PipahCookies (minimum 5 huruf).');
             return;
         }
         
-        alert(`Pendaftaran Berjaya! Anda akan diarah ke WhatsApp untuk menghantar maklumat ini kepada Admin.`);
+        // NEW: Confirmation Dialog before redirecting
+        const confirmationMessage = 
+            `Pendaftaran Berjaya!\n\n` +
+            `Anda akan diarah ke WhatsApp untuk menghantar maklumat ini kepada Admin (${ADMIN_WHATSAPP_NUMBER}).\n\n` +
+            `Sila tekan 'OK' untuk teruskan atau 'Cancel' untuk membatalkan.`;
+
+        if (!confirm(confirmationMessage)) {
+            // User clicked Cancel
+            alert('Pendaftaran dibatalkan. Sila cuba lagi.');
+            return;
+        }
         
-        // PREPARE WHATSAPP MESSAGE (Using phoneForMessage which starts with '0')
+        // PREPARE WHATSAPP MESSAGE
         const msg = 
-            `🧾 *Permohonan Reseller PipahCookies* 🧾\n` +
+            `🎉 *Permohonan Reseller PipahCookies* 🎉\n` +
             `---------------------------------\n` +
             `👤 Nama: ${name}\n` +
             `📱 WhatsApp: ${phoneForMessage}\n` + // Display as 01x-xxxxxxx
@@ -167,15 +181,15 @@
             `*Pengalaman Menjual Online:*\n${experience}\n\n` +
             `*Sebab Menjadi Reseller:*\n${reason}\n` +
             `---------------------------------\n` +
-            `🚀 Mula Sekarang?: ${startNow}\n` +
+            `✅ Mula Sekarang?: ${startNow}\n` +
             `\nTerima kasih!`;
 
         const encodedMsg = encodeURIComponent(msg);
         
         // IMPORTANT: The WhatsApp link MUST use the country code (60) for the recipient (ADMIN).
-        // The phone number in the message body is the one that starts with '0'.
         const waLink = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodedMsg}`;
 
+        // Redirect/Open the WhatsApp link
         window.open(waLink, '_blank');
     });
 </script>
