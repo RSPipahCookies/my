@@ -39,6 +39,8 @@
       <div><input type="text" id="orderId" readonly style="background:#f6f2ee"></div>
       <label>Nama Penuh</label>
       <div><input type="text" id="customerName" placeholder="Nama penuh"></div>
+      <label>Tarikh Pengambilan (Pickup)</label>
+      <div><input type="text" id="pickupDate" readonly style="background:#f6f2ee; font-weight: bold;"></div>
       <label>Alamat (boleh kosong untuk pickup)</label>
       <div><textarea id="customerAddress" rows="2" placeholder="Alamat penuh (optional)"></textarea></div>
     </div>
@@ -95,6 +97,7 @@ function loadOrderFromStorage(){
     orderId: getNextOrderNumber(),
     name: '',
     address: '',
+    // pickupDate will be undefined but will not break anything
     date: new Date().toISOString(),
     items: cart
   };
@@ -104,6 +107,17 @@ function renderOrder(){
   const order = loadOrderFromStorage();
   document.getElementById('orderId').value = order.orderId || getNextOrderNumber();
   document.getElementById('customerName').value = order.name || '';
+  
+  // BARU: Paparkan tarikh pengambilan
+  const pickupDateEl = document.getElementById('pickupDate');
+  if (order.pickupDate) {
+      // Format tarikh dalam format yang lebih mesra pengguna
+      pickupDateEl.value = new Date(order.pickupDate).toLocaleDateString('ms-MY', { year: 'numeric', month: 'long', day: 'numeric' });
+  } else {
+      pickupDateEl.value = 'Belum ditetapkan';
+  }
+  // Akhir BARU
+
   document.getElementById('customerAddress').value = order.address || '';
   const tbody = document.querySelector('#items-table tbody');
   tbody.innerHTML = '';
@@ -138,8 +152,11 @@ function orderToText(order){
   lines.push('  P I P A H C O O K I E S - O R D E R  ');
   lines.push('======================================');
   lines.push(`No. Pesanan: ${order.orderId || ''}`);
-  lines.push(`Tarikh: ${new Date(order.date).toLocaleString() || ''}`);
+  lines.push(`Tarikh Dibuat: ${new Date(order.date).toLocaleString() || ''}`);
   lines.push(`Nama Penuh: ${order.name || '-'}`);
+  // BARU: Tambah tarikh pengambilan
+  lines.push(`Tarikh Pengambilan: ${order.pickupDate || 'Belum ditetapkan'}`);
+  // Akhir BARU
   lines.push(`Alamat: ${order.address || 'Pickup/Tiada Alamat'}`);
   lines.push('--------------------------------------');
   
@@ -185,6 +202,9 @@ function openWhatsApp(order){
   lines.push(`PipahCookies — Pesanan Baru`);
   lines.push(`No. Pesanan: ${order.orderId}`);
   lines.push(`Nama: ${order.name || '-'}`);
+  // BARU: Tambah tarikh pengambilan
+  if(order.pickupDate) lines.push(`Tarikh Pengambilan: ${new Date(order.pickupDate).toLocaleDateString('ms-MY', { year: 'numeric', month: 'long', day: 'numeric' })}`);
+  // Akhir BARU
   if(order.address) lines.push(`Alamat: ${order.address}`);
   lines.push('');
   lines.push('Items:');
@@ -215,6 +235,7 @@ function gatherOrderFromForm(){
     date: base.date || new Date().toISOString(),
     name: document.getElementById('customerName').value.trim(),
     address: document.getElementById('customerAddress').value.trim(),
+    pickupDate: base.pickupDate, // Ambil dari base order (local storage)
     items: base.items || []
   };
   return order;
