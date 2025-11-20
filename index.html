@@ -269,6 +269,9 @@
       <input type="text" id="orderId" name="orderId" readonly style="background:#f4f4f4;">
       <input id="full-name" type="text" placeholder="Nama penuh" />
       <textarea id="full-address" placeholder="Alamat penuh (boleh kosong untuk pickup)"></textarea>
+      
+      <label for="pickup-date" style="margin-top: 4px; font-weight: 600;">Tarikh Pengambilan (Pickup)</label>
+      <input type="date" id="pickup-date" name="pickup-date" required style="font-family: inherit;">
       <button class="btn checkout" id="go-to-summary">Teruskan ke Ringkasan</button>
     </div>
 
@@ -297,6 +300,18 @@ function getUnitPriceForQty(productId, qty){
     return window.getResellerCost(productId, qty).cost; 
 }
 
+// BARU: Fungsi untuk mendapatkan tarikh minimum (2 hari selepas hari ini)
+function getMinPickupDate() {
+    const today = new Date();
+    // Tambah 2 hari
+    today.setDate(today.getDate() + 2); 
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); // Januari adalah 0!
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`; // Format YYYY-MM-DD
+}
+// Akhir BARU
+
 // ===== LOCAL STORAGE & INIT (unchanged) =====
 const CART_KEY = 'pipah_reseller_cart_v1';
 let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
@@ -310,11 +325,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
   renderProducts(); updateCartUI();
   document.querySelectorAll('.fade-up').forEach((el,i)=> el.style.animationDelay = (i*80)+'ms');
   const orderIdInput = document.getElementById('orderId'); if(orderIdInput) orderIdInput.value = getNextOrderNumber();
+
+  // BARU: Setkan tarikh minimum pada input tarikh
+  const pickupDateInput = document.getElementById('pickup-date');
+  if(pickupDateInput) pickupDateInput.setAttribute('min', getMinPickupDate());
+  
   document.getElementById('go-to-summary').addEventListener('click', ()=>{
     const name = document.getElementById('full-name').value.trim();
     const address = document.getElementById('full-address').value.trim();
+    // BARU: Ambil tarikh pengambilan
+    const pickupDate = pickupDateInput ? pickupDateInput.value : '';
+
     if(!name){ alert('Sila isi nama penuh.'); return; }
-    const order = { orderId: document.getElementById('orderId').value, name, address, date: new Date().toISOString(), items: cart };
+    // BARU: Semak tarikh pengambilan
+    if(!pickupDate){ alert('Sila pilih tarikh pengambilan.'); return; }
+
+    const order = { 
+        orderId: document.getElementById('orderId').value, 
+        name, 
+        address, 
+        // BARU: Tambah tarikh pengambilan ke objek order
+        pickupDate: pickupDate, 
+        date: new Date().toISOString(), 
+        items: cart 
+    };
     localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
     window.open('reseller-checkout.html', '_blank');
   });
