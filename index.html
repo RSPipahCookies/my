@@ -325,20 +325,22 @@ document.addEventListener('DOMContentLoaded', ()=>{
   renderProducts(); updateCartUI();
   document.querySelectorAll('.fade-up').forEach((el,i)=> el.style.animationDelay = (i*80)+'ms');
   const orderIdInput = document.getElementById('orderId'); if(orderIdInput) orderIdInput.value = getNextOrderNumber();
-
+  
   // BARU: Setkan tarikh minimum pada input tarikh
   const pickupDateInput = document.getElementById('pickup-date');
   if(pickupDateInput) pickupDateInput.setAttribute('min', getMinPickupDate());
-  
+  // Akhir BARU
+
   document.getElementById('go-to-summary').addEventListener('click', ()=>{
     const name = document.getElementById('full-name').value.trim();
     const address = document.getElementById('full-address').value.trim();
+    
     // BARU: Ambil tarikh pengambilan
     const pickupDate = pickupDateInput ? pickupDateInput.value : '';
 
     if(!name){ alert('Sila isi nama penuh.'); return; }
     // BARU: Semak tarikh pengambilan
-    if(!pickupDate){ alert('Sila pilih tarikh pengambilan.'); return; }
+    if(!pickupDate){ alert('Sila pilih tarikh pengambilan. Tarikh terawal adalah 2 hari dari hari ini.'); return; }
 
     const order = { 
         orderId: document.getElementById('orderId').value, 
