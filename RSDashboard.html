@@ -3,402 +3,132 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PipahCookies — Multi-Product Reseller Portal</title>
+  <title>Reseller Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* Updated Soft Beige Theme */
-    :root{
-      --primary: #A67734; /* Rich Brown/Gold Accent */
-      --primary-dark: #6C4920; /* Darker Brown for Text/Headers */
-      --accent: #F4EAE0; /* Soft Beige/Cream Background */
-      --whatsapp: #25d366;
-      --sea-blue: #0ea5e9; 
-      --bg: #F9F7F5; /* Very Light Beige Background */
-      --card: #ffffff;
-      --muted: #888888;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:'Inter', sans-serif;background:var(--bg);color:#333;-webkit-font-smoothing:antialiased}
-    h1,h2,h3{font-family:'Inter', sans-serif;color:var(--primary-dark);margin:0 0 12px;font-weight:700}
-    a{color:inherit}
-
-    .site-header{display:block}
-    .header-img{width:100%;height:auto;display:block;object-fit:cover;max-height:300px;border-radius:0 0 18px 18px;box-shadow:0 12px 25px rgba(0,0,0,0.1);animation:fadeUp .9s both}
-    .site-nav{position:sticky;top:0;background:var(--primary);z-index:1000;box-shadow:0 2px 4px rgba(0,0,0,0.1);padding:10px 0}
-    .nav-list{display:flex;justify-content:space-around;max-width:1000px;margin:0 auto;list-style:none;padding:0}
-    .nav-list a{text-decoration:none;color:var(--accent);padding:10px 15px;border-radius:6px;transition:background-color .2s;font-weight:600;}
-    .nav-list a:hover{background-color:rgba(255,255,255,0.2)}
-
-    .container{max-width:1200px;margin:0 auto;padding:0 20px}
-    .section{padding:40px 0;border-bottom:1px solid rgba(0,0,0,0.08)}
-    
-    .products {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr); 
-        gap: 20px;
-        justify-content: center;
-    }
-    @media (min-width: 768px) { .products { grid-template-columns: repeat(3, 1fr); } }
-    @media (min-width: 1024px) { .products { grid-template-columns: repeat(4, 1fr); } }
-
-    .card{background:var(--card);padding:20px;border-radius:12px;box-shadow:0 6px 15px rgba(0,0,0,0.05);transition:transform .3s;text-align:center;}
-    .card:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,0.1);}
-    
-    .generator-card { border: 2px solid #e0e0e0; position: relative; }
-    .generator-card.selected { border-color: var(--sea-blue); box-shadow: 0 0 15px rgba(14, 165, 233, 0.4); }
-    .card-checkbox { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; cursor: pointer; z-index: 10; accent-color: var(--sea-blue); }
-
-    .generator-grid-3-in-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px 0; }
-    @media (min-width: 640px) { .generator-grid-3-in-row { grid-template-columns: repeat(3, 1fr); } }
-    @media (min-width: 1024px) { .generator-grid-3-in-row { grid-template-columns: repeat(4, 1fr); } }
-    
-    .generator-card-grid { display: flex; flex-direction: column; align-items: center; text-align: center; background: var(--card); border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform .2s; height: 100%; padding: 12px; }
-    .generator-card-grid:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,0.1);}
-    .generator-card-grid img { width: 55px !important; height: 55px !important; margin-bottom: 8px !important; margin-right: 0 !important; margin-top: 5px; }
-    .generator-card-grid .product-details { flex-grow: 1; min-height: 40px; margin-bottom: 5px; }
-    .generator-card-grid .product-details h4 { font-size: 0.9em; margin-bottom: 2px; }
-    .generator-card-grid .input-group { margin-top: 5px; width: 100%; margin-bottom: 0; text-align: center; }
-    .generator-card-grid .input-group input { text-align: center; padding: 4px !important; font-size: 1em !important; font-weight: 700; }
-    .generator-card-grid .input-group label { font-size: 0.7em; font-weight: 500; color: var(--muted); }
-    .generator-card-grid.selected { border-width: 3px; }
-    
-    .btn{display:inline-block;padding:12px 25px;border-radius:8px;text-decoration:none;font-weight:600;transition:all .2s;text-align:center;border:none;}
-    .primary-btn{background:var(--primary);color:#fff}
-    .whatsapp-btn{background:var(--whatsapp);color:#fff}
-    .input-group{margin-bottom:15px}
-    .input-group label{display:block;margin-bottom:5px;font-weight:600;color:var(--primary-dark);font-size:0.95em;}
-    .input-group input, .input-group select{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:1em;color:#444}
-    
-    .fab-container{position:fixed;bottom:20px;right:20px;z-index:1001}
-    .fab-btn{background:var(--primary);color:#fff;border:none;border-radius:50%;width:56px;height:56px;font-size:1.5em;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;transition:background-color .2s}
-    .fab-btn:hover{background-color:var(--primary-dark)}
-    .calculator-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1002;align-items:center;justify-content:center}
-    .calculator-content{background:var(--card);padding:30px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);width:90%;max-width:400px;transform:translateY(20px);opacity:0;transition:all .3s ease-out}
-    .calculator-modal.open .calculator-content{transform:translateY(0);opacity:1}
-    .profit-result span{font-size:1.8em;font-weight:700;color:var(--whatsapp);display:block;margin-top:5px;}
+    :root{ --primary: #A67734; --bg: #F9F7F5; }
+    body{font-family:'Inter', sans-serif;background:var(--bg);color:#333}
+    .card{background:white;padding:15px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.05);transition:0.2s; border: 2px solid transparent;}
+    .card.selected{border-color:#0ea5e9;box-shadow:0 0 15px rgba(14, 165, 233, 0.2);}
+    .loading-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background: #e5e7eb; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
   </style>
 </head>
 <body>
-
-  <header class="site-header">
-    <img id="header-banner" src="images/Header2.jpg" alt="Header Image" class="header-img">
-  </header>
-
-  <nav class="site-nav">
-    <ul class="nav-list">
-      <li><a href="#products">Produk</a></li>
-      <li><a href="#generator">Jana Jualan</a></li>
-      <li><a href="#contact">Hubungi Kami</a></li>
-    </ul>
-  </nav>
-
-  <div class="container">
-
-    <section id="products" class="section">
-      <h2 class="text-center text-3xl mb-8">Senarai Produk & Harga Runcit Disyorkan (RRP)</h2>
-      <p class="text-center text-gray-600 mb-8">Klik pada mana-mana produk untuk melihat **Struktur Tiers Harga Reseller (Kos Anda)**.</p>
-      <div id="product-list" class="products"></div>
-    </section>
-    
-    <div id="tierModal" class="calculator-modal" onclick="closeModal(event)">
-        <div class="calculator-content" onclick="event.stopPropagation()" style="max-width: 500px;">
-            <h3 class="text-center text-2xl mb-5" id="tierModalTitle">Struktur Tiers Harga: -</h3>
-            <div id="product-tiers-list" class="my-4"></div>
-            <p class="text-sm text-gray-700 mt-5">Sila gunakan Kalkulator Keuntungan untuk mengira kos sebenar anda.</p>
-            <button class="close-btn" onclick="closeTierModal()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5em;color:var(--muted);"><i class="fas fa-times"></i></button>
-        </div>
-    </div>
-    
-    <section id="generator" class="section bg-accent p-8 rounded-2xl shadow-xl">
-      <h2 class="text-center text-3xl" style="color:var(--whatsapp);"><i class="fas fa-share-alt"></i> Jana Pautan Jualan Anda</h2>
-      <p class="text-center text-gray-600 mb-8">
-        1. Masukkan info anda, 2. Pilih produk & harga, 3. Jana pautan.
-      </p>
-
-      <div class="max-w-4xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="input-group">
-              <label for="whatsappNumber">Nombor WhatsApp Anda (Wajib)</label>
-              <input type="tel" id="whatsappNumber" placeholder="cth: 01234567890" value="" class="shadow-sm">
-            </div>
-            
-            <div class="input-group">
-              <label for="brandName">Nama Jenama / Kedai Anda (Pilihan)</label>
-              <input type="text" id="brandName" placeholder="cth: Kedai Cookies Siti" value="" class="shadow-sm border-primary">
-            </div>
-        </div>
-
-        <hr class="my-6 border-primary/20">
-        
-        <h3 class="text-xl font-semibold text-center mb-4 text-primary-dark">Pilih Produk & Tetapkan Harga Jualan Runcit (RM)</h3>
-        
-        <div id="generator-product-grid" class="generator-grid-3-in-row"></div>
-
-        <div class="text-center my-8">
-          <button onclick="generateLink()" class="btn whatsapp-btn text-lg w-full py-4 shadow-lg hover:shadow-xl">
-            <i class="fas fa-link"></i> Jana & Salin Pautan Jualan Sekarang
-          </button>
-        </div>
-
-        <div id="generatedLinkContainer" class="hidden mt-6 bg-white p-5 rounded-lg border-l-4 border-whatsapp shadow-inner">
-          <p class="font-bold text-green-700 mb-3 text-center">Pautan Jualan Anda Berjaya Dijana & Disalin!</p>
-          <input type="text" id="salesLink" readonly class="w-full p-3 border-dashed border-gray-400 rounded-md text-sm text-center cursor-pointer bg-gray-50" onclick="copyLink()">
-          <a id="testLink" href="#" target="_blank" class="block mt-4 text-center text-sm text-primary hover:underline font-medium">Cuba Pautan Ini Dalam Tab Baru <i class="fas fa-external-link-alt"></i></a>
-        </div>
+  <div class="max-w-4xl mx-auto p-4">
+    <div class="bg-white p-6 rounded-xl shadow-lg mt-10">
+      <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Jana Pautan Jualan</h2>
+      
+      <!-- INPUTS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div><label class="block font-bold text-sm mb-1">No. WhatsApp</label><input type="tel" id="whatsappNumber" class="w-full p-3 border rounded-lg bg-gray-50"></div>
+        <div><label class="block font-bold text-sm mb-1">Nama Brand</label><input type="text" id="brandName" class="w-full p-3 border rounded-lg bg-gray-50"></div>
       </div>
-    </section>
 
-    <section id="contact" class="section">
-      <h2 class="text-center text-3xl">🔧</h2>
-      <p class="text-center text-gray-600 mb-6">Jika anda memerlukan bantuan, bertanya tentang stok, atau menghadapi isu teknikal.</p>
-      <div class="text-center">
-        <a id="hq-whatsapp-link" href="#" class="btn whatsapp-btn text-lg shadow-md" target="_blank">
-          <i class="fab fa-whatsapp"></i> Klik for Support
-        </a>
+      <!-- PRODUCT GRID -->
+      <h3 class="font-bold text-gray-700 mb-4">Pilih Produk & Tetapkan Harga</h3>
+      <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4 min-h-[200px]">
+          <!-- Loader -->
+          <div class="col-span-full text-center py-10 text-gray-400">Loading products from HQ...</div>
       </div>
-    </section>
 
-  </div>
-
-  <div class="fab-container">
-    <button class="fab-btn shadow-xl" onclick="toggleCalculator()">
-      <i class="fas fa-calculator"></i>
-    </button>
-  </div>
-
-  <div id="calculatorModal" class="calculator-modal" onclick="closeModal(event)">
-    <div class="calculator-content" onclick="event.stopPropagation()">
-      <h3 class="text-center text-2xl mb-5">Kalkulator Keuntungan Reseller</h3>
-      <div class="input-group">
-        <label for="calcProduct">Pilih Produk</label>
-        <select id="calcProduct" onchange="calculateProfit()"></select>
+      <button onclick="generateLink()" class="mt-8 bg-green-500 text-white font-bold p-3 w-full rounded-lg shadow-lg hover:bg-green-600">Jana Link</button>
+      
+      <div id="resultArea" class="hidden mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <input type="text" id="finalLink" readonly class="w-full bg-transparent text-sm mb-2 text-center">
+        <div class="text-center"><button onclick="copyLink()" class="text-blue-600 font-bold underline">Copy Link</button></div>
       </div>
-      <div class="input-group">
-        <label for="calcRetailPrice">Harga Jualan Runcit Anda (RM)</label>
-        <input type="number" id="calcRetailPrice" step="0.50" min="1" value="25.00" oninput="calculateProfit()" class="text-xl font-bold text-primary-dark">
-      </div>
-      <div class="input-group">
-        <label for="calcQuantity">Kuantiti (Unit)</label>
-        <input type="number" id="calcQuantity" min="1" value="10" oninput="calculateProfit()">
-      </div>
-      <div class="my-5 p-5 rounded-xl border-2 border-primary-dark bg-accent/70">
-        <p class="text-sm text-gray-700 mb-3">Kos Reseller Per Unit (Tier Diskaun: <strong id="calcDiscountTierName">-</strong>): <strong id="calcCostPerUnit">RM 0.00</strong></p>
-        <p class="text-xl font-semibold text-primary-dark">Keuntungan Kasar Total:</p>
-        <div class="profit-result">
-            <span id="calcProfit">RM 0.00</span>
-        </div>
-      </div>
-      <button class="close-btn" onclick="toggleCalculator()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5em;color:var(--muted);"><i class="fas fa-times"></i></button>
     </div>
   </div>
-  
-  <script src="pipah-product-config.js"></script>
-  
-  <script>
-   document.addEventListener('DOMContentLoaded', () => {
-     document.getElementById('header-banner').src = window.HEADER_IMAGE_URL; 
-     let hqWa = String(window.HQ_WHATSAPP_NUMBER);
-     if (hqWa.startsWith('0')) { hqWa = '60' + hqWa.substring(1); } 
-     else if (!hqWa.startsWith('60')) { hqWa = '60' + hqWa; }
-     document.getElementById('hq-whatsapp-link').href = `https://wa.me/${hqWa}`;
-     loadProductList();
-     loadGeneratorGrid(); 
-     loadCalculatorOptions();
-     calculateProfit(); 
-   });
 
-   function loadProductList() {
-     const container = document.getElementById('product-list');
-     container.innerHTML = window.PRODUCTS_DATA.map(p => `
-       <div class="card flex flex-col items-center cursor-pointer hover:bg-gray-50 transition-colors" onclick="openTierModal('${p.id}')">
-         <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/A67734/ffffff?text=Product';" class="w-24 h-24 object-cover rounded-full mb-4 shadow-md border-2 border-accent" alt="${p.name}">
-         <h3 class="text-lg text-center">${p.name}</h3>
-         <p class="text-sm text-gray-700">RRP: <strong style="color:var(--primary); font-size:1.1em;">RM ${p.rrp.toFixed(2)}</strong></p>
-         <p class="text-xs mt-2 text-gray-500 font-semibold text-sea-blue">Klik untuk lihat Struktur Harga</p>
-       </div>
-     `).join('');
-   }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-   function openTierModal(productId) {
-       const modal = document.getElementById('tierModal');
-       const title = document.getElementById('tierModalTitle');
-       const listContainer = document.getElementById('product-tiers-list');
-       const product = window.PRODUCTS_DATA.find(p => p.id === productId);
-       if (!product) return;
-       title.textContent = `Struktur Tiers Harga: ${product.name}`;
-       listContainer.innerHTML = product.tiers.map(t => `
-           <div class="flex justify-between items-center p-3 my-2 rounded-lg ${t.max === Infinity ? 'bg-green-100 border-l-4 border-green-500' : 'bg-white border'}">
-               <div>
-                   <span class="font-bold text-primary-dark">${t.name}</span>
-                   <p class="text-xs text-gray-500">${t.min} - ${t.max === Infinity ? 'Infinity' : t.max} unit</p>
-               </div>
-               <span class="text-xl font-bold text-whatsapp">RM ${t.price.toFixed(2)}</span>
-           </div>
-       `).join('');
-       modal.classList.add('open');
-       modal.style.display = 'flex';
-   }
-   function closeTierModal() {
-       const modal = document.getElementById('tierModal');
-       modal.classList.remove('open');
-       setTimeout(() => modal.style.display = 'none', 300);
-   }
+    const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT",
+            storageBucket: "YOUR_PROJECT.firebasestorage.app",
+            messagingSenderId: "...",
+            appId: "..."
+    };
 
-   function loadGeneratorGrid() {
-     const container = document.getElementById('generator-product-grid');
-     container.innerHTML = window.PRODUCTS_DATA.map((p, index) => `
-       <div id="card_${p.id}" class="generator-card generator-card-grid ${index < 3 ? 'selected' : ''}">
-           <input type="checkbox" id="check_${p.id}" value="${p.id}" ${index < 3 ? 'checked' : ''} class="card-checkbox" onchange="toggleCardSelection('${p.id}')">
-           <img src="${p.img_url}" onerror="this.onerror=null; this.src='https://placehold.co/60x60/A67734/ffffff?text=IMG';" class="w-14 h-14 object-cover rounded-full shadow-md border-2 border-accent" alt="${p.name}">
-           <div class="product-details">
-                <h4 class="font-semibold">${p.name}</h4>
-                <p class="text-xs text-gray-500">RRP: RM ${p.rrp.toFixed(2)}</p>
-           </div>
-           <div class="input-group">
-               <label for="price_${p.id}" class="">Harga Jual (RM)</label>
-               <input type="number" id="price_${p.id}" step="0.50" min="1" value="${p.rrp.toFixed(2)}" class="w-full">
-           </div>
-       </div>
-     `).join('');
-   }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let PRODUCTS_DATA = [];
 
-   function toggleCardSelection(productId) {
-       const card = document.getElementById(`card_${productId}`);
-       const checkbox = document.getElementById(`check_${productId}`);
-       if (checkbox.checked) {
-           card.classList.add('selected');
-       } else {
-           card.classList.remove('selected');
-       }
-   }
-   
-   // --- SALES LINK GENERATOR LOGIC (UPDATED WITH BRAND) ---
-   function generateLink() {
-     let whatsapp = document.getElementById('whatsappNumber').value.trim();
-     const brandName = document.getElementById('brandName').value.trim(); // NEW
-     const linkContainer = document.getElementById('generatedLinkContainer');
-     const salesLinkInput = document.getElementById('salesLink');
-     const testLink = document.getElementById('testLink');
-     
-     if (!whatsapp || whatsapp.length < 8) {
-       showTemporaryAlert('❌ Ralat: Sila masukkan Nombor WhatsApp yang sah.', 'bg-red-500');
-       return;
-     }
+    // 1. FETCH PRODUCTS
+    async function loadProducts() {
+        const grid = document.getElementById('product-grid');
+        try {
+            const snap = await getDocs(collection(db, 'products'));
+            PRODUCTS_DATA = [];
+            grid.innerHTML = '';
 
-     if (whatsapp.startsWith('0')) { whatsapp = '60' + whatsapp.substring(1); }
-     
-     let selectedIds = [];
-     let selectedPrices = [];
+            snap.forEach(doc => {
+                const p = doc.data();
+                p.id = doc.id; // Critical: Use Firestore ID
+                PRODUCTS_DATA.push(p);
 
-     window.PRODUCTS_DATA.forEach(p => {
-       const checkbox = document.getElementById(`check_${p.id}`);
-       if (checkbox && checkbox.checked) {
-           const priceInput = document.getElementById(`price_${p.id}`);
-           let price = parseFloat(priceInput.value);
-           if (isNaN(price) || price < 0.01) { price = p.rrp; }
-           selectedIds.push(p.id);
-           selectedPrices.push(price.toFixed(2));
-       }
-     });
-     
-     if (selectedIds.length === 0) {
-         showTemporaryAlert('❌ Ralat: Sila pilih sekurang-kurangnya satu produk.', 'bg-red-500');
-         return;
-     }
-     
-     // ADDED &rs_brand parameter
-     let params = `rs_wa=${whatsapp}&p_ids=${selectedIds.join(',')}&p_prices=${selectedPrices.join(',')}`;
-     if (brandName) {
-         params += `&rs_brand=${encodeURIComponent(brandName)}`;
-     }
+                const imgUrl = p.images && p.images[0] ? p.images[0] : 'https://placehold.co/100';
+                
+                grid.innerHTML += `
+                    <div id="card_${p.id}" class="card">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" id="chk_${p.id}" value="${p.id}" onchange="toggleCard('${p.id}')" class="w-5 h-5">
+                            <span class="text-xs font-bold text-gray-500">Pilih</span>
+                        </div>
+                        <img src="${imgUrl}" class="w-16 h-16 rounded-lg mx-auto mb-2 object-cover">
+                        <h4 class="text-sm font-bold text-center leading-tight mb-2 h-10 overflow-hidden">${p.name}</h4>
+                        <input type="number" id="price_${p.id}" value="${p.rrp}" class="w-full text-center border rounded p-1 font-bold text-gray-700">
+                    </div>
+                `;
+            });
+        } catch (e) {
+            grid.innerHTML = `<p class="text-red-500 col-span-full text-center">Failed to load products. Check Config.</p>`;
+        }
+    }
 
-     const customerFormFile = 'OrderNow.html';
-     const fullLink = `${customerFormFile}?${params}`;
-     const displayLink = `OrderNow.html-...?rs_wa=${whatsapp}${brandName ? '&rs_brand='+brandName : ''}`; 
-     
-     const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-     const fullUrl = `${baseUrl}${fullLink}`;
+    // 2. EXPOSE FUNCTIONS TO WINDOW (Module Scope Fix)
+    window.toggleCard = (id) => {
+        const el = document.getElementById(`card_${id}`);
+        const chk = document.getElementById(`chk_${id}`);
+        if(chk.checked) el.classList.add('selected'); else el.classList.remove('selected');
+    };
 
-     localStorage.setItem('loggedInResellerWa', whatsapp);
-     if(brandName) localStorage.setItem('loggedInResellerBrand', brandName); // Save brand
-     
-     const priceMap = {};
-     selectedIds.forEach((id, index) => { priceMap[id] = parseFloat(selectedPrices[index]); });
-     localStorage.setItem('currentResellerPrices', JSON.stringify(priceMap));
+    window.generateLink = () => {
+        let wa = document.getElementById('whatsappNumber').value.replace(/[^0-9]/g, '');
+        let brand = document.getElementById('brandName').value.trim();
+        if(wa.startsWith('0')) wa = '60' + wa.substring(1);
 
-     salesLinkInput.value = displayLink;
-     testLink.href = fullUrl;
-     linkContainer.classList.remove('hidden');
+        let p_ids = [], p_prices = [];
+        PRODUCTS_DATA.forEach(p => {
+            const chk = document.getElementById(`chk_${p.id}`);
+            if(chk && chk.checked) {
+                p_ids.push(p.id);
+                p_prices.push(document.getElementById(`price_${p.id}`).value);
+            }
+        });
 
-     copyLink(fullUrl);
-   }
+        if(p_ids.length === 0) return alert("Pilih produk dahulu.");
 
-   function copyLink(linkToCopy) {
-     const tempInput = document.createElement('input');
-     tempInput.value = linkToCopy;
-     document.body.appendChild(tempInput);
-     tempInput.select();
-     tempInput.setSelectionRange(0, 99999); 
-     let copied = false;
-     try { copied = document.execCommand('copy'); } catch (err) { console.error('Could not copy', err); } 
-     finally { document.body.removeChild(tempInput); }
-     
-     if (copied) {
-       const container = document.getElementById('generatedLinkContainer');
-       const pElement = container.querySelector('p');
-       pElement.textContent = 'Pautan telah disalin ke papan keratan! ✅';
-       setTimeout(() => { pElement.textContent = 'Pautan Jualan Anda Berjaya Dijana & Disalin!'; }, 3000);
-     } else {
-       showTemporaryAlert('❌ Gagal menyalin. Sila salin manual.', 'bg-red-500');
-     }
-   }
+        const params = new URLSearchParams({ rs_wa: wa, rs_brand: brand, p_ids: p_ids.join(','), p_prices: p_prices.join(',') });
+        const url = window.location.href.replace('RSDashboard.html', 'OrderNow.html') + '?' + params.toString();
+        
+        document.getElementById('resultArea').classList.remove('hidden');
+        document.getElementById('finalLink').value = url;
+    };
 
-   function showTemporaryAlert(message, className) {
-       const tempAlert = document.createElement('div');
-       tempAlert.className = `fixed inset-0 ${className} text-white flex items-center justify-center p-4 z-50 text-xl font-bold`;
-       tempAlert.textContent = message;
-       document.body.appendChild(tempAlert);
-       setTimeout(() => document.body.removeChild(tempAlert), 3000);
-   }
+    window.copyLink = () => {
+        const link = document.getElementById('finalLink');
+        link.select();
+        document.execCommand('copy');
+        alert("Copied!");
+    };
 
-   function loadCalculatorOptions() {
-       const select = document.getElementById('calcProduct');
-       select.innerHTML = window.PRODUCTS_DATA.map(p => 
-           `<option value="${p.id}">${p.name} (RRP: RM ${p.rrp.toFixed(2)})</option>`
-       ).join('');
-       document.getElementById('calcRetailPrice').value = window.PRODUCTS_DATA[0].rrp.toFixed(2);
-   }
-   function calculateProfit() {
-       const productId = document.getElementById('calcProduct').value;
-       const retailPrice = parseFloat(document.getElementById('calcRetailPrice').value);
-       const quantity = parseInt(document.getElementById('calcQuantity').value);
-       const product = window.PRODUCTS_DATA.find(p => p.id === productId);
-
-       if (!product || isNaN(retailPrice) || isNaN(quantity) || quantity < 1 || retailPrice < 1) {
-           document.getElementById('calcProfit').textContent = 'RM 0.00';
-           document.getElementById('calcCostPerUnit').textContent = 'RM 0.00';
-           document.getElementById('calcDiscountTierName').textContent = '-';
-           return;
-       }
-       const { cost: costPerUnit, name: discountName } = window.getResellerCost(productId, quantity);
-       const profit = (retailPrice - costPerUnit) * quantity;
-       document.getElementById('calcCostPerUnit').textContent = `RM ${costPerUnit.toFixed(2)}`;
-       document.getElementById('calcDiscountTierName').textContent = discountName;
-       document.getElementById('calcProfit').textContent = `RM ${profit.toFixed(2)}`;
-   }
-   function toggleCalculator() {
-       const modal = document.getElementById('calculatorModal');
-       modal.classList.toggle('open');
-       if (modal.classList.contains('open')) {
-           modal.style.display = 'flex';
-           calculateProfit(); 
-       } else { setTimeout(() => modal.style.display = 'none', 300); }
-   }
-   function closeModal(event) {
-       if (event.target.id === 'calculatorModal') toggleCalculator();
-       if (event.target.id === 'tierModal') closeTierModal();
-   }
+    loadProducts();
   </script>
 </body>
 </html>
