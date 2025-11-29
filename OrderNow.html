@@ -3,409 +3,167 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>Order - PipahCookies</title>
+  <title>Order Form</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
   <style>
-    /* Professional Modern Theme */
-    :root {
-      --primary: #A67734;       /* Gold/Brown */
-      --primary-light: #fdf8f3; /* Very light gold for active states */
-      --text-dark: #1f2937;
-      --text-gray: #6b7280;
-      --bg-page: #F9FAFB;       /* Cool Gray Background */
-      --whatsapp: #25d366;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-page);
-      color: var(--text-dark);
-      padding-bottom: 140px; /* Space for sticky footer */
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Brand Header Typography */
-    .brand-header-big {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      margin-bottom: 0.25rem;
-    }
-    
-    /* Modern Card Styling */
-    .glass-card {
-      background: white;
-      border: 1px solid #f3f4f6;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-      border-radius: 16px;
-    }
-
-    /* Product Card Interactions */
-    .product-card {
-      transition: all 0.2s ease;
-      border: 1px solid transparent;
-    }
-    
-    .product-card.active {
-      background-color: var(--primary-light);
-      border-color: var(--primary);
-      transform: scale(1.01);
-    }
-
-    /* Smooth Quantiy Buttons */
-    .qty-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-    .qty-btn:active { transform: scale(0.9); }
-
-    /* Custom Input Fields */
-    .input-icon-wrap { position: relative; }
-    .input-icon-wrap i {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #9ca3af;
-      font-size: 1.1rem;
-    }
-    .modern-input {
-      padding-left: 3rem; /* Space for icon */
-      padding-top: 0.85rem;
-      padding-bottom: 0.85rem;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      width: 100%;
-      transition: all 0.2s;
-      background: #fff;
-    }
-    .modern-input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(166, 119, 52, 0.1);
-    }
-
-    /* Sticky Bottom Bar */
-    .sticky-footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      padding: 15px 20px;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-      z-index: 50;
-      border-t: 1px solid #f3f4f6;
-      /* Safe area for iPhone home bar */
-      padding-bottom: env(safe-area-inset-bottom, 20px); 
-    }
+    body { font-family: sans-serif; background-color: #F9FAFB; padding-bottom: 120px; }
+    .qty-btn { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .sticky-footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
+    .img-thumb { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #eee; }
   </style>
 </head>
 <body>
 
-<div class="max-w-md mx-auto min-h-screen px-4 pt-6">
-  
-  <div class="text-center mb-8 fade-in">
-    <div id="brand-container">
-      <h1 id="page-main-title" class="text-2xl font-bold text-gray-900">Borang Pesanan</h1>
-      <p id="page-sub-title" class="text-sm text-gray-500 mt-1 font-medium">Isi butiran untuk pesanan pantas via WhatsApp.</p>
-    </div>
-    <div class="h-1 w-16 bg-yellow-600 mx-auto mt-4 rounded-full opacity-50"></div>
+<div class="max-w-md mx-auto px-4 pt-6">
+  <div class="text-center mb-6">
+    <h1 id="brandTitle" class="text-2xl font-extrabold text-[#A67734]">PIPAHCOOKIES</h1>
+    <p class="text-sm text-gray-500">Borang Pesanan</p>
   </div>
 
   <form id="order-form">
-    
-    <div class="glass-card p-6 mb-6">
-      <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Butiran Penghantaran</h2>
-      
-      <div class="space-y-4">
-        <div class="input-icon-wrap">
-          <i class="fas fa-user"></i>
-          <input type="text" id="customerName" class="modern-input" placeholder="Nama Penuh" required>
-        </div>
-        
-        <div class="input-icon-wrap">
-          <i class="fab fa-whatsapp"></i>
-          <input type="tel" id="customerPhone" class="modern-input" placeholder="No. WhatsApp (cth: 012...)" required>
-        </div>
-        
-        <div class="input-icon-wrap">
-          <i class="fas fa-map-marker-alt"></i>
-          <textarea id="customerAddress" class="modern-input" rows="2" placeholder="Alamat Penghantaran Lengkap" required style="border-radius: 12px;"></textarea>
-        </div>
-      </div>
+    <div class="bg-white p-4 rounded-xl shadow-sm border mb-4 space-y-3">
+        <input type="text" id="cName" class="w-full border p-3 rounded-lg" placeholder="Nama Penuh" required>
+        <input type="tel" id="cPhone" class="w-full border p-3 rounded-lg" placeholder="No. WhatsApp" required>
+        <textarea id="cAddr" class="w-full border p-3 rounded-lg" placeholder="Alamat" required></textarea>
     </div>
 
-    <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Pilih Produk</h2>
-    <div id="product-list-container" class="space-y-3">
-        </div>
+    <div id="product-list" class="space-y-3">
+        <div class="text-center py-10 text-gray-400">Loading products...</div>
+    </div>
 
-    <input type="hidden" id="reseller-whatsapp" value=""> 
-
-    <div class="sticky-footer flex items-center justify-between gap-4 max-w-md mx-auto left-0 right-0 md:relative md:rounded-xl md:shadow-none md:border-none md:bg-transparent">
-      
-      <div class="flex flex-col">
-        <span class="text-xs text-gray-500 font-medium">Anggaran Jumlah</span>
-        <span id="grand-total" class="text-2xl font-extrabold text-gray-900">RM 0.00</span>
+    <!-- Footer -->
+    <div class="sticky-footer flex justify-between items-center gap-4 max-w-md mx-auto">
+      <div>
+        <p class="text-xs text-gray-500">Total</p>
+        <p id="grand-total" class="text-xl font-bold">RM 0.00</p>
       </div>
-
-      <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-green-500/30 flex items-center justify-center gap-2 transition-transform transform active:scale-95">
-        <span>Hantar</span> <i class="fab fa-whatsapp text-xl"></i>
+      <button type="submit" id="submitBtn" class="flex-1 bg-green-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg">
+        Hantar WhatsApp
       </button>
-
     </div>
   </form>
-
 </div>
 
-<script>
-  // **CONFIGURATION**
-  const DEFAULT_RESALER_PRICE_KEY = 'currentResellerPrices';
-  const DEFAULT_RESALER_WA_KEY = 'loggedInResellerWa';
-  const DEFAULT_RESALER_BRAND_KEY = 'loggedInResellerBrand';
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // PRODUCT DATA (Must match Dashboard)
-  const PRODUCTS_BASE = [
-    { id: 'P1', name: 'Seasalt Cookies', img_url: 'images/ss1.jpg', desc: 'Premium Chocolate Chip' },
-    { id: 'P2', name: 'ChocHazelnut Button', img_url: 'images/ch1.jpg', desc: 'Crunchy Hazelnut' },
-    { id: 'P3', name: 'Brownies Cookies', img_url: 'images/br1.jpg', desc: 'Rich Dark Chocolate' },
-    { id: 'P4', name: 'Black Cookies', img_url: 'images/bc1.jpg', desc: 'Black Cocoa Edition' },
-    { id: 'P5', name: 'RedVelvet Button', img_url: 'images/rv1.jpg', desc: 'Red Velvet Crumbs' },
-    { id: 'P6', name: 'DarkChoc Cookies', img_url: 'images/dc1.jpg', desc: 'Bittersweet Delight' },
-  ];
-
-  // --- Utility Functions ---
-  function getUrlParameter(name) {
-      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-      const regex = new RegExp('[?&]' + name + '=([^&#]*)');
-      const results = regex.exec(window.location.search);
-      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+  const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT",
+            storageBucket: "YOUR_PROJECT.firebasestorage.app",
+            messagingSenderId: "...",
+            appId: "..."
   };
-  
-  function getPricesFromUrl() {
-    const idsString = getUrlParameter('p_ids'); 
-    const pricesString = getUrlParameter('p_prices'); 
-    const ids = idsString ? idsString.split(',') : [];
-    const prices = pricesString ? pricesString.split(',').map(p => parseFloat(p)) : [];
-    const priceMap = {};
-    let found = false;
-    ids.forEach((id, index) => {
-        if (prices[index] && !isNaN(prices[index])) {
-            priceMap[id] = prices[index];
-            found = true;
-        }
-    });
-    return found ? priceMap : null; 
-  }
 
-  function getPricesFromLocalStorage() {
-      const storedData = localStorage.getItem(DEFAULT_RESALER_PRICE_KEY);
-      try { return storedData ? JSON.parse(storedData) : null; } 
-      catch (e) { return null; }
-  }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-  function getFinalPriceMap() {
-      const urlPrices = getPricesFromUrl();
-      if (urlPrices) return urlPrices;
-      const localPrices = getPricesFromLocalStorage();
-      return localPrices || {}; 
-  }
+  // Parse URL Params
+  const params = new URLSearchParams(window.location.search);
+  const p_ids = (params.get('p_ids') || '').split(',');
+  const p_prices = (params.get('p_prices') || '').split(',');
+  const rsBrand = params.get('rs_brand');
+  const rsWa = params.get('rs_wa');
 
-  function getResellerWa() {
-      const waFromUrl = getUrlParameter('rs_wa');
-      if (waFromUrl) return waFromUrl;
-      return localStorage.getItem(DEFAULT_RESALER_WA_KEY) || '';
-  }
+  if(rsBrand) document.getElementById('brandTitle').innerText = rsBrand;
 
-  function getResellerBrand() {
-      const brandFromUrl = getUrlParameter('rs_brand');
-      if (brandFromUrl) {
-          localStorage.setItem(DEFAULT_RESALER_BRAND_KEY, brandFromUrl);
-          return brandFromUrl;
-      }
-      return localStorage.getItem(DEFAULT_RESALER_BRAND_KEY) || '';
-  }
+  async function renderOrderForm() {
+      const container = document.getElementById('product-list');
+      container.innerHTML = '';
+      
+      let hasItems = false;
 
-  // --- UI RENDER LOGIC ---
+      // Fetch details for each ID in URL
+      for (let i = 0; i < p_ids.length; i++) {
+          const pid = p_ids[i];
+          if(!pid) continue;
 
-  function renderBrandHeader() {
-      const brandName = getResellerBrand();
-      const mainTitle = document.getElementById('page-main-title');
-      const subTitle = document.getElementById('page-sub-title');
+          try {
+            const docRef = doc(db, "products", pid);
+            const docSnap = await getDoc(docRef);
 
-      if (brandName && brandName.trim() !== "") {
-          mainTitle.textContent = brandName;
-          mainTitle.className = 'brand-header-big'; // Applies the new BIG font class
-          subTitle.textContent = "Borang Pesanan Rasmi";
-          document.title = `${brandName} - Pesanan`;
-      }
-  }
+            if (docSnap.exists()) {
+                hasItems = true;
+                const p = docSnap.data();
+                const price = parseFloat(p_prices[i]);
+                const img = p.images && p.images[0] ? p.images[0] : '';
 
-  function renderProducts(priceMap) {
-    const container = document.getElementById('product-list-container');
-    container.innerHTML = '';
-    let foundProducts = false;
-
-    PRODUCTS_BASE.forEach(product => {
-        const customPrice = priceMap[product.id];
-        if (customPrice && customPrice > 0) {
-            foundProducts = true;
-            
-            // Create Card
-            const card = document.createElement('div');
-            card.id = `card-${product.id}`;
-            card.className = 'product-card glass-card p-4 flex items-center gap-4';
-            
-            card.innerHTML = `
-                <div class="relative">
-                    <img src="${product.img_url}" alt="${product.name}" class="w-16 h-16 rounded-xl object-cover shadow-sm bg-gray-100">
-                </div>
-                <div class="flex-grow">
-                    <h3 class="font-bold text-gray-800 leading-tight">${product.name}</h3>
-                    <p class="text-xs text-gray-500 mb-1">${product.desc || 'Sedap & Rangup'}</p>
-                    <p class="text-primary font-bold">RM ${customPrice.toFixed(2)}</p>
-                </div>
-                
-                <div class="flex flex-col items-end gap-1">
-                    <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-1 border border-gray-200">
-                        <button type="button" class="qty-btn text-gray-400 hover:bg-white hover:shadow-sm" onclick="updateQuantity('${product.id}', -1)">
-                            <i class="fas fa-minus text-xs"></i>
-                        </button>
-                        <span id="qty-${product.id}" class="w-4 text-center font-bold text-gray-800 text-sm" data-price="${customPrice.toFixed(2)}">0</span>
-                        <button type="button" class="qty-btn bg-white shadow-sm text-green-600 hover:text-green-700 border border-gray-100" onclick="updateQuantity('${product.id}', 1)">
-                            <i class="fas fa-plus text-xs"></i>
-                        </button>
+                const div = document.createElement('div');
+                div.className = "bg-white p-3 rounded-xl shadow-sm border flex items-center gap-3";
+                div.innerHTML = `
+                    <img src="${img}" class="img-thumb">
+                    <div class="flex-grow">
+                        <h3 class="font-bold text-gray-800 text-sm">${p.name}</h3>
+                        <p class="text-[#A67734] font-bold">RM ${price.toFixed(2)}</p>
                     </div>
-                </div>
-            `;
-            container.appendChild(card);
-        }
-    });
-
-    if (!foundProducts) {
-        container.innerHTML = `
-            <div class="text-center p-8 bg-red-50 rounded-2xl border border-red-100">
-                <i class="fas fa-exclamation-circle text-red-400 text-3xl mb-3"></i>
-                <p class="text-red-800 font-bold">Tiada Produk Dijumpai</p>
-                <p class="text-sm text-red-600 mt-1">Sila pastikan anda menggunakan pautan yang betul dari Reseller.</p>
-            </div>`;
-    }
-  }
-
-  window.updateQuantity = function(id, delta) {
-    const qtyEl = document.getElementById(`qty-${id}`);
-    const cardEl = document.getElementById(`card-${id}`);
-    
-    if (!qtyEl) return;
-    
-    let currentQty = parseInt(qtyEl.textContent);
-    let newQty = currentQty + delta;
-    if (newQty < 0) newQty = 0;
-    
-    qtyEl.textContent = newQty;
-
-    // UX: Highlight Card if Item Selected
-    if (newQty > 0) {
-        cardEl.classList.add('active');
-    } else {
-        cardEl.classList.remove('active');
-    }
-
-    updateTotals();
-  }
-
-  function updateTotals() {
-    let grandTotal = 0;
-    PRODUCTS_BASE.forEach(product => {
-        const qtyEl = document.getElementById(`qty-${product.id}`);
-        if (qtyEl) {
-            const qty = parseInt(qtyEl.textContent);
-            const price = parseFloat(qtyEl.getAttribute('data-price')) || 0; 
-            grandTotal += qty * price;
-        }
-    });
-    
-    // Animate Total Update
-    const totalEl = document.getElementById('grand-total');
-    totalEl.textContent = `RM ${grandTotal.toFixed(2)}`;
-    
-    // Tiny bump animation
-    totalEl.classList.add('scale-110');
-    setTimeout(() => totalEl.classList.remove('scale-110'), 150);
-  }
-
-  // --- SUBMISSION ---
-  document.getElementById('order-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const resellerWhatsapp = document.getElementById('reseller-whatsapp').value;
-    const customerName = document.getElementById('customerName').value.trim();
-    const customerPhone = document.getElementById('customerPhone').value.trim();
-    const customerAddress = document.getElementById('customerAddress').value.trim();
-    
-    if (!resellerWhatsapp) { 
-        alert('Ralat Sistem: No. WhatsApp Reseller tiada. Sila hubungi penjual secara manual.'); 
-        return; 
-    }
-    
-    let totalOrderValue = 0;
-    let orderSummary = '';
-    let totalItems = 0;
-    
-    PRODUCTS_BASE.forEach(product => {
-        const qtyEl = document.getElementById(`qty-${product.id}`);
-        if (qtyEl) {
-            const qty = parseInt(qtyEl.textContent);
-            const price = parseFloat(qtyEl.getAttribute('data-price')) || 0; 
-            if (qty > 0 && price > 0) {
-                const itemTotal = qty * price;
-                totalOrderValue += itemTotal;
-                totalItems += qty;
-                orderSummary += `\n🍪 ${product.name} x${qty} (RM${itemTotal.toFixed(2)})`;
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="qty-btn bg-gray-100" onclick="updateQty('${pid}', -1)">-</button>
+                        <span id="qty-${pid}" class="w-6 text-center font-bold" data-price="${price}" data-name="${p.name}">0</span>
+                        <button type="button" class="qty-btn bg-green-100 text-green-700" onclick="updateQty('${pid}', 1)">+</button>
+                    </div>
+                `;
+                container.appendChild(div);
             }
-        }
-    });
-    
-    if (totalItems === 0) {
-      alert('Sila pilih sekurang-kurangnya 1 produk.');
-      return;
-    }
-    
-    // Professional Message Format
-    const message = `*PESANAN BARU* 📝\n` +
-                    `\n👤 *Nama:* ${customerName}\n` +
-                    `📞 *Tel:* ${customerPhone}\n` + 
-                    `📍 *Alamat:* ${customerAddress}\n` +
-                    `\n*SENARAI PESANAN:*` +
-                    orderSummary + 
-                    `\n\n💰 *JUMLAH: RM ${totalOrderValue.toFixed(2)}*` +
-                    `\n\n_Mohon semak stok & sahkan. Terima kasih!_`;
+          } catch (e) { console.error("Err loading product", pid); }
+      }
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${resellerWhatsapp}?text=${encodedMessage}`; 
+      if(!hasItems) container.innerHTML = `<div class="text-center p-4 bg-red-50 text-red-500">Invalid Link.</div>`;
+  }
 
-    window.open(whatsappUrl, '_blank');
-  });
-  
-  // INIT
-  document.addEventListener('DOMContentLoaded', () => {
-    const resellerWa = getResellerWa();
-    document.getElementById('reseller-whatsapp').value = resellerWa;
-    
-    renderBrandHeader(); 
-    const finalPrices = getFinalPriceMap();
-    renderProducts(finalPrices);
-  });
+  // --- GLOBAL HELPERS ---
+  window.updateQty = (id, delta) => {
+      const el = document.getElementById(`qty-${id}`);
+      let v = parseInt(el.innerText) + delta;
+      if(v < 0) v = 0;
+      el.innerText = v;
+      
+      let total = 0;
+      document.querySelectorAll('[id^="qty-"]').forEach(item => {
+          total += parseInt(item.innerText) * parseFloat(item.dataset.price);
+      });
+      document.getElementById('grand-total').innerText = `RM ${total.toFixed(2)}`;
+  };
+
+  // --- SUBMIT ---
+  document.getElementById('order-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.innerText = "Processing..."; btn.disabled = true;
+
+      const customer = {
+          name: document.getElementById('cName').value,
+          phone: document.getElementById('cPhone').value,
+          addr: document.getElementById('cAddr').value
+      };
+
+      let items = [], total = 0;
+      document.querySelectorAll('[id^="qty-"]').forEach(el => {
+          const q = parseInt(el.innerText);
+          if(q > 0) {
+              const sub = q * parseFloat(el.dataset.price);
+              items.push({ name: el.dataset.name, qty: q, sub: sub });
+              total += sub;
+          }
+      });
+
+      if(items.length === 0) { alert("Pilih produk."); btn.disabled = false; return; }
+
+      // Save to DB
+      await addDoc(collection(db, "orders"), {
+          reseller_wa: rsWa, reseller_brand: rsBrand, customer, items, total,
+          created_at: serverTimestamp(), date_str: new Date().toLocaleString()
+      });
+
+      // WhatsApp
+      const txt = items.map(i => `\n🍪 ${i.name} x${i.qty} (RM${i.sub.toFixed(2)})`).join('');
+      const msg = `*PESANAN BARU* 📝\nNama: ${customer.name}\nTel: ${customer.phone}\nAlamat: ${customer.addr}\n\n*ORDER:*${txt}\n\n*TOTAL: RM ${total.toFixed(2)}*`;
+      window.location.href = `https://wa.me/${rsWa || '601123456789'}?text=${encodeURIComponent(msg)}`;
+  };
+
+  renderOrderForm();
 </script>
 </body>
 </html>
