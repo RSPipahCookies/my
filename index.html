@@ -286,6 +286,14 @@
 <script>
 // Data produk kini diambil dari config file (tetapi disalin ke variable 'products' 
 // untuk membolehkan logik sedia ada berfungsi tanpa banyak ubahsuai)
+
+// --- FIXED: ADDED SAFETY CHECK FOR CONFIG FILE ---
+if (typeof window.PRODUCTS_DATA === 'undefined') {
+    console.error("CRITICAL: pipah-product-config.js not loaded.");
+    alert("System Error: Config file not loaded.");
+}
+// ------------------------------------------------
+
 const WHATSAPP_NUMBER = window.ORDER_WHATSAPP_NUMBER; 
 const products = window.PRODUCTS_DATA.map(p => ({ 
     id: p.id, 
@@ -346,9 +354,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
         orderId: document.getElementById('orderId').value, 
         name, 
         address, 
-        // BARU: Tambah tarikh pengambilan ke objek order
         pickupDate: pickupDate, 
-        date: new Date().toISOString(), 
+        // --- FIXED: CHANGED TIMEZONE TO MALAYSIA TIME ---
+        date: new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', hour12: true }), 
+        // ------------------------------------------------
         items: cart 
     };
     localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
@@ -357,7 +366,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
 
 function getNextOrderNumber(){ const n = localStorage.getItem('pipah_reseller_last_order') || '1000'; const next = parseInt(n)+1; localStorage.setItem('pipah_reseller_last_order', next); return 'RS-'+next; }
-// getUnitPriceForQty is now defined above, using global function
 
 function renderProducts(){ const grid = document.getElementById('product-grid'); grid.innerHTML=''; products.forEach(prod=>{
   const card = document.createElement('article'); card.className='card product-card';
@@ -437,7 +445,26 @@ function onAddToCart(e){
 function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
 function updateCartUI(){ const list = document.getElementById('cart-items'); const totalEl = document.getElementById('cart-total'); const badge = document.getElementById('cart-badge'); list.innerHTML=''; let subtotal=0, count=0; cart.forEach((item,idx)=>{ subtotal += item.unitPrice*item.qty; count += item.qty; const li = document.createElement('li'); const left = document.createElement('div'); left.style.flex='1'; left.innerHTML = `<strong>${escapeHtml(item.name)}</strong><div style="font-size:12px;color:#666">${item.qty} × RM ${item.unitPrice.toFixed(2)} = RM ${(item.unitPrice*item.qty).toFixed(2)}</div>`; const middle = document.createElement('div'); const minus = document.createElement('button'); minus.textContent='−'; minus.onclick = ()=> changeCartQty(idx,-1); const qtySpan = document.createElement('span'); qtySpan.style.margin='0 8px'; qtySpan.textContent = item.qty; const plus = document.createElement('button'); plus.textContent = '+'; plus.onclick = ()=> changeCartQty(idx,1); middle.appendChild(minus); middle.appendChild(qtySpan); middle.appendChild(plus); const right = document.createElement('div'); right.style.marginLeft='8px'; right.innerHTML = `RM ${(item.unitPrice*item.qty).toFixed(2)} <button onclick="removeCartItem(${idx})">x</button>`; li.appendChild(left); li.appendChild(middle); li.appendChild(right); list.appendChild(li); }); badge.textContent = String(count); totalEl.textContent = 'Jumlah: RM ' + subtotal.toFixed(2); }
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c)); }
-function changeCartQty(idx, delta){ cart[idx].qty += delta; if(cart[idx].qty<=0) cart.splice(idx,1); saveCart(); updateCartUI(); }
+
+// --- FIXED: UPDATE PRICE LOGIC WHEN CHANGING QTY IN CART ---
+function changeCartQty(idx, delta){ 
+    const item = cart[idx];
+    let newQty = item.qty + delta;
+
+    if (newQty <= 0) {
+        cart.splice(idx, 1);
+    } else {
+        item.qty = newQty;
+        // Recalculate price based on new quantity (Tier Pricing)
+        // Uses the getUnitPriceForQty wrapper defined earlier
+        item.unitPrice = getUnitPriceForQty(item.id, newQty);
+    }
+    
+    saveCart();
+    updateCartUI();
+}
+// -----------------------------------------------------------
+
 function removeCartItem(idx){ cart.splice(idx,1); saveCart(); updateCartUI(); }
 function toggleCart(){ const panel = document.getElementById('cart-panel'); panel.classList.toggle('show'); }
 function showCheckoutForm(){ document.getElementById('checkout-form').classList.toggle('hidden'); }
