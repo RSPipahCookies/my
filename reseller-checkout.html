@@ -67,20 +67,18 @@
     </p>
   </div>
 
+<script src="pipah-product-config.js"></script>
+
 <script>
 /**
- * reseller-summary.html
- * - reads localStorage key 'pipah_reseller_order' (saved by your index page)
- * - shows items & totals
- * - allows downloading TXT (instead of CSV)
- * - opens WhatsApp with a nicely formatted order message
- * - clears cart and increments order counter after submit
- *
- * NOTE: cannot auto-attach the file to WhatsApp via wa.me due to browser/WhatsApp limitations.
+ * reseller-checkout.html
  */
 
-const WHATSAPP_NUMBER = '601121243407'; // edit here if you later change number
-const CART_KEY = 'pipah_cart_v3';
+// FIXED: Use variables from config file
+const WHATSAPP_NUMBER = window.ORDER_WHATSAPP_NUMBER || '601121243407'; 
+
+// FIXED: Match the key used in index.html
+const CART_KEY = 'pipah_reseller_cart_v1'; 
 const ORDER_KEY = 'pipah_reseller_order';
 
 function formatCurrency(n){ return Number(n).toFixed(2); }
@@ -108,43 +106,39 @@ function renderOrder(){
   document.getElementById('orderId').value = order.orderId || getNextOrderNumber();
   document.getElementById('customerName').value = order.name || '';
   
-  // BARU: Paparkan tarikh pengambilan
+  // Display Pickup Date
   const pickupDateEl = document.getElementById('pickupDate');
   if (order.pickupDate) {
-      // Format tarikh dalam format yang lebih mesra pengguna
       pickupDateEl.value = new Date(order.pickupDate).toLocaleDateString('ms-MY', { year: 'numeric', month: 'long', day: 'numeric' });
   } else {
       pickupDateEl.value = 'Belum ditetapkan';
   }
-  // Akhir BARU
 
   document.getElementById('customerAddress').value = order.address || '';
   const tbody = document.querySelector('#items-table tbody');
   tbody.innerHTML = '';
   let total = 0;
   (order.items || []).forEach(it => {
-  const tr = document.createElement('tr');
+    const tr = document.createElement('tr');
 
-  // safely read values (fallbacks)
-  const unitPrice = Number(it.unitPrice || it.price || 0);
-  const qty = Number(it.qty || it.quantity || 0);
-  const subtotal = unitPrice * qty;
-  total += subtotal;
+    // safely read values (fallbacks)
+    const unitPrice = Number(it.unitPrice || it.price || 0);
+    const qty = Number(it.qty || it.quantity || 0);
+    const subtotal = unitPrice * qty;
+    total += subtotal;
 
-  tr.innerHTML = `<td>${escapeHtml(it.name || it.id || 'Produk')}</td>
-                  <td>RM ${formatCurrency(unitPrice)}</td>
-                  <td>${qty}</td>
-                  <td>RM ${formatCurrency(subtotal)}</td>`;
-  tbody.appendChild(tr);
-});
+    tr.innerHTML = `<td>${escapeHtml(it.name || it.id || 'Produk')}</td>
+                    <td>RM ${formatCurrency(unitPrice)}</td>
+                    <td>${qty}</td>
+                    <td>RM ${formatCurrency(subtotal)}</td>`;
+    tbody.appendChild(tr);
+  });
   document.getElementById('total-display').textContent = 'Jumlah: RM ' + formatCurrency(total);
 }
 
 function escapeHtml(text){ return String(text).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 
-// START MODIFIED CODE for TXT output
-
-// Plain Text generator (replaces orderToCSV)
+// Plain Text generator
 function orderToText(order){
   const lines = [];
 
@@ -154,9 +148,7 @@ function orderToText(order){
   lines.push(`No. Pesanan: ${order.orderId || ''}`);
   lines.push(`Tarikh Dibuat: ${new Date(order.date).toLocaleString() || ''}`);
   lines.push(`Nama Penuh: ${order.name || '-'}`);
-  // BARU: Tambah tarikh pengambilan
   lines.push(`Tarikh Pengambilan: ${order.pickupDate || 'Belum ditetapkan'}`);
-  // Akhir BARU
   lines.push(`Alamat: ${order.address || 'Pickup/Tiada Alamat'}`);
   lines.push('--------------------------------------');
   
@@ -180,9 +172,8 @@ function orderToText(order){
   return lines.join('\n');
 }
 
-// trigger download (modified to download text/plain)
+// Trigger download 
 function downloadText(filename, textContent){
-  // Changed MIME type to text/plain
   const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -194,17 +185,13 @@ function downloadText(filename, textContent){
   URL.revokeObjectURL(url);
 }
 
-// END MODIFIED CODE
-
-// open whatsapp with message
+// Open WhatsApp
 function openWhatsApp(order){
   const lines = [];
   lines.push(`PipahCookies — Pesanan Baru`);
   lines.push(`No. Pesanan: ${order.orderId}`);
   lines.push(`Nama: ${order.name || '-'}`);
-  // BARU: Tambah tarikh pengambilan
   if(order.pickupDate) lines.push(`Tarikh Pengambilan: ${new Date(order.pickupDate).toLocaleDateString('ms-MY', { year: 'numeric', month: 'long', day: 'numeric' })}`);
-  // Akhir BARU
   if(order.address) lines.push(`Alamat: ${order.address}`);
   lines.push('');
   lines.push('Items:');
@@ -235,7 +222,7 @@ function gatherOrderFromForm(){
     date: base.date || new Date().toISOString(),
     name: document.getElementById('customerName').value.trim(),
     address: document.getElementById('customerAddress').value.trim(),
-    pickupDate: base.pickupDate, // Ambil dari base order (local storage)
+    pickupDate: base.pickupDate, 
     items: base.items || []
   };
   return order;
@@ -246,48 +233,45 @@ document.getElementById('refresh-from-storage').addEventListener('click', ()=>{
   renderOrder();
 });
 
-// download TXT button (modified handler)
 document.getElementById('download-csv').addEventListener('click', ()=>{
   const order = gatherOrderFromForm();
-  // Changed from orderToCSV to orderToText
   const text = orderToText(order);
-  // Changed file extension to .txt
   const fn = `${order.orderId || 'order'}_${(new Date()).toISOString().slice(0,19).replace(/[:T]/g,'-')}.txt`;
-  // Changed from downloadCSV to downloadText
   downloadText(fn, text);
 });
 
-// submit button (modified handler)
 document.getElementById('submit-order').addEventListener('click', ()=>{
   const order = gatherOrderFromForm();
   if(!order.name){ alert('Sila isi nama penuh sebelum hantar pesanan.'); return; }
 
-  // 1) auto-download TXT (modified)
-  // Changed from orderToCSV to orderToText
+  // 1) auto-download TXT
   const text = orderToText(order);
-  // Changed file extension to .txt
   const fn = `${order.orderId || 'order'}.txt`;
-  // Changed from downloadCSV to downloadText
   downloadText(fn, text);
 
-  // 2) open WhatsApp with prefilled message
+  // 2) open WhatsApp
   openWhatsApp(order);
 
-  // 3) persist final order record (optional)
+  // 3) persist final order record
   localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
 
-  // 4) increment order counter so next order has new number
+  // 4) increment order counter
   incrementOrderCounter();
 
   // 5) clear the cart
   try { localStorage.removeItem(CART_KEY); } catch(e){}
 
-  // 6) show a small confirmation and optionally close after a bit (modified alert)
+  // 6) confirmation
   alert('Order prepared — WhatsApp opened in new tab and TXT file telah dimuat turun. Sila semak dan hantar mesej di WhatsApp.');
 });
 
-// initial render
-renderOrder();
+// Check if config loaded
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof window.ORDER_WHATSAPP_NUMBER === 'undefined') {
+        alert("Warning: pipah-product-config.js not loaded properly.");
+    }
+    renderOrder();
+});
 
 </script>
 </body>
