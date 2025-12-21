@@ -160,7 +160,7 @@
       // WhatsApp
       const txt = items.map(i => `\n🍪 ${i.name} x${i.qty} (RM${i.sub.toFixed(2)})`).join('');
       const msg = `*PESANAN BARU* 📝\nNama: ${customer.name}\nTel: ${customer.phone}\nAlamat: ${customer.addr}\n\n*ORDER:*${txt}\n\n*TOTAL: RM ${total.toFixed(2)}*`;
-      window.location.href = `https://wa.me/${rsWa || '601123456789'}?text=${encodeURIComponent(msg)}`;
+      window.location.href = `https://wa.me/${rsWa || '60182806839'}?text=${encodeURIComponent(msg)}`;
   };
 
   renderOrderForm();
