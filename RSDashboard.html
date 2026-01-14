@@ -97,8 +97,15 @@
   </div>
 
   <script>
-    const firebaseConfig = { apiKey: "AIzaSyA2Y2cOh3J7U916Ip0tnDDFVs2fK6sACl0", authDomain: "pipahcookies-21e38.firebaseapp.com", projectId: "pipahcookies-21e38", storageBucket: "pipahcookies-21e38.firebasestorage.app", messagingSenderId: "162482379926", appId: "1:162482379926:web:14d16f5a2444816876f6b7" };
-    
+    const firebaseConfig = {
+  apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
+  authDomain: "pipahcookies-order.firebaseapp.com",
+  databaseURL: "https://pipahcookies-order-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "pipahcookies-order",
+  storageBucket: "pipahcookies-order.firebasestorage.app",
+  messagingSenderId: "1038900448087",
+  appId: "1:1038900448087:web:a46586f21e9ae989708c12"
+};
     // 1. Initialize Firebase (Once)
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
