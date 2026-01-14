@@ -3,218 +3,206 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>RS Shop Builder</title>
+  <title>Shop Builder</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; color: #334155; padding-bottom: 100px; }
-    .section-title { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94A3B8; margin-bottom: 0.75rem; }
-    .input-box { width: 100%; background: white; border: 1px solid #E2E8F0; padding: 12px; border-radius: 10px; font-weight: 600; outline: none; transition: 0.2s; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 120px; }
+    .step-badge { width: 24px; height: 24px; background: #0f172a; color: white; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: bold; }
+    .input-box { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 12px; outline: none; font-size: 14px; }
     .input-box:focus { border-color: #A67734; ring: 2px solid #A67734; }
-    .color-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
-    .color-dot.active { border-color: white; box-shadow: 0 0 0 2px #333; transform: scale(1.1); }
+    .color-dot { width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 1px #cbd5e1; transition: 0.2s; }
+    .color-dot.active { transform: scale(1.1); box-shadow: 0 0 0 2px #0f172a; }
+    
+    /* Custom Checkbox Animation */
+    .custom-check { transition: all 0.2s ease; }
+    .peer:checked ~ .card-body .custom-check { background-color: #A67734; border-color: #A67734; color: white; }
+    .peer:checked ~ .card-body { border-color: #A67734; background-color: #fffaf0; }
   </style>
 </head>
 <body>
 
-  <div class="bg-white border-b sticky top-0 z-30 px-4 py-3 flex justify-between items-center shadow-sm">
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 bg-[#A67734] rounded-lg flex items-center justify-center text-white font-bold">RS</div>
-      <h1 class="font-bold text-gray-800">Shop Builder</h1>
+  <div class="bg-white/80 backdrop-blur border-b border-slate-200 sticky top-0 z-30 px-4 py-3 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="w-8 h-8 rounded-full bg-slate-100 grid place-items-center text-slate-600"><i class="fa-solid fa-arrow-left text-sm"></i></a>
+      <h1 class="font-bold text-slate-800">Shop Builder</h1>
     </div>
-    <a href="index.html" class="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full">Exit</a>
+    <button onclick="clearData()" class="text-xs text-red-500 font-bold">Reset</button>
   </div>
 
   <div class="max-w-md mx-auto px-4 mt-6 space-y-8">
-
-    <section>
-      <p class="section-title">Step 1: Store Identity</p>
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-        
-        <div>
-          <label class="text-xs font-bold text-gray-400">WhatsApp Number (Required)</label>
-          <input type="tel" id="rs_wa" class="input-box" placeholder="e.g. 60123456789" oninput="saveState()">
-        </div>
-
-        <div class="grid grid-cols-1 gap-4">
+    
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <div class="flex items-center gap-2 mb-4"><div class="step-badge">1</div><span class="font-bold text-sm uppercase">Shop Branding</span></div>
+        <div class="space-y-4">
+            <input type="tel" id="rs_wa" class="input-box" placeholder="WhatsApp Number" oninput="saveState()">
+            <input type="text" id="rs_name" class="input-box" placeholder="Shop Name (e.g. Kedai Cookies)" oninput="saveState()">
             <div>
-                <label class="text-xs font-bold text-gray-400">Shop Name</label>
-                <input type="text" id="rs_name" class="input-box" placeholder="e.g. Kak Lisa Cookies" oninput="saveState()">
-            </div>
-            <div>
-                <label class="text-xs font-bold text-gray-400">Slogan / Location</label>
-                <input type="text" id="rs_tagline" class="input-box" placeholder="e.g. Agent Sah Ampang" oninput="saveState()">
+                <label class="text-xs font-bold text-slate-400 mb-2 block">Theme Color</label>
+                <div class="flex gap-3 overflow-x-auto pb-2" id="color-picker"></div>
+                <input type="hidden" id="rs_color" value="#A67734">
             </div>
         </div>
+    </div>
 
-        <div>
-           <label class="text-xs font-bold text-gray-400 mb-2 block">Theme Color</label>
-           <div class="flex gap-3" id="color-picker">
-              </div>
-           <input type="hidden" id="rs_color" value="#A67734">
+    <div>
+        <div class="flex items-center justify-between mb-3 px-1">
+            <div class="flex items-center gap-2"><div class="step-badge">2</div><span class="font-bold text-sm uppercase">Select Products</span></div>
+            <button onclick="selectAll()" class="text-xs font-bold text-blue-600">Select All</button>
         </div>
-
-      </div>
-    </section>
-
-    <section>
-        <p class="section-title">Step 2: Payment Instructions</p>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-            <label class="text-xs font-bold text-gray-400">Bank Details (Shown at Checkout)</label>
-            <textarea id="rs_bank" rows="2" class="input-box text-sm font-normal" placeholder="e.g. Maybank 1122334455 (Siti Nurhaliza). Send resit selepas bayar." oninput="saveState()"></textarea>
-        </div>
-    </section>
-
-    <section>
-        <p class="section-title">Step 3: Manage Inventory</p>
         <div id="product-list" class="space-y-3">
-            </div>
-    </section>
-
-  </div>
-
-  <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40">
-    <div class="max-w-md mx-auto">
-      <button onclick="generateLink()" class="w-full bg-slate-900 text-white font-bold text-lg py-3.5 rounded-xl shadow-lg hover:bg-slate-800 transition active:scale-95 flex items-center justify-center gap-2">
-        <span>🚀 Launch Shop Link</span>
-      </button>
-      <p id="toast" class="text-center text-xs font-bold text-green-600 mt-2 hidden">Link Copied to Clipboard!</p>
+             <div class="text-center py-10 text-slate-400">Loading products...</div>
+        </div>
     </div>
   </div>
 
-<script src="pipah-product-config.js"></script>
-<script>
-    const COLORS = [
-        { hex: '#A67734', name: 'Gold' },
-        { hex: '#EC4899', name: 'Pink' },
-        { hex: '#3B82F6', name: 'Blue' },
-        { hex: '#10B981', name: 'Green' },
-        { hex: '#111827', name: 'Black' }
-    ];
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40 pb-8 safe-area-bottom">
+      <button onclick="generateLink()" id="gen-btn" class="w-full bg-[#A67734] text-white font-bold text-lg py-3.5 rounded-xl shadow-xl flex items-center justify-center gap-2">
+        <i class="fa-solid fa-share-nodes"></i> Share Shop Link
+      </button>
+  </div>
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadState();
-        renderColors();
-        renderProducts();
-    });
+  <script>
+    const firebaseConfig = { apiKey: "AIzaSyA2Y2cOh3J7U916Ip0tnDDFVs2fK6sACl0", authDomain: "pipahcookies-21e38.firebaseapp.com", projectId: "pipahcookies-21e38", storageBucket: "pipahcookies-21e38.firebasestorage.app", messagingSenderId: "162482379926", appId: "1:162482379926:web:14d16f5a2444816876f6b7" };
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    // --- DATABASE INITIALIZATION ---
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
-    // --- RENDERERS ---
+const db = firebase.firestore();
+
+// ENABLE OFFLINE PERSISTENCE
+db.enablePersistence()
+  .catch((err) => {
+      if (err.code == 'failed-precondition') {
+          console.log("Offline mode failed: Multiple tabs open");
+      } else if (err.code == 'unimplemented') {
+          console.log("Browser doesn't support offline storage");
+      }
+  });
+    const COLORS = [{h:'#A67734'}, {h:'#ec4899'}, {h:'#3b82f6'}, {h:'#10b981'}, {h:'#ef4444'}, {h:'#0f172a'}];
+
+    function init() { renderColors(); loadState(); fetchProducts(); }
+
     function renderColors() {
-        const container = document.getElementById('color-picker');
-        const current = document.getElementById('rs_color').value;
-        
-        container.innerHTML = COLORS.map(c => `
-            <div class="color-dot ${c.hex === current ? 'active' : ''}" 
-                 style="background:${c.hex}" 
-                 onclick="selectColor('${c.hex}')">
-            </div>
-        `).join('');
+        const c = document.getElementById('rs_color').value;
+        document.getElementById('color-picker').innerHTML = COLORS.map(col => `<div class="color-dot ${col.h==c?'active':''}" style="background:${col.h}" onclick="setColor('${col.h}')"></div>`).join('');
+        document.getElementById('gen-btn').style.background = c;
+    }
+    window.setColor = (hex) => { document.getElementById('rs_color').value = hex; renderColors(); saveState(); }
+
+    function fetchProducts() {
+        db.collection('products').where('available', '==', true).get().then(snap => {
+            const list = document.getElementById('product-list'); 
+            list.innerHTML = '';
+            
+            snap.forEach(doc => {
+                const p = doc.data();
+                // Logic: Profit calculated based on Agent Price (Tier 2)
+                const cost = p.priceTier2 || (p.priceTier1 * 0.8) || 0; 
+                const retail = p.priceTier1 || p.price || 0;
+                
+                list.innerHTML += `
+                <label class="relative block cursor-pointer select-none group">
+                    <input type="checkbox" id="chk-${doc.id}" class="peer sr-only" onchange="toggleItem('${doc.id}', ${cost})">
+                    
+                    <div class="card-body bg-white p-3 rounded-xl border border-slate-200 flex gap-3 items-start transition duration-200">
+                        <div class="custom-check w-6 h-6 flex-shrink-0 mt-1 rounded border-2 border-slate-300 bg-white text-transparent grid place-items-center">
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </div>
+                        
+                        <img src="${p.image}" class="w-16 h-16 rounded-lg bg-gray-100 object-cover border border-slate-100">
+                        
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-bold text-sm text-slate-800 truncate">${p.name}</h3>
+                            <p class="text-[10px] text-slate-500 leading-snug line-clamp-2 mt-0.5">${p.description || 'No description available.'}</p>
+                            <p class="text-[10px] text-slate-400 mt-1">Cost: RM${cost.toFixed(2)}</p>
+                        </div>
+
+                        <div class="flex flex-col items-end opacity-40 pointer-events-none transition" id="box-${doc.id}">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase mb-1">Sell Price</span>
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="text-xs font-bold text-slate-400">RM</span>
+                                <input type="number" id="price-${doc.id}" value="${retail.toFixed(2)}" class="w-14 border rounded p-1 text-center font-bold text-sm text-slate-800" onclick="event.preventDefault()" onkeyup="calc('${doc.id}', ${cost})">
+                            </div>
+                            <div class="text-[9px] font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full hidden" id="profit-${doc.id}">+ RM0.00</div>
+                        </div>
+                    </div>
+                </label>`;
+            });
+        });
     }
 
-    function renderProducts() {
-        const list = document.getElementById('product-list');
-        list.innerHTML = window.PRODUCTS_DATA.map(p => `
-            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex gap-3 items-center">
-                <input type="checkbox" id="chk-${p.id}" class="w-5 h-5 accent-slate-900" onchange="togglePriceInput('${p.id}')">
-                <img src="${p.img}" class="w-12 h-12 rounded bg-gray-100 object-cover">
-                <div class="flex-1">
-                    <h3 class="font-bold text-sm text-gray-800">${p.name}</h3>
-                </div>
-                <div class="flex items-center gap-1 opacity-50 pointer-events-none transition" id="price-box-${p.id}">
-                    <span class="text-xs text-gray-400">RM</span>
-                    <input type="number" id="price-${p.id}" value="${p.rrp.toFixed(2)}" class="w-16 border rounded p-1 text-center font-bold text-sm">
-                </div>
-            </div>
-        `).join('');
-        
-        // Restore checked state logic handled in loadState usually, simplified here
-    }
-
-    // --- LOGIC ---
-    window.selectColor = (hex) => {
-        document.getElementById('rs_color').value = hex;
-        renderColors();
-        saveState();
-    };
-
-    window.togglePriceInput = (id) => {
+    window.toggleItem = (id, cost) => {
         const chk = document.getElementById(`chk-${id}`);
-        const box = document.getElementById(`price-box-${id}`);
-        if(chk.checked) {
-            box.classList.remove('opacity-50', 'pointer-events-none');
-        } else {
-            box.classList.add('opacity-50', 'pointer-events-none');
+        const box = document.getElementById(`box-${id}`);
+        const badge = document.getElementById(`profit-${id}`);
+        if(chk.checked) { 
+            box.classList.remove('opacity-40', 'pointer-events-none'); 
+            badge.classList.remove('hidden'); 
+        } else { 
+            box.classList.add('opacity-40', 'pointer-events-none'); 
+            badge.classList.add('hidden'); 
         }
-    };
-
-    // --- SAVE/LOAD ---
-    function saveState() {
-        const state = {
-            wa: document.getElementById('rs_wa').value,
-            name: document.getElementById('rs_name').value,
-            tagline: document.getElementById('rs_tagline').value,
-            bank: document.getElementById('rs_bank').value,
-            color: document.getElementById('rs_color').value
-        };
-        localStorage.setItem('rs_profile', JSON.stringify(state));
+        calc(id, cost);
     }
 
-    function loadState() {
-        const raw = localStorage.getItem('rs_profile');
-        if(raw) {
-            const s = JSON.parse(raw);
-            if(s.wa) document.getElementById('rs_wa').value = s.wa;
-            if(s.name) document.getElementById('rs_name').value = s.name;
-            if(s.tagline) document.getElementById('rs_tagline').value = s.tagline;
-            if(s.bank) document.getElementById('rs_bank').value = s.bank;
-            if(s.color) document.getElementById('rs_color').value = s.color;
-        }
+    window.calc = (id, cost) => {
+        const val = parseFloat(document.getElementById(`price-${id}`).value) || 0;
+        const profit = val - cost;
+        document.getElementById(`profit-${id}`).innerText = `Profit: RM${profit.toFixed(2)}`;
     }
 
-    // --- GENERATE LINK ---
+    window.selectAll = () => { document.querySelectorAll('input[type="checkbox"]').forEach(c => { if(!c.checked) c.click(); }); }
+    
+    function saveState() { 
+        localStorage.setItem('rs_v3', JSON.stringify({ 
+            wa: document.getElementById('rs_wa').value, 
+            name: document.getElementById('rs_name').value, 
+            color: document.getElementById('rs_color').value 
+        })); 
+    }
+    
+    function loadState() { 
+        const s = JSON.parse(localStorage.getItem('rs_v3')||'{}'); 
+        if(s.wa) document.getElementById('rs_wa').value = s.wa; 
+        if(s.name) document.getElementById('rs_name').value = s.name; 
+        if(s.color) setColor(s.color); 
+    }
+    
+    window.clearData = () => { if(confirm("Reset Form?")) { localStorage.removeItem('rs_v3'); location.reload(); } }
+
     window.generateLink = () => {
         const wa = document.getElementById('rs_wa').value.replace(/[^0-9]/g, '');
-        if(!wa) return alert("Please enter WhatsApp number");
+        const name = document.getElementById('rs_name').value;
+        const color = document.getElementById('rs_color').value;
 
-        // Collect Products
-        const items = [];
-        const prices = [];
-        
-        window.PRODUCTS_DATA.forEach(p => {
-            const chk = document.getElementById(`chk-${p.id}`);
-            if(chk.checked) {
-                items.push(p.id);
-                prices.push(document.getElementById(`price-${p.id}`).value);
-            }
+        if(!wa || !name) return alert("Please complete Step 1 (WhatsApp & Name)");
+
+        const items = [], prices = [];
+        document.querySelectorAll('input[type="checkbox"]:checked').forEach(c => {
+            const id = c.id.replace('chk-','');
+            items.push(id);
+            prices.push(document.getElementById(`price-${id}`).value);
         });
 
-        if(items.length === 0) return alert("Select at least 1 product");
+        if(!items.length) return alert("Please select at least 1 product");
 
-        // Construct Payload
-        const payload = {
-            w: wa.startsWith('0') ? '60'+wa.substring(1) : wa, // Phone
-            n: document.getElementById('rs_name').value.trim(), // Shop Name
-            t: document.getElementById('rs_tagline').value.trim(), // Tagline
-            b: document.getElementById('rs_bank').value.trim(), // Bank Info
-            c: document.getElementById('rs_color').value, // Color
-            i: items,
-            p: prices
-        };
-
-        // Safer Base64 Encoding for Unicode (Emojis/Malay text)
-        const jsonStr = JSON.stringify(payload);
-        const encoded = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g,
-            function toSolidBytes(match, p1) {
-                return String.fromCharCode('0x' + p1);
-        }));
-
+        const data = JSON.stringify({ w:wa.startsWith('0')?'60'+wa.slice(1):wa, n:name, c:color, i:items, p:prices });
+        
+        // Base64 Encode
+        const encoded = btoa(encodeURIComponent(data).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+        
         const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','OrderNow.html')}?d=${encoded}`;
         
-        navigator.clipboard.writeText(url);
-        const toast = document.getElementById('toast');
-        toast.classList.remove('hidden');
-        setTimeout(() => toast.classList.add('hidden'), 3000);
-    };
-</script>
+        if(navigator.share) navigator.share({title: name, url: url});
+        else { navigator.clipboard.writeText(url); alert("Link copied to clipboard!"); }
+    }
+
+    init();
+  </script>
 </body>
 </html>
