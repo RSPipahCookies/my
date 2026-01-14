@@ -24,23 +24,26 @@
     <p class="font-bold text-slate-400 text-sm animate-pulse">Loading Shop...</p>
   </div>
 
-  <div class="relative w-full h-64 bg-slate-900 overflow-hidden rounded-b-[2.5rem] shadow-2xl">
-    <div class="absolute inset-0 bg-orange-600/90 mix-blend-multiply"></div>
-    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+  <div class="relative w-full bg-slate-900 overflow-hidden shadow-2xl transition-all duration-500" id="header-container" style="min-height: 250px; border-radius: 0 0 2.5rem 2.5rem;">
+    <div id="header-bg" class="absolute inset-0 bg-cover bg-center transition-opacity duration-500" style="opacity: 0.3;"></div>
     
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+
     <div class="absolute top-4 right-4 z-20 flex bg-black/30 backdrop-blur rounded-full p-1">
         <button onclick="setLang('ms')" id="l-ms" class="px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold">MY</button>
         <button onclick="setLang('en')" id="l-en" class="px-3 py-1 text-white/70 rounded-full text-[10px] font-bold">EN</button>
     </div>
 
-    <div class="absolute bottom-10 left-6 right-6 text-white z-10">
-        <div class="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-3 border border-white/10" data-i18n="agent_badge">Official Agent</div>
-        <h1 id="shop-name" class="text-3xl font-extrabold leading-tight mb-2">...</h1>
+    <div class="absolute bottom-0 left-0 right-0 p-6 text-white z-10 flex flex-col items-center text-center pb-10">
+        <img id="shop-logo" class="w-20 h-20 rounded-full border-4 border-white shadow-xl mb-3 object-cover hidden bg-white">
+        
+        <div class="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2 border border-white/10" data-i18n="agent_badge">Official Agent</div>
+        <h1 id="shop-name" class="text-3xl font-extrabold leading-tight mb-2 text-shadow">...</h1>
         <p class="text-orange-100 text-sm flex items-center gap-2"><i class="fa-solid fa-truck-fast"></i> <span data-i18n="secure_msg">Fast Delivery & Secure</span></p>
     </div>
   </div>
 
-  <div class="max-w-md mx-auto px-4 -mt-8 relative z-20 space-y-6">
+  <div class="max-w-md mx-auto px-4 -mt-6 relative z-20 space-y-6">
     <div class="bg-white p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
         <div class="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
             <div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 grid place-items-center"><i class="fa-regular fa-user"></i></div>
@@ -72,15 +75,17 @@
   </div>
 
   <script>
+    // ⚠️ REPLACE THIS WITH YOUR NEW FIREBASE CONFIG
     const firebaseConfig = {
-  apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
-  authDomain: "pipahcookies-order.firebaseapp.com",
-  databaseURL: "https://pipahcookies-order-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "pipahcookies-order",
-  storageBucket: "pipahcookies-order.firebasestorage.app",
-  messagingSenderId: "1038900448087",
-  appId: "1:1038900448087:web:a46586f21e9ae989708c12"
-};
+      apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
+      authDomain: "pipahcookies-order.firebaseapp.com",
+      databaseURL: "https://pipahcookies-order-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "pipahcookies-order",
+      storageBucket: "pipahcookies-order.firebasestorage.app",
+      messagingSenderId: "1038900448087",
+      appId: "1:1038900448087:web:a46586f21e9ae989708c12"
+    };
+
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -106,14 +111,45 @@
             try {
                 const str = decodeURIComponent(atob(encoded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
                 SHOP = JSON.parse(str);
+                
+                // 1. SETUP BRANDING (Banner, Logo, Color)
                 document.getElementById('shop-name').innerText = SHOP.n || 'Reseller Shop';
                 
+                if (SHOP.b) {
+                    const bg = document.getElementById('header-bg');
+                    bg.style.backgroundImage = `url('${SHOP.b}')`;
+                    bg.style.opacity = '0.5';
+                    document.getElementById('header-container').style.height = '320px'; // Taller for hero
+                }
+
+                if (SHOP.l) {
+                    const logo = document.getElementById('shop-logo');
+                    logo.src = SHOP.l;
+                    logo.classList.remove('hidden');
+                }
+
+                // Apply Theme Color to Buttons/Accents if needed (Optional)
+                if (SHOP.c) {
+                    // You can apply SHOP.c to specific elements if desired
+                }
+
+                // 2. FETCH PRODUCTS
                 const snap = await db.collection('products').get();
                 snap.forEach(d => DB_PRODUCTS[d.id] = d.data());
                 
+                // 3. BUILD CART (With Old Price Logic)
                 SHOP.i.forEach((id, idx) => {
                     const p = DB_PRODUCTS[id];
-                    if(p) CART.push({ id, name: p.name, price: parseFloat(SHOP.p[idx]), qty: 0, image: p.image });
+                    if(p) {
+                        CART.push({ 
+                            id, 
+                            name: p.name, 
+                            price: parseFloat(SHOP.p[idx]), 
+                            oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, // Unpack Old Price
+                            qty: 0, 
+                            image: p.image 
+                        });
+                    }
                 });
                 render();
                 document.getElementById('loader').classList.add('hidden');
@@ -124,12 +160,23 @@
     function render() {
         const list = document.getElementById('product-list'); list.innerHTML = '';
         CART.forEach((item, idx) => {
+            // Price Display Logic
+            let priceHTML = `<p class="text-orange-600 font-extrabold">RM ${item.price.toFixed(2)}</p>`;
+            
+            if (item.oldPrice > item.price) {
+                priceHTML = `
+                <div>
+                    <span class="text-xs text-slate-400 line-through mr-1">RM${item.oldPrice.toFixed(2)}</span>
+                    <span class="text-orange-600 font-extrabold">RM ${item.price.toFixed(2)}</span>
+                </div>`;
+            }
+
             list.innerHTML += `
             <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex gap-4 items-center transition">
                 <img src="${item.image}" class="w-20 h-20 rounded-xl object-cover bg-gray-100">
                 <div class="flex-1">
                     <h4 class="font-bold text-slate-800 leading-tight mb-1">${item.name}</h4>
-                    <p class="text-orange-600 font-extrabold">RM ${item.price.toFixed(2)}</p>
+                    ${priceHTML}
                 </div>
                 <div class="flex items-center gap-3 bg-slate-50 p-1 rounded-lg border border-slate-100">
                     <button class="w-8 h-8 bg-white text-slate-600 rounded-md shadow-sm font-bold" onclick="upd(${idx}, -1)">-</button>
