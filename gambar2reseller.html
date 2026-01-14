@@ -3,289 +3,135 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gallery Grid</title>
+<title>Marketing Gallery</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: #f5f5f5;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .gallery-container {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    padding: 20px;
-  }
-
-  .gallery-container img {
-    width: 100%;
-    aspect-ratio: 1/1;
-    object-fit: cover;
-    cursor: pointer;
-    border-radius: 10px;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-  }
-
-  .gallery-container img.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Overlay for zoom (Modal Background) */
-  .overlay {
-    position: fixed;
-    display: none;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease forwards;
-    cursor: pointer; /* Makes the background clickable to close */
-  }
-
-  /* Image within the Overlay (The Modal Content) */
-  .overlay img {
-    /* Initial state set by JS - use transition for smooth movement */
-    max-width: 80%;
-    max-height: 80%;
-    width: auto;
-    height: auto;
-    background: #fff;
-    padding: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    border-radius: 10px;
-    cursor: default;
-    
-    /* Crucial for the new animation */
-    opacity: 0; /* Start hidden */
-    transition: opacity 0.3s ease-out, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smooth transition */
-  }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; color: #334155; }
+  /* Smooth Fade In Animation */
+  .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   
-  /* State when the image is fully opened */
-  .overlay.active #overlay-img {
-    opacity: 1; /* Show the image */
-    transform: translate(0, 0) scale(1) !important; /* Override initial transform set by JS */
+  /* Masonry Item Styles */
+  .image-card { 
+    break-inside: avoid; 
+    margin-bottom: 16px; 
+    border-radius: 16px; 
+    overflow: hidden; 
+    position: relative; 
+    cursor: pointer; 
+    transform: translateZ(0); 
+    transition: transform 0.2s; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   }
-
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  /* REMOVED zoomIn keyframe */
-
-
-  /* Text buttons */
-  .gallery-btn {
-    display: inline-block;
-    margin: 10px auto 30px auto;
-    font-size: 18px;
-    font-weight: 600;
-    color: #A67734;
-    cursor: pointer;
-    background: none;
-    border: none;
-    outline: none;
-    text-align: center;
-    transition: color 0.3s ease, letter-spacing 0.3s ease;
-  }
-
-  .gallery-btn:hover {
-    color: #ff5722;
-    letter-spacing: 1px;
-  }
-
-  .btn-container {
-    text-align: center;
-  }
-  /* Header Section */
-.gallery-header {
-  text-align: center;
-  padding: 40px 20px 10px;
-}
-
-.gallery-header h1 {
-  font-size: 32px;
-  color: #A67734;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
-}
-
-.gallery-header p {
-  font-size: 16px;
-  color: #555;
-  max-width: 700px;
-  margin: 0 auto;
-  line-height: 1.6;
-}
-  @media (max-width: 768px) {
-  .gallery-header h1 {
-    font-size: 26px;
-  }
-  .gallery-header p {
-    font-size: 15px;
-  }
-}
-@media (max-width: 600px) { /* Penambahan untuk susunan 2 lajur pada peranti kecil */
-  .gallery-container {
-    grid-template-columns: repeat(2, 1fr);
-    padding: 10px;
-  }
-}
+  .image-card:active { transform: scale(0.98); }
 </style>
 </head>
-<body>
+<body class="pb-10">
 
-<div class="gallery-header">
-  <h1>PipahCookies Gallery</h1>
-  <p>
-    Lihat koleksi gambar eksklusif PipahCookies — setiap cookies buatan tangan kami dibuat dengan penuh kasih sayang, 
-    menggunakan bahan berkualiti dan rasa yang memikat. Sesuai untuk dijadikan hadiah atau jualan semula!
-  </p>
-</div>
+  <div class="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 py-4 flex items-center gap-3 shadow-sm">
+    <a href="index.html" class="w-9 h-9 rounded-full bg-slate-100 grid place-items-center text-slate-600 hover:bg-slate-200 transition">
+        <i class="fa-solid fa-arrow-left text-sm"></i>
+    </a>
+    <h1 class="font-bold text-lg text-slate-800">Galeri Reseller</h1>
+  </div>
 
-<div class="gallery-container" id="gallery"></div>
-<body>
-  
+  <div class="max-w-3xl mx-auto px-4 mt-6">
+    
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm mb-6 text-center">
+        <h2 class="text-xl font-bold text-[#A67734] mb-2">PipahCookies Gallery</h2>
+        <p class="text-sm text-slate-500 leading-relaxed">
+            Lihat koleksi gambar eksklusif. Tekan gambar untuk lihat penuh & <b>Download</b> untuk kegunaan promosi di WhatsApp Status.
+        </p>
+    </div>
 
-<div class="gallery-container" id="gallery"></div>
+    <div class="columns-2 md:columns-3 gap-4" id="gallery-grid">
+        </div>
 
-<div class="btn-container">
-  <button class="gallery-btn" id="seeMoreBtn">See More</button>
-  <button class="gallery-btn" id="seeLessBtn" style="display:none;">See Less</button>
-</div>
+    <div class="text-center mt-8 mb-8">
+        <button id="load-more" class="bg-white border border-slate-200 text-slate-600 font-bold px-6 py-3 rounded-full shadow-sm hover:bg-slate-50 transition active:scale-95">
+            Load More Images
+        </button>
+    </div>
+  </div>
 
-<div class="overlay" id="overlay">
-  <img src="" id="overlay-img" alt="Zoomed Image">
-</div>
+  <div id="modal" class="fixed inset-0 z-50 hidden bg-black/95 flex flex-col items-center justify-center p-4 backdrop-blur-sm animate-fade-in" onclick="closeModal(event)">
+      <button onclick="closeModal({target:{id:'modal'}})" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition">
+          <i class="fa-solid fa-times text-lg"></i>
+      </button>
+
+      <img id="m-img" src="" class="max-w-full max-h-[70vh] rounded-lg shadow-2xl mb-8 object-contain">
+      
+      <div class="flex gap-4">
+          <a id="m-download" href="" download class="bg-white text-slate-900 font-bold px-8 py-3 rounded-full flex items-center gap-2 hover:bg-slate-100 transition shadow-lg active:scale-95">
+              <i class="fa-solid fa-download"></i> Download
+          </a>
+      </div>
+  </div>
 
 <script>
+  // YOUR IMAGE LIST
   const allImages = [
-    
     'images/pic21.jpg',
-    'images/ss1.jpg',
-    'images/ss2.jpg',
-    'images/ss3.jpg',
-    'images/ch1.jpg',
-    'images/ch2.jpg',
-    'images/ch3.jpg',
-    'images/bc1.jpg',
-    'images/bc2.jpg',
-    'images/bc3.jpg',
-    'images/dc1.jpg',
-    'images/dc2.jpg',
-    'images/dc3.jpg',
-    'images/rv1.jpg',
-    'images/rv2.jpg',
-    'images/rv3.jpg',
-    'images/br1.jpg',
-    'images/br2.jpg',
-    'images/br3.jpg'
+    'images/ss1.jpg', 'images/ss2.jpg', 'images/ss3.jpg',
+    'images/ch1.jpg', 'images/ch2.jpg', 'images/ch3.jpg',
+    'images/bc1.jpg', 'images/bc2.jpg', 'images/bc3.jpg',
+    'images/dc1.jpg', 'images/dc2.jpg', 'images/dc3.jpg',
+    'images/rv1.jpg', 'images/rv2.jpg', 'images/rv3.jpg',
+    'images/br1.jpg', 'images/br2.jpg', 'images/br3.jpg'
   ];
 
-  const gallery = document.getElementById('gallery');
-  const seeMoreBtn = document.getElementById('seeMoreBtn');
-  const seeLessBtn = document.getElementById('seeLessBtn');
-  const overlay = document.getElementById('overlay');
-  const overlayImg = document.getElementById('overlay-img');
+  const grid = document.getElementById('gallery-grid');
+  let itemsToShow = 8; // Start with 8 images to keep page fast
 
-  const initialLayers = 5; // 5 rows x 4 images = 20 images
-  let isExpanded = false;
+  function renderGallery() {
+      grid.innerHTML = '';
+      const limit = Math.min(itemsToShow, allImages.length);
+      
+      for(let i=0; i<limit; i++) {
+          grid.innerHTML += `
+          <div class="image-card group bg-white" onclick="openModal('${allImages[i]}')">
+              <img src="${allImages[i]}" class="w-full h-auto object-cover block" loading="lazy">
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                  <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-white">
+                    <i class="fa-solid fa-expand"></i>
+                  </div>
+              </div>
+          </div>`;
+      }
 
-  function renderGallery(count) {
-    gallery.innerHTML = '';
-    for (let i = 0; i < count && i < allImages.length; i++) {
-      const img = document.createElement('img');
-      img.src = allImages[i];
-      img.alt = 'Gallery Image';
-      gallery.appendChild(img);
-      setTimeout(() => img.classList.add('show'), i * 50); // stagger fade-in
-    }
-    adjustHeight();
-  }
-  
-  // FUNGSI INI KINI BERFUNGSI UNTUK MELARASKAN KETINGGIAN IFRAME DI PORTAL INDUK
-  function adjustHeight() {
-    if (window.parent) {
-      setTimeout(() => {
-        const height = document.body.scrollHeight;
-        // Mesej diselaraskan: Gunakan type: "resizeGallery" dan height: height
-        window.parent.postMessage({ type: "resizeGallery", height: height }, '*');
-      }, 300);
-    }
+      // Hide "Load More" if all images are shown
+      if(itemsToShow >= allImages.length) {
+          document.getElementById('load-more').style.display = 'none';
+      }
   }
 
-  // Initial load
-  renderGallery(initialLayers * 4);
+  // Initial Render
+  renderGallery();
 
-  seeMoreBtn.addEventListener('click', () => {
-    renderGallery(allImages.length);
-    seeMoreBtn.style.display = 'none';
-    seeLessBtn.style.display = 'inline-block';
-    isExpanded = true;
+  // Load More Logic
+  document.getElementById('load-more').addEventListener('click', () => {
+      itemsToShow += 8;
+      renderGallery();
   });
 
-  seeLessBtn.addEventListener('click', () => {
-    renderGallery(initialLayers * 4);
-    seeLessBtn.style.display = 'none';
-    seeMoreBtn.style.display = 'inline-block';
-    isExpanded = false;
-  });
+  // Modal Logic
+  window.openModal = (src) => {
+      document.getElementById('m-img').src = src;
+      document.getElementById('m-download').href = src;
+      document.getElementById('modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling background
+  }
 
-  // Image zoom - UPDATED LOGIC HERE
-  gallery.addEventListener('click', e => {
-    if(e.target.tagName === 'IMG') {
-      const clickedImage = e.target;
-      overlayImg.src = clickedImage.src;
-      
-      const rect = clickedImage.getBoundingClientRect();
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      
-      // Calculate the difference between the image's center and the screen center
-      const offsetX = centerX - (rect.left + rect.width / 2);
-      const offsetY = centerY - (rect.top + rect.height / 2);
-      
-      // Calculate the scale factor (e.g., 20% of the original size)
-      const scaleFactor = rect.width / overlayImg.offsetWidth;
-      // Note: overlayImg.offsetWidth is likely 0 here, so we'll estimate a small starting size
-      const startScale = clickedImage.offsetWidth / (window.innerWidth * 0.8); // Estimate scale
-
-      // 1. Set the initial transform (position and scale) to match the clicked image
-      // We translate the image to its center point, then translate it back to the center of the overlay
-      // For simplicity, we calculate the required translate to move the center of the image to the center of the viewport
-      overlayImg.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${startScale / 2})`; // Start smaller and positioned
-
-      // 2. Display the overlay
-      overlay.style.display = 'flex';
-      
-      // 3. Force a reflow (required for the transition to work)
-      void overlay.offsetWidth; 
-
-      // 4. Trigger the transition after a short delay (using a class)
-      // This resets the transform, causing the image to smoothly move to the center (0, 0) and full scale (1)
-      setTimeout(() => {
-        overlay.classList.add('active');
-      }, 50); 
-    }
-  });
-
-  overlay.addEventListener('click', () => {
-    overlay.classList.remove('active');
-    // Hide the overlay after the transition finishes
-    setTimeout(() => {
-      overlay.style.display = 'none';
-    }, 400); // Wait for the 0.4s transition
-  });
+  window.closeModal = (e) => {
+      // Close only if clicking background or close button
+      if(e.target.id === 'modal' || !e.target.closest('#modal')) {
+        document.getElementById('modal').classList.add('hidden');
+        document.body.style.overflow = ''; // Restore scrolling
+      }
+  }
 </script>
 
 </body>
