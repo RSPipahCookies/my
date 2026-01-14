@@ -15,9 +15,10 @@
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 40px; }
     .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
     .tier-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; }
-    .tier-1 { background: #e2e8f0; color: #64748b; } /* Retail */
-    .tier-2 { background: #dbeafe; color: #2563eb; } /* Agent */
-    .tier-3 { background: #dcfce7; color: #16a34a; } /* Bulk/Stockist */
+    .tier-1 { background: #e2e8f0; color: #64748b; } 
+    .tier-2 { background: #dbeafe; color: #2563eb; } 
+    .tier-3 { background: #dcfce7; color: #16a34a; } 
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -37,11 +38,9 @@
     
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
         <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2" data-i18n="cart_title">Senarai Barang</h2>
-        
         <div id="cart-items" class="space-y-4">
             <div class="text-center py-8"><div class="loader mx-auto"></div></div>
         </div>
-
         <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
             <span class="font-bold text-slate-500" data-i18n="total">Jumlah Besar</span>
             <span class="text-2xl font-extrabold text-blue-600" id="grand-total">RM 0.00</span>
@@ -89,38 +88,25 @@
   </div>
 
   <script>
-    // --- FIREBASE SETUP ---
+    // YOUR NEW CONFIG
     const firebaseConfig = {
-  apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
-  authDomain: "pipahcookies-order.firebaseapp.com",
-  databaseURL: "https://pipahcookies-order-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "pipahcookies-order",
-  storageBucket: "pipahcookies-order.firebasestorage.app",
-  messagingSenderId: "1038900448087",
-  appId: "1:1038900448087:web:a46586f21e9ae989708c12"
-};
+      apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
+      authDomain: "pipahcookies-order.firebaseapp.com",
+      databaseURL: "https://pipahcookies-order-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "pipahcookies-order",
+      storageBucket: "pipahcookies-order.firebasestorage.app",
+      messagingSenderId: "1038900448087",
+      appId: "1:1038900448087:web:a46586f21e9ae989708c12"
+    };
+
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    // --- DATABASE INITIALIZATION ---
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-const db = firebase.firestore();
-
-// ENABLE OFFLINE PERSISTENCE
-db.enablePersistence()
-  .catch((err) => {
-      if (err.code == 'failed-precondition') {
-          console.log("Offline mode failed: Multiple tabs open");
-      } else if (err.code == 'unimplemented') {
-          console.log("Browser doesn't support offline storage");
-      }
-  });
-    // --- CONFIGURATION ---
     const HQ_WHATSAPP = "60182806839"; 
     const CART_KEY = 'pipah_reseller_cart_v1';
     let CART = [], PRODUCTS_MAP = {};
     let curLang = 'ms';
 
-    // --- I18N DICTIONARY ---
     const i18n = {
         ms: {
             title: "Checkout Stok", cart_title: "Senarai Barang", total: "Jumlah Besar", details_title: "Butiran Reseller",
@@ -140,23 +126,16 @@ db.enablePersistence()
         }
     };
 
-    // --- INITIALIZATION ---
     async function init() {
         generateOrderId();
-        
-        // 1. Load Cart
         const raw = localStorage.getItem(CART_KEY);
         if(raw) CART = JSON.parse(raw);
 
-        // 2. Fetch Latest Prices & Tier Info from DB
         try {
             const snap = await db.collection('products').get();
             snap.forEach(doc => PRODUCTS_MAP[doc.id] = doc.data());
             renderCart();
-        } catch(e) {
-            console.error(e);
-            alert("Error loading product data. Please check internet.");
-        }
+        } catch(e) { console.error(e); alert("Connection error. Check internet."); }
     }
 
     function generateOrderId() {
@@ -166,49 +145,27 @@ db.enablePersistence()
         document.getElementById('r_oid').value = `STK-${str}-${rand}`;
     }
 
-    // --- LANGUAGE LOGIC ---
     window.setLang = (lang) => {
         curLang = lang;
-        // Toggle Button Styles
-        document.getElementById('btn-ms').className = lang==='ms' 
-            ? "px-3 py-1 rounded-md text-xs font-bold transition bg-white shadow-sm text-slate-800" 
-            : "px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-slate-600 transition";
-        document.getElementById('btn-en').className = lang==='en' 
-            ? "px-3 py-1 rounded-md text-xs font-bold transition bg-white shadow-sm text-slate-800" 
-            : "px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-slate-600 transition";
-
-        // Update Text
-        document.querySelectorAll('[data-i18n]').forEach(e => {
-            if(i18n[lang][e.dataset.i18n]) e.innerText = i18n[lang][e.dataset.i18n];
-        });
-        
-        // Update Placeholders
+        document.getElementById('btn-ms').className = lang==='ms' ? "px-3 py-1 rounded-md text-xs font-bold transition bg-white shadow-sm text-slate-800" : "px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-slate-600 transition";
+        document.getElementById('btn-en').className = lang==='en' ? "px-3 py-1 rounded-md text-xs font-bold transition bg-white shadow-sm text-slate-800" : "px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-slate-600 transition";
+        document.querySelectorAll('[data-i18n]').forEach(e => { if(i18n[lang][e.dataset.i18n]) e.innerText = i18n[lang][e.dataset.i18n]; });
         document.getElementById('r_name').placeholder = lang==='ms' ? "Nama anda" : "Your name";
         document.getElementById('r_note').placeholder = lang==='ms' ? "Contoh: Pickup pukul 3..." : "E.g. Pickup at 3pm...";
-        
-        renderCart(); // Re-render cart to translate tier badges
+        renderCart();
     }
 
-    // --- TIER PRICING LOGIC ---
     function getPriceForQty(product, qty) {
-        // Default to Retail (Tier 1)
         let finalPrice = product.priceTier1 || product.price || 0;
         let tierName = i18n[curLang].tier_1;
         let tierClass = "tier-1";
 
-        // Check Tier 2 (Agent/Bulk) - defined in Admin
-        // Logic: If Qty >= MinQty2, apply Tier 2
-        const minQty2 = product.minQty2 || 99999; // Default high if not set
+        const minQty2 = product.minQty2 || 99999;
         if (qty >= minQty2) {
             finalPrice = product.priceTier2 || finalPrice;
             tierName = i18n[curLang].tier_2;
             tierClass = "tier-2";
         }
-
-        // Future-proof: Logic for Tier 3 if you add it to Admin later
-        // const minQty3 = product.minQty3 || 99999;
-        // if (qty >= minQty3) { ... }
-
         return { price: finalPrice, label: tierName, css: tierClass };
     }
 
@@ -218,12 +175,7 @@ db.enablePersistence()
         let total = 0;
 
         if(CART.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-8">
-                    <i class="fa-solid fa-basket-shopping text-4xl text-slate-200 mb-2"></i>
-                    <p class="text-slate-400 font-bold">${i18n[curLang].empty_cart}</p>
-                    <a href="index.html" class="text-blue-500 text-sm font-bold mt-2 inline-block">${i18n[curLang].add_stock}</a>
-                </div>`;
+            container.innerHTML = `<div class="text-center py-8"><i class="fa-solid fa-basket-shopping text-4xl text-slate-200 mb-2"></i><p class="text-slate-400 font-bold">${i18n[curLang].empty_cart}</p><a href="index.html" class="text-blue-500 text-sm font-bold mt-2 inline-block">${i18n[curLang].add_stock}</a></div>`;
             document.getElementById('grand-total').innerText = "RM 0.00";
             document.getElementById('btn-submit').classList.add('opacity-50', 'pointer-events-none');
             return;
@@ -232,10 +184,8 @@ db.enablePersistence()
         document.getElementById('btn-submit').classList.remove('opacity-50', 'pointer-events-none');
 
         CART.forEach(item => {
-            const p = PRODUCTS_MAP[item.id] || {};
+            const p = PRODUCTS_MAP[item.id] || { name: item.name }; // Fallback to item.name if map fails
             const name = p.name || "Product"; 
-            
-            // Calculate Tier
             const pricing = getPriceForQty(p, item.qty);
             const subtotal = pricing.price * item.qty;
             total += subtotal;
@@ -255,11 +205,9 @@ db.enablePersistence()
                 <span class="font-bold text-slate-800 mt-0.5">RM ${subtotal.toFixed(2)}</span>
             </div>`;
         });
-
         document.getElementById('grand-total').innerText = `RM ${total.toFixed(2)}`;
     }
 
-    // --- SUBMIT ORDER ---
     async function submitOrder() {
         const name = document.getElementById('r_name').value.trim();
         const date = document.getElementById('r_date').value;
@@ -274,36 +222,20 @@ db.enablePersistence()
         btn.innerHTML = `<div class="loader"></div>`;
 
         try {
-            // Recalculate everything securely
             let grandTotal = 0;
             const itemsToSave = CART.map(c => {
-                const p = PRODUCTS_MAP[c.id];
-                // Use the same tier logic for final calculation
+                const p = PRODUCTS_MAP[c.id] || {name: c.name};
                 const pricing = getPriceForQty(p, c.qty);
                 grandTotal += pricing.price * c.qty;
-                return { 
-                    id: c.id, 
-                    name: p.name || c.id, 
-                    qty: c.qty, 
-                    price: pricing.price, // Save the actual tier price used
-                    tier: pricing.label 
-                };
+                return { id: c.id, name: p.name, qty: c.qty, price: pricing.price, tier: pricing.label };
             });
 
-            // Database Write
             const batch = db.batch();
             const orderRef = db.collection('orders').doc(oid);
             batch.set(orderRef, {
-                orderId: oid,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                customerName: name,
-                resellerName: name,
-                type: 'restock',
-                pickupDate: date,
-                note: note,
-                items: itemsToSave,
-                totalPrice: grandTotal,
-                status: 'new'
+                orderId: oid, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                customerName: name, resellerName: name, type: 'restock', pickupDate: date, note: note,
+                items: itemsToSave, totalPrice: grandTotal, status: 'new'
             });
 
             itemsToSave.forEach(i => {
@@ -313,14 +245,10 @@ db.enablePersistence()
 
             await batch.commit();
 
-            // WhatsApp
-            let msg = `*RESTOCK ORDER: ${oid}* 📦\n`;
-            msg += `👤 ${name}\n`;
+            let msg = `*RESTOCK ORDER: ${oid}* 📦\n👤 ${name}\n`;
             if(date) msg += `📅 ${date}\n`;
             msg += `\n*ITEMS:*`;
-            itemsToSave.forEach(i => {
-                msg += `\n▪️ ${i.qty}x ${i.name} (RM${i.price})`;
-            });
+            itemsToSave.forEach(i => { msg += `\n▪️ ${i.qty}x ${i.name} (RM${i.price})`; });
             msg += `\n\n*TOTAL: RM ${grandTotal.toFixed(2)}*`;
             if(note) msg += `\n📝 ${note}`;
 
@@ -343,11 +271,11 @@ db.enablePersistence()
         
         let total = 0;
         CART.forEach(c => {
-            const p = PRODUCTS_MAP[c.id] || {};
+            const p = PRODUCTS_MAP[c.id] || {name: c.name};
             const pricing = getPriceForQty(p, c.qty);
             const sub = pricing.price * c.qty;
             total += sub;
-            content += `${c.qty}x ${p.name || 'Item'} @ RM${pricing.price} = RM${sub.toFixed(2)}\n`;
+            content += `${c.qty}x ${p.name} @ RM${pricing.price} = RM${sub.toFixed(2)}\n`;
         });
         
         content += `--------------------------------\nTOTAL: RM ${total.toFixed(2)}\n================================\n`;
