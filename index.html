@@ -115,7 +115,8 @@
   appId: "1:1038900448087:web:a46586f21e9ae989708c12"
 };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    firebase.firestore().enablePersistence().catch(err => console.log(err));
+const db = firebase.firestore();
     db.enablePersistence().catch(err => { console.log("Offline mode error:", err.code); });
 
     // --- I18N CONFIG ---
@@ -205,7 +206,13 @@
         const btn = document.querySelector('.fab-cart'); btn.style.transform = "scale(1.2)"; setTimeout(()=>btn.style.transform="scale(1)", 150);
     }
     function updateCart() { document.getElementById('cart-count').innerText = CART.reduce((a,b)=>a+b.qty,0); }
-    if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
+if ('serviceWorker' in navigator) { 
+    window.addEventListener('load', () => { 
+        navigator.serviceWorker.register('./service-worker.js')
+            .then(reg => console.log('SW Registered'))
+            .catch(err => console.log('SW Fail', err)); 
+    }); 
+}
   </script>
 </body>
 </html>
