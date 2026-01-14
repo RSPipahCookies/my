@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pipah Admin Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
+        .sidebar-link.active { background: #eff6ff; color: #2563eb; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <div id="auth-screen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-[60] px-4">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+            <h1 class="text-xl font-bold mb-4">Admin Login</h1>
+            <input type="tel" id="pin-code" class="w-full border p-3 rounded-xl mb-4 text-center text-xl font-bold bg-slate-50 outline-none focus:ring-2 ring-blue-500" placeholder="PIN" maxlength="4">
+            <button onclick="login()" class="w-full bg-slate-900 text-white font-bold p-3 rounded-xl">Masuk</button>
+        </div>
+    </div>
+
+    <header class="bg-white border-b h-16 flex items-center px-4 justify-between shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-600"><i class="fa-solid fa-bars text-xl"></i></button>
+            <h2 class="font-bold text-lg">Pipah<span class="text-blue-600">Admin</span></h2>
+        </div>
+        <button onclick="initData(this)" class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 grid place-items-center hover:bg-slate-200 transition">
+            <i class="fa-solid fa-rotate-right"></i>
+        </button>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden relative">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r transform -translate-x-full md:translate-x-0 transition z-30 flex flex-col pt-16 md:pt-0">
+            <nav class="p-4 space-y-2 flex-1">
+                <button onclick="nav('overview')" class="w-full text-left p-3 rounded-xl font-bold text-slate-500 sidebar-link active" id="btn-overview">
+                    <i class="fa-solid fa-chart-pie w-6"></i> Overview
+                </button>
+                <button onclick="nav('manage')" class="w-full text-left p-3 rounded-xl font-bold text-slate-500 sidebar-link" id="btn-manage">
+                    <i class="fa-solid fa-box-open w-6"></i> Products & Tiers
+                </button>
+                <button onclick="nav('resellers')" class="w-full text-left p-3 rounded-xl font-bold text-slate-500 sidebar-link" id="btn-resellers">
+                    <i class="fa-solid fa-users w-6"></i> Leaderboard
+                </button>
+            </nav>
+            <div class="p-4 border-t"><button onclick="location.reload()" class="w-full text-red-500 font-bold text-sm">Log Out</button></div>
+        </aside>
+
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
+
+        <main class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 md:ml-64">
+            
+            <div id="view-overview">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Total Sales</p>
+                        <h3 class="text-xl font-extrabold text-slate-800" id="stat-sales">RM 0.00</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Units Sold</p>
+                        <h3 class="text-xl font-extrabold text-slate-800" id="stat-units">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-manage" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-xl">Inventory</h2>
+                    <button onclick="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg hover:bg-blue-700 transition">+ Add Product</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20" id="manage-grid"></div>
+            </div>
+
+            <div id="view-resellers" class="hidden">
+                <h2 class="font-bold text-xl mb-4">Top Resellers</h2>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-2" id="reseller-list"></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="product-modal" class="fixed inset-0 z-50 hidden flex items-end md:items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto" onclick="closeModal()"></div>
+        <div class="bg-white w-full md:w-[500px] md:rounded-2xl rounded-t-2xl shadow-2xl pointer-events-auto max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between bg-slate-50 rounded-t-2xl">
+                <h3 class="font-bold">Product Details</h3>
+                <button onclick="closeModal()"><i class="fa-solid fa-times text-slate-400"></i></button>
+            </div>
+            <div class="p-5 space-y-4 overflow-y-auto custom-scroll">
+                <input type="hidden" id="p-id">
+                
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('p-file').click()">
+                    <img id="p-preview" class="h-32 mx-auto object-contain hidden rounded-lg">
+                    <div id="p-upload-ui">
+                        <i class="fa-solid fa-camera text-2xl text-slate-300 mb-2"></i>
+                        <p class="text-xs font-bold text-slate-400">Click to Upload Image</p>
+                    </div>
+                    <input type="file" id="p-file" class="hidden" accept="image/*" onchange="previewImage(event)">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Product Name</label>
+                    <input type="text" id="p-name" class="w-full border border-slate-300 rounded-lg p-2.5 font-bold outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Description</label>
+                    <textarea id="p-desc" rows="2" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500" placeholder="Shown in shop..."></textarea>
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
+                    <p class="text-xs font-extrabold text-blue-800 uppercase flex items-center gap-2"><i class="fa-solid fa-tags"></i> Pricing Config</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500">Retail Price (Tier 1)</label>
+                            <input type="number" id="p-retail" step="0.01" class="w-full bg-white border border-blue-200 p-2 rounded-lg font-bold" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500">Agent Price (Tier 2)</label>
+                            <input type="number" id="p-agent" step="0.01" class="w-full bg-white border border-blue-200 p-2 rounded-lg font-bold" placeholder="0.00">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-bold text-slate-500">Min Qty for Agent Price</label>
+                            <input type="number" id="p-minqty" class="w-full bg-white border border-blue-200 p-2 rounded-lg font-bold" placeholder="e.g. 10">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="p-avail" class="w-5 h-5 accent-blue-600" checked>
+                    <label class="font-bold text-sm text-slate-700">Available in Stock</label>
+                </div>
+            </div>
+            <div class="p-4 border-t bg-white safe-area-bottom">
+                <button onclick="saveProduct()" id="btn-save" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                    Save Product
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+  apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
+  authDomain: "pipahcookies-order.firebaseapp.com",
+  databaseURL: "https://pipahcookies-order-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "pipahcookies-order",
+  storageBucket: "pipahcookies-order.firebasestorage.app",
+  messagingSenderId: "1038900448087",
+  appId: "1:1038900448087:web:a46586f21e9ae989708c12"
+};
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        
+        let PRODUCTS = [];
+        let CURRENT_EDIT_ID = null; // Ensuring consistency in variable name
+
+        function toggleSidebar() { 
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('sidebar-overlay');
+            sb.classList.toggle('-translate-x-full');
+            ov.classList.toggle('hidden');
+        }
+
+        function login() { 
+            if(document.getElementById('pin-code').value==="1234"){ 
+                document.getElementById('auth-screen').remove(); 
+                initData(); 
+            } else alert("Wrong PIN"); 
+        }
+
+        function nav(v) { 
+            document.querySelectorAll('[id^="view-"]').forEach(e=>e.classList.add('hidden')); 
+            document.getElementById('view-'+v).classList.remove('hidden'); 
+            document.querySelectorAll('.sidebar-link').forEach(e=>e.classList.remove('active')); 
+            document.getElementById('btn-'+v).classList.add('active'); 
+            if(window.innerWidth<768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+        }
+
+        function initData(btn) { 
+            if(btn) { btn.children[0].classList.add('fa-spin'); setTimeout(()=>btn.children[0].classList.remove('fa-spin'), 1000); }
+            loadProducts(); 
+            loadStats(); 
+        }
+
+        function loadProducts() {
+            db.collection('products').onSnapshot(snap => {
+                const grid = document.getElementById('manage-grid'); 
+                grid.innerHTML = ''; 
+                PRODUCTS = [];
+                
+                snap.forEach(doc => {
+                    const p = {id:doc.id, ...doc.data()}; 
+                    PRODUCTS.push(p);
+                    
+                    grid.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex gap-3 relative overflow-hidden group">
+                        <div class="w-20 h-20 rounded-lg bg-slate-100 flex-shrink-0">
+                             <img src="${p.image}" class="w-full h-full object-cover rounded-lg">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold text-sm text-slate-800 truncate">${p.name}</h4>
+                            <div class="text-[10px] text-slate-500 mt-1 space-y-1">
+                                <div class="flex justify-between"><span>Retail:</span> <span class="font-bold text-slate-700">RM${(p.priceTier1||0).toFixed(0)}</span></div>
+                                <div class="flex justify-between bg-blue-50 px-1.5 py-0.5 rounded text-blue-700"><span>Agent:</span> <span class="font-bold">RM${(p.priceTier2||0).toFixed(0)}</span></div>
+                            </div>
+                            <div class="mt-1 text-[10px] text-slate-400">Min Qty: <b>${p.minQty2||0}</b></div>
+                        </div>
+                        <button onclick="editItem('${p.id}')" class="absolute top-2 right-2 w-8 h-8 bg-slate-50 text-slate-500 hover:text-blue-600 rounded-lg"><i class="fa-solid fa-pen"></i></button>
+                    </div>`;
+                });
+            });
+        }
+
+        function loadStats() {
+            db.collection('orders').onSnapshot(snap => {
+                let sales=0, units=0, map={};
+                snap.forEach(d => { 
+                    const o = d.data(); 
+                    sales += o.totalPrice||0;
+                    (o.items||[]).forEach(i => units+=i.qty);
+                    const n = o.resellerName || "Unknown";
+                    if(!map[n]) map[n] = {sales:0}; 
+                    map[n].sales += o.totalPrice;
+                });
+                document.getElementById('stat-sales').innerText = "RM " + sales.toFixed(2);
+                document.getElementById('stat-units').innerText = units;
+                
+                const list = document.getElementById('reseller-list'); 
+                list.innerHTML='';
+                if(Object.keys(map).length === 0) list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">No Data</p>';
+                
+                Object.keys(map).sort((a,b)=>map[b].sales-map[a].sales).forEach((k,i)=>{
+                    list.innerHTML += `
+                    <div class="flex justify-between items-center p-3 border-b border-slate-50 last:border-0">
+                        <div class="flex gap-3 items-center">
+                            <span class="w-6 text-center font-bold text-slate-400 text-sm">#${i+1}</span>
+                            <span class="font-bold text-slate-700 text-sm">${k}</span>
+                        </div>
+                        <span class="font-bold text-green-600 text-sm">RM${map[k].sales.toFixed(0)}</span>
+                    </div>`;
+                });
+            });
+        }
+
+        function openModal() { 
+            CURRENT_EDIT_ID=null; 
+            ['p-name','p-desc','p-retail','p-agent','p-minqty'].forEach(i=>document.getElementById(i).value=''); 
+            document.getElementById('p-file').value = '';
+            document.getElementById('p-preview').classList.add('hidden'); 
+            document.getElementById('p-upload-ui').classList.remove('hidden'); 
+            document.getElementById('product-modal').classList.remove('hidden'); 
+        }
+
+        window.editItem = (id) => { 
+            const p = PRODUCTS.find(x=>x.id===id); 
+            if(!p) return;
+            CURRENT_EDIT_ID = id;
+            document.getElementById('p-name').value = p.name; 
+            document.getElementById('p-desc').value = p.description||'';
+            document.getElementById('p-retail').value = p.priceTier1; 
+            document.getElementById('p-agent').value = p.priceTier2; 
+            document.getElementById('p-minqty').value = p.minQty2||'';
+            document.getElementById('p-avail').checked = p.available;
+
+            if(p.image){ 
+                document.getElementById('p-preview').src = p.image; 
+                document.getElementById('p-preview').classList.remove('hidden'); 
+                document.getElementById('p-upload-ui').classList.add('hidden'); 
+            } else {
+                document.getElementById('p-preview').classList.add('hidden'); 
+                document.getElementById('p-upload-ui').classList.remove('hidden'); 
+            }
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
+        function previewImage(e) { 
+            if(e.target.files[0]){ 
+                document.getElementById('p-preview').src = URL.createObjectURL(e.target.files[0]); 
+                document.getElementById('p-preview').classList.remove('hidden'); 
+                document.getElementById('p-upload-ui').classList.add('hidden'); 
+            } 
+        }
+
+        async function saveProduct() {
+            const btn = document.getElementById('btn-save'); 
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<div class="loader"></div> Saving...'; 
+            btn.disabled = true;
+
+            try {
+                const name = document.getElementById('p-name').value;
+                const p1 = parseFloat(document.getElementById('p-retail').value)||0;
+                const p2 = parseFloat(document.getElementById('p-agent').value)||0;
+                const mq = parseInt(document.getElementById('p-minqty').value)||0;
+                const desc = document.getElementById('p-desc').value;
+                const file = document.getElementById('p-file').files[0];
+                
+                if(!name) throw new Error("Name is required");
+
+                // IMAGE LOGIC: If new file, upload it. If no new file but editing, keep old URL. Else placeholder.
+                let img = "https://via.placeholder.com/150";
+                if(CURRENT_EDIT_ID) {
+                    const existing = PRODUCTS.find(x => x.id === CURRENT_EDIT_ID);
+                    if(existing) img = existing.image;
+                }
+
+                if(file) { 
+                    const ref = storage.ref('prod/'+Date.now()); 
+                    await ref.put(file); 
+                    img = await ref.getDownloadURL(); 
+                }
+                
+                const data = { 
+                    name, 
+                    priceTier1: p1, 
+                    priceTier2: p2, 
+                    minQty2: mq, 
+                    price: p1, // Fallback
+                    description: desc, 
+                    image: img, 
+                    available: document.getElementById('p-avail').checked 
+                };
+
+                if(CURRENT_EDIT_ID) {
+                    await db.collection('products').doc(CURRENT_EDIT_ID).update(data);
+                } else {
+                    await db.collection('products').add(data);
+                }
+                closeModal();
+            } catch(e) {
+                alert(e.message);
+            } finally {
+                btn.innerHTML = oldText; 
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
