@@ -12,92 +12,61 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
   <style>
-    :root { --brand: #A67734; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 140px; }
-    
-    .bg-brand { background-color: var(--brand); }
-    .text-brand { color: var(--brand); }
-    .border-brand { border-color: var(--brand); }
-    .ring-brand { --tw-ring-color: var(--brand); }
-
-    /* Buttons */
-    .qty-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; cursor: pointer; background: white; border: 1px solid #e2e8f0; transition: 0.2s; }
-    .qty-btn:active { background: #f1f5f9; transform: scale(0.9); }
-
-    /* Modal */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
-    .modal-box { background: white; width: 100%; max-width: 340px; border-radius: 20px; overflow: hidden; animation: zoomIn 0.25s ease; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-    @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #ea580c; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
   <div id="loader" class="fixed inset-0 bg-white z-[60] flex flex-col items-center justify-center">
-    <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-gray-800"></div>
-    <p class="mt-4 font-bold text-slate-400 text-sm animate-pulse">Loading Shop...</p>
+    <div class="loader mb-4"></div>
+    <p class="font-bold text-slate-400 text-sm animate-pulse">Loading Shop...</p>
   </div>
 
-  <div class="relative w-full h-64 bg-slate-900 overflow-hidden shadow-xl rounded-b-[2rem]">
-    <div class="absolute inset-0 bg-brand opacity-90 transition-colors duration-500"></div>
-    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 24px 24px;"></div>
+  <div class="relative w-full h-64 bg-slate-900 overflow-hidden rounded-b-[2.5rem] shadow-2xl">
+    <div class="absolute inset-0 bg-orange-600/90 mix-blend-multiply"></div>
+    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
     
-    <div class="absolute top-4 right-4 z-20 bg-black/20 backdrop-blur rounded-full p-1 flex">
-        <button onclick="setLang('ms')" id="l-ms" class="px-3 py-1 rounded-full text-[10px] font-bold text-white bg-white/20">MY</button>
-        <button onclick="setLang('en')" id="l-en" class="px-3 py-1 rounded-full text-[10px] font-bold text-white/70">EN</button>
+    <div class="absolute top-4 right-4 z-20 flex bg-black/30 backdrop-blur rounded-full p-1">
+        <button onclick="setLang('ms')" id="l-ms" class="px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold">MY</button>
+        <button onclick="setLang('en')" id="l-en" class="px-3 py-1 text-white/70 rounded-full text-[10px] font-bold">EN</button>
     </div>
 
-    <div class="absolute bottom-8 left-6 right-6 text-white z-10">
-        <p class="text-xs uppercase tracking-widest opacity-80 mb-2 font-bold" data-i18n="welcome">Welcome to</p>
+    <div class="absolute bottom-10 left-6 right-6 text-white z-10">
+        <div class="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-3 border border-white/10" data-i18n="agent_badge">Official Agent</div>
         <h1 id="shop-name" class="text-3xl font-extrabold leading-tight mb-2">...</h1>
-        <div class="flex gap-2 text-[10px] opacity-90">
-            <span class="bg-black/20 px-2 py-1 rounded"><i class="fa-solid fa-check mr-1"></i>Official Agent</span>
-            <span class="bg-black/20 px-2 py-1 rounded"><i class="fa-solid fa-truck-fast mr-1"></i>Fast Delivery</span>
+        <p class="text-orange-100 text-sm flex items-center gap-2"><i class="fa-solid fa-truck-fast"></i> <span data-i18n="secure_msg">Fast Delivery & Secure</span></p>
+    </div>
+  </div>
+
+  <div class="max-w-md mx-auto px-4 -mt-8 relative z-20 space-y-6">
+    <div class="bg-white p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
+        <div class="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
+            <div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 grid place-items-center"><i class="fa-regular fa-user"></i></div>
+            <h3 class="text-sm font-bold text-slate-700 uppercase" data-i18n="your_info">Maklumat Anda</h3>
+        </div>
+        <div class="space-y-3">
+            <input type="text" id="c_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-orange-500 transition" placeholder="Nama Penuh">
+            <textarea id="c_addr" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:ring-2 ring-orange-500 transition" placeholder="Alamat Penghantaran"></textarea>
         </div>
     </div>
-  </div>
 
-  <div class="max-w-md mx-auto px-4 -mt-6 relative z-20 space-y-5">
-    
-    <div class="bg-white p-5 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 space-y-3">
-        <div class="flex items-center gap-2 mb-1">
-            <i class="fa-regular fa-id-card text-slate-400"></i>
-            <h3 class="text-xs font-bold text-slate-400 uppercase" data-i18n="details">Delivery Details</h3>
-        </div>
-        <input type="text" id="c_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold outline-none focus:ring-2 ring-brand transition" placeholder="Full Name">
-        <textarea id="c_addr" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold outline-none focus:ring-2 ring-brand transition" placeholder="Address"></textarea>
+    <div>
+        <h3 class="font-bold text-slate-800 mb-3 px-1" data-i18n="menu">Menu Pilihan</h3>
+        <div id="product-list" class="space-y-3"></div>
     </div>
-
-    <div class="relative">
-        <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400 text-sm"></i>
-        <input type="text" id="search" onkeyup="render()" class="w-full pl-10 pr-4 py-3 bg-white rounded-xl border border-gray-200 text-sm outline-none focus:border-gray-400 shadow-sm" placeholder="Search cookies...">
-    </div>
-
-    <div id="product-list" class="grid grid-cols-1 gap-3"></div>
   </div>
 
-  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
-      <div class="modal-box">
-          <div class="relative">
-             <img id="m-img" src="" class="w-full h-48 object-cover bg-slate-100">
-             <button onclick="document.getElementById('modal').style.display='none'" class="absolute top-2 right-2 w-8 h-8 bg-black/40 text-white rounded-full"><i class="fa-solid fa-times"></i></button>
-          </div>
-          <div class="p-5">
-              <h3 id="m-title" class="text-xl font-bold text-slate-800 leading-tight"></h3>
-              <p id="m-desc" class="text-sm text-slate-500 mt-2 leading-relaxed"></p>
-              <button class="w-full bg-slate-100 text-slate-600 font-bold py-3 rounded-xl mt-4 hover:bg-slate-200" onclick="document.getElementById('modal').style.display='none'">Close</button>
-          </div>
-      </div>
-  </div>
-
-  <div class="fixed bottom-4 left-4 right-4 z-40 max-w-md mx-auto transition-all duration-300 transform translate-y-32" id="cart-bar">
-    <div class="bg-gray-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between">
+  <div class="fixed bottom-6 left-4 right-4 z-40 max-w-md mx-auto transition-all duration-300 transform translate-y-40" id="cart-bar">
+    <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700">
         <div>
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider" data-i18n="total">Total Order</p>
-            <p class="text-xl font-bold leading-none" id="grand-total">RM 0.00</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider" data-i18n="total">Jumlah Besar</p>
+            <p class="text-2xl font-bold leading-none" id="grand-total">RM 0.00</p>
         </div>
         <button onclick="submitOrder()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition flex items-center gap-2 shadow-lg shadow-green-500/30 active:scale-95">
-            <i class="fa-brands fa-whatsapp text-lg"></i>
-            <span data-i18n="order">WhatsApp</span>
+            <i class="fa-brands fa-whatsapp text-xl"></i>
+            <span data-i18n="btn_order">Order</span>
         </button>
     </div>
   </div>
@@ -107,73 +76,59 @@
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- State & Config ---
-    const i18n = {
-        ms: { welcome:"Selamat Datang ke", details:"Butiran Penghantaran", total:"Jumlah Besar", order:"Hantar Order", search:"Cari biskut...", name_ph:"Nama Penuh", addr_ph:"Alamat Lengkap", sending:"Sedang Proses..." },
-        en: { welcome:"Welcome to", details:"Delivery Details", total:"Total Order", order:"Send Order", search:"Search cookies...", name_ph:"Full Name", addr_ph:"Full Address", sending:"Processing..." }
-    };
     let SHOP = {}, CART = [], DB_PRODUCTS = {}, curLang='ms';
+    const i18n = {
+        ms: { agent_badge:"Ejen Sah", secure_msg:"Pantas & Selamat", your_info:"Maklumat Anda", menu:"Menu Pilihan", total:"Jumlah Besar", btn_order:"Order WhatsApp", ph_name:"Nama Penuh", ph_addr:"Alamat Penghantaran", alert_name:"Sila isi nama.", alert_item:"Sila pilih biskut." },
+        en: { agent_badge:"Official Agent", secure_msg:"Fast & Secure", your_info:"Your Details", menu:"Menu Selection", total:"Grand Total", btn_order:"Order via WhatsApp", ph_name:"Full Name", ph_addr:"Delivery Address", alert_name:"Please enter name.", alert_item:"Please select items." }
+    };
 
-    // --- Initialization ---
+    function setLang(l) {
+        curLang = l;
+        document.getElementById('l-ms').className = l==='ms'?"px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold":"px-3 py-1 text-white/70 rounded-full text-[10px] font-bold";
+        document.getElementById('l-en').className = l==='en'?"px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold":"px-3 py-1 text-white/70 rounded-full text-[10px] font-bold";
+        
+        document.querySelectorAll('[data-i18n]').forEach(e => e.innerText = i18n[l][e.dataset.i18n]);
+        document.getElementById('c_name').placeholder = i18n[l].ph_name;
+        document.getElementById('c_addr').placeholder = i18n[l].ph_addr;
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
         const encoded = new URLSearchParams(window.location.search).get('d');
         if(encoded) {
             try {
-                // Decode Shop Data
                 const str = decodeURIComponent(atob(encoded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
                 SHOP = JSON.parse(str);
-                
-                if(SHOP.c) document.documentElement.style.setProperty('--brand', SHOP.c);
                 document.getElementById('shop-name').innerText = SHOP.n || 'Reseller Shop';
                 
-                // Fetch Product Metadata
                 const snap = await db.collection('products').get();
                 snap.forEach(d => DB_PRODUCTS[d.id] = d.data());
-
-                // Build Cart from URL IDs
+                
                 SHOP.i.forEach((id, idx) => {
                     const p = DB_PRODUCTS[id];
-                    if(p) CART.push({ id, name: p.name, price: parseFloat(SHOP.p[idx]), qty: 0, image: p.image, desc: p.description });
+                    if(p) CART.push({ id, name: p.name, price: parseFloat(SHOP.p[idx]), qty: 0, image: p.image });
                 });
                 render();
                 document.getElementById('loader').classList.add('hidden');
-            } catch(e) { console.error(e); alert("Invalid or Broken Shop Link"); }
+            } catch(e) { console.error(e); alert("Invalid Link"); }
         }
     });
 
-    // --- UI Logic ---
-    function setLang(l) {
-        curLang = l;
-        const t = i18n[l];
-        document.getElementById('l-ms').className = l=='ms'?'px-3 py-1 rounded-full text-[10px] font-bold text-white bg-white/20':'px-3 py-1 rounded-full text-[10px] font-bold text-white/70';
-        document.getElementById('l-en').className = l=='en'?'px-3 py-1 rounded-full text-[10px] font-bold text-white bg-white/20':'px-3 py-1 rounded-full text-[10px] font-bold text-white/70';
-        document.querySelectorAll('[data-i18n]').forEach(e=>e.innerText = t[e.dataset.i18n]);
-        document.getElementById('search').placeholder = t.search;
-        document.getElementById('c_name').placeholder = t.name_ph;
-        document.getElementById('c_addr').placeholder = t.addr_ph;
-    }
-
     function render() {
-        const list = document.getElementById('product-list');
-        const term = document.getElementById('search').value.toLowerCase();
-        list.innerHTML = '';
-
+        const list = document.getElementById('product-list'); list.innerHTML = '';
         CART.forEach((item, idx) => {
-            if(item.name.toLowerCase().includes(term)) {
-                list.innerHTML += `
-                <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex gap-4 items-center transition hover:border-slate-300">
-                    <img src="${item.image}" class="w-20 h-20 rounded-xl object-cover bg-gray-100 cursor-pointer" onclick="showModal(${idx})">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-slate-800 leading-tight mb-1" onclick="showModal(${idx})">${item.name}</h4>
-                        <p class="text-brand font-extrabold">RM ${item.price.toFixed(2)}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="qty-btn" onclick="upd(${idx}, -1)">-</div>
-                        <span class="font-bold text-sm w-4 text-center select-none" id="q-${idx}">${item.qty}</span>
-                        <div class="qty-btn text-brand border-brand bg-brand/5" onclick="upd(${idx}, 1)">+</div>
-                    </div>
-                </div>`;
-            }
+            list.innerHTML += `
+            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex gap-4 items-center transition">
+                <img src="${item.image}" class="w-20 h-20 rounded-xl object-cover bg-gray-100">
+                <div class="flex-1">
+                    <h4 class="font-bold text-slate-800 leading-tight mb-1">${item.name}</h4>
+                    <p class="text-orange-600 font-extrabold">RM ${item.price.toFixed(2)}</p>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-50 p-1 rounded-lg border border-slate-100">
+                    <button class="w-8 h-8 bg-white text-slate-600 rounded-md shadow-sm font-bold" onclick="upd(${idx}, -1)">-</button>
+                    <span class="font-bold text-sm w-4 text-center select-none" id="q-${idx}">${item.qty}</span>
+                    <button class="w-8 h-8 bg-slate-900 text-white rounded-md shadow-sm font-bold" onclick="upd(${idx}, 1)">+</button>
+                </div>
+            </div>`;
         });
     }
 
@@ -181,96 +136,41 @@
         if(CART[idx].qty + d < 0) return;
         CART[idx].qty += d;
         document.getElementById(`q-${idx}`).innerText = CART[idx].qty;
-        
         let total = 0, count = 0;
         CART.forEach(c => { total += c.qty * c.price; count += c.qty; });
         document.getElementById('grand-total').innerText = "RM " + total.toFixed(2);
-        
-        const bar = document.getElementById('cart-bar');
-        count > 0 ? bar.classList.remove('translate-y-32') : bar.classList.add('translate-y-32');
+        const bar = document.getElementById('cart-bar'); count > 0 ? bar.classList.remove('translate-y-40') : bar.classList.add('translate-y-40');
     }
 
-    window.showModal = (idx) => {
-        const item = CART[idx];
-        document.getElementById('m-img').src = item.image;
-        document.getElementById('m-title').innerText = item.name;
-        document.getElementById('m-desc').innerText = item.desc || "Delicious premium cookies.";
-        document.getElementById('modal').style.display = 'flex';
-    }
-    window.closeModal = (e) => { if(e.target.id === 'modal') document.getElementById('modal').style.display='none'; }
-
-    // --- CORE INTEGRATION LOGIC ---
     window.submitOrder = async () => {
         const name = document.getElementById('c_name').value.trim();
         const addr = document.getElementById('c_addr').value.trim();
         const items = CART.filter(c => c.qty > 0);
-
-        if(!name) return alert("Please enter your name");
-        if(items.length === 0) return alert("Cart is empty");
-
-        // 1. UI Feedback
-        const btn = document.querySelector('#cart-bar button');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ${i18n[curLang].sending}`;
-        btn.disabled = true;
+        if(!name) return alert(i18n[curLang].alert_name);
+        if(items.length === 0) return alert(i18n[curLang].alert_item);
 
         try {
-            let total = 0;
-            const orderItems = items.map(i => {
-                total += i.qty * i.price;
-                return { id: i.id, name: i.name, qty: i.qty, price: i.price };
-            });
-
-            // 2. Prepare Batch Write (Atomic Operation)
             const batch = db.batch();
-            
-            // A. Create Order Document
             const orderRef = db.collection('orders').doc();
+            let total = 0;
+            const orderItems = items.map(i => { total += i.qty * i.price; return { id: i.id, name: i.name, qty: i.qty, price: i.price }; });
+
             batch.set(orderRef, {
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                customerName: name,
-                customerAddress: addr,
-                resellerName: SHOP.n, // From URL
-                resellerPhone: SHOP.w, // From URL
-                items: orderItems,
-                totalPrice: total,
-                status: 'new'
+                customerName: name, customerAddress: addr, resellerName: SHOP.n, resellerPhone: SHOP.w, items: orderItems, totalPrice: total, type: 'customer_order'
             });
-
-            // B. Increment 'soldCount' for Analytics
-            items.forEach(i => {
-                const prodRef = db.collection('products').doc(i.id);
-                batch.update(prodRef, {
-                    soldCount: firebase.firestore.FieldValue.increment(i.qty)
-                });
-            });
-
-            // 3. Commit to Firebase
+            items.forEach(i => { batch.update(db.collection('products').doc(i.id), { soldCount: firebase.firestore.FieldValue.increment(i.qty) }); });
             await batch.commit();
 
-            // 4. Generate WhatsApp Link
-            let msg = `*ORDER ${SHOP.n.toUpperCase()}* 👋\n`;
-            msg += `👤 ${name}\n`;
+            let msg = `*ORDER ${SHOP.n.toUpperCase()}* 👋\n👤 ${name}\n`;
             if(addr) msg += `📍 ${addr}\n`;
             msg += `\n*ITEMS:*`;
-            items.forEach(i => {
-                const sub = i.qty * i.price;
-                msg += `\n▪️ ${i.qty}x ${i.name} (RM${sub.toFixed(2)})`;
-            });
+            items.forEach(i => { msg += `\n▪️ ${i.qty}x ${i.name}`; });
             msg += `\n\n*TOTAL: RM ${total.toFixed(2)}*`;
-            msg += `\n\n_Order ID: ${orderRef.id.slice(0,5)}_`; // Add ID for reference
-
+            
             window.location.href = `https://wa.me/${SHOP.w}?text=${encodeURIComponent(msg)}`;
-
-        } catch (error) {
-            console.error("Order Error:", error);
-            alert("Connection Error. Redirecting to WhatsApp anyway...");
-            // Fallback if Firebase fails
-             let msg = `*ORDER (Offline Mode)* 👋\n👤 ${name}\n...`; 
-             window.location.href = `https://wa.me/${SHOP.w}?text=${encodeURIComponent(msg)}`;
-        }
+        } catch (error) { window.location.href = `https://wa.me/${SHOP.w}`; }
     }
-</script>
-
+  </script>
 </body>
 </html>
