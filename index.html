@@ -1,606 +1,238 @@
 <!doctype html>
 <html lang="ms">
 <head>
-  <link rel="apple-touch-icon" href="images/rs194.png">
-  <link rel="manifest" href="reseller-manifest.json">
-  
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PipahCookies — Reseller Portal (Demo)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Reseller Portal</title>
+  
+  <link rel="manifest" href="reseller-manifest.json">
+  <link rel="apple-touch-icon" href="rs194.png">
+  <meta name="theme-color" content="#0f172a">
 
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
   <style>
- /* Theme variables */
- :root{
-    --primary:#A67734;
-    --primary-dark:#d4b390;
-    --accent:#fff1e6;
-    --whatsapp:#25d366;
-    --bg:#fff8f2;
-    --card:#ffffff;
-    --muted:#6b6b6b;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:"Fredoka",sans-serif;background:var(--bg);color:#222;-webkit-font-smoothing:antialiased}
-  h1,h2,h3{font-family:"Poppins",sans-serif;color:var(--primary-dark);margin:0 0 8px}
-  a{color:inherit}
-
-/* Header */
-  .site-header{display:block}
-  .header-img{width:100%;height:auto;display:block;object-fit:cover;max-height:360px;border-radius:0 0 14px 14px;box-shadow:0 8px 18px rgba(0,0,0,0.06);animation:fadeUp .9s both}
-/* Nav */
-  .site-nav{position:sticky;top:0;background:var(--primary);z-index:40;padding:10px 0}
-  .nav-list{list-style:none;margin:0;padding:0;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
-  .nav-list a{color:#fff;text-decoration:none;font-weight:700;padding:8px 12px;border-radius:8px;transition:transform .15s}
-  .nav-list a:hover{transform:translateY(-3px);background:rgba(255,255,255,0.08)}
-
-/* Sections */
-  .section{padding:36px 18px}
-  .lead{max-width:900px;margin:0 auto;color:var(--muted);line-height:1.6}
-
-/* Syarat box */
-.syarat-box{max-width:920px;margin:0 auto;background:linear-gradient(180deg,rgba(255,255,255,0.9),var(--accent));padding:18px;border-radius:12px;box-shadow:0 12px 30px rgba(166,119,52,0.08);border:1px solid rgba(166,119,52,0.06)}
-.syarat-box ul{margin:12px 0 0 18px}
-.syarat-box li{margin-bottom:8px;color:#333}
-
-/* Product Section Layout (FORCED 2-IN-A-ROW ON ALL SCREENS) */
-.products { display:flex;flex-wrap:wrap;gap:20px;justify-content:center }
-.product-card {
-    flex:0 0 calc(50% - 10px); /* 50% width minus half the gap for perfect 2-in-a-row layout */
-    max-width: 400px; /* Limit max width for elegance on large screens */
-    height:420px;
-    background:var(--card);
-    padding:15px;
-    border-radius:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.06);
-    overflow:hidden;
-    text-align:center;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between
-}
-
-/* Slider CSS for swipe functionality */
-.product-slider{position:relative;overflow:hidden;border-radius:10px;}
-.slider-wrapper {
-  display: flex;
-  transition: transform 0.3s ease-out; /* Enable smooth sliding */
-}
-.product-img{
-  width: 100%; /* Each image takes 100% of the slider container width */
-  flex-shrink: 0; /* Prevents images from shrinking */
-  height:240px;
-  object-fit:cover;
-  display:block;
-  border-radius:10px;
-  cursor: zoom-in; /* Indicate interactivity for zoom */
-  pointer-events: auto; /* Ensure events like onclick and drag work */
-}
-
-.slider-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
-.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.6);cursor:pointer}
-.dot.active{background:var(--primary-dark)}
-
-.card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 12px 24px rgba(0,0,0,0.06);transition:transform .18s}
-.card:hover{transform:translateY(-8px)}
-.old-price{text-decoration:line-through;color:gray;font-size:14px}
-.price{color:var(--primary-dark);font-weight:700;margin-bottom:6px}
-
-.qty-control{display:flex;justify-content:center;align-items:center;gap:8px;margin:10px 0}
-.qty-btn{background:var(--primary);color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:18px;cursor:pointer;transition:transform .12s}
-.qty-btn:hover{background:var(--primary-dark);transform:scale(1.04)}
-.qty-input{min-width:48px;text-align:center;border-radius:8px;border:1px solid #eee;padding:6px;background:#fff}
-.btn{display:inline-block;padding:10px 14px;border-radius:22px;border:none;cursor:pointer;font-weight:800;transition:transform .14s,box-shadow .14s}
-.btn.primary{background:var(--primary);color:#fff}
-.btn.primary:hover{background:var(--primary-dark);transform:translateY(-3px)}
-.btn.secondary{background:#fff;color:var(--primary);border:2px solid var(--primary)}
-.btn.checkout{background:var(--whatsapp);color:#fff}
-
-.thumbs{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-top:8px;justify-content:center}
-.thumb{width:72px;height:72px;border-radius:8px;border:2px solid transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.thumb.active{border-color:var(--accent)}
-
-/* Ensure PWA Popups/Buttons have lower Z-index than cart */
-#cart-icon{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;z-index:9998;box-shadow:0 14px 30px rgba(0,0,0,0.16);transition:transform .18s}
-#cart-badge{position:absolute;top:6px;right:6px;background:#ff3b3b;color:#fff;padding:3px 7px;border-radius:50%;font-weight:800;font-size:12px;box-shadow:0 6px 12px rgba(0,0,0,0.12)}
-
-.cart-panel{position:fixed;right:20px;bottom:92px;width:340px;max-height:72vh;overflow:auto;background:#fff;padding:12px;border-radius:12px;box-shadow:0 30px 60px rgba(0,0,0,0.18);z-index:9997;transform:translateY(10px);opacity:0;pointer-events:none}
-.cart-panel.show{transform:translateY(0);opacity:1;pointer-events:auto;animation:slideUp .26s both}
-.cart-header{display:flex;justify-content:space-between;align-items:center}
-.close-cart{background:transparent;border:none;font-size:18px;cursor:pointer}
-.cart-items{list-style:none;padding:0;margin:10px 0;display:flex;flex-direction:column;gap:8px}
-.cart-items li{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fff9f5;border:1px solid #fee6d8}
-.cart-items li button{margin-left:6px;padding:6px 8px;border-radius:6px;border:none;cursor:pointer}
-
-.checkout-form{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-.checkout-form input,.checkout-form textarea{padding:8px;border-radius:8px;border:1px solid #eee;font-family:inherit}
-
-.cart-summary{margin-top:6px}
-.cart-actions{margin-top:10px;display:flex;gap:8px;justify-content:space-between}
-.hidden{display:none}
-
-
-/* New CSS for Zoom Modal (Lightbox) */
-.zoom-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-  display: none; /* Hidden by default */
-  align-items: center;
-  justify-content: center;
-  z-index: 9000;
-  backdrop-filter: blur(4px);
-  cursor: pointer;
-}
-.zoom-modal.active {
-  display: flex;
-}
-.zoom-modal-content {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
-  transform: scale(0.9);
-  transition: transform 0.3s ease-out;
-}
-.zoom-modal.active .zoom-modal-content {
-  transform: scale(1);
-}
-.close-zoom {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  color: #fff;
-  font-size: 40px;
-  font-weight: bold;
-  cursor: pointer;
-  opacity: 0.8;
-  transition: opacity 0.2s;
-}
-.close-zoom:hover {
-  opacity: 1;
-}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
-.added{animation:bounce .46s both}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{opacity:0;animation:fadeInUp .9s forwards}
-
-</style>
+    body{ font-family: 'Plus Jakarta Sans', sans-serif; background:#F8FAFC; padding-bottom: 90px; }
+    .header-bg { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 0 0 24px 24px; padding: 20px 20px 80px 20px; color: white; }
+    .menu-card { background: white; padding: 12px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; height: 100%; justify-content: center; }
+    .fab-cart { position: fixed; bottom: 25px; right: 25px; background: #0f172a; color: white; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; z-index: 40; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: transform 0.2s; }
+    .fab-cart:active { transform: scale(0.9); }
+  </style>
 </head>
 <body>
 
-  <header class="site-header">
-    <img src="images/rshd.png" alt="Pipah Cookies" class="header-img">
-  </header>
-
-  <nav class="site-nav">
-    <ul class="nav-list">
-      <li><a href="#syarat">Syarat</a></li>
-      <li><a href="#products">Produk</a></li>
-      <li><a href="#contact">Hubungi</a></li>
-    </ul>
-  </nav>
-
-  <main>
-    <section class="section" style="padding: 10px 18px;">
-    <div style="background: linear-gradient(135deg, #A67734 0%, #d4b390 100%); border-radius: 16px; padding: 24px; text-align: left; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px rgba(166,119,52,0.25);">
+  <div class="header-bg relative">
+    <div class="flex justify-between items-start mb-4">
         <div>
-            <h3 style="margin:0; color:white; font-size: 1.4em;">Reseller Tool 🚀</h3>
-            <p style="margin:4px 0 0; font-size: 0.9em; opacity: 0.9;">Buat link jualan & set harga sendiri.</p>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Reseller Portal</p>
+            <h1 class="text-2xl font-extrabold">PipahCookies</h1>
         </div>
-        <a href="RSDashboard.html" style="background: white; color: #A67734; padding: 12px 18px; border-radius: 12px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            Buka &rarr;
-        </a>
+        <div class="bg-white/10 p-1 rounded-full flex">
+            <div class="px-2 py-0.5 bg-white text-slate-900 rounded-full text-[10px] font-bold">MY</div>
+        </div>
     </div>
-</section>
-    <section id="syarat" class="section fade-up">
-      <h2 style="text-align:center;color:var(--primary-dark);">Syarat - Syarat Reseller</h2>
-      <div class="syarat-box">
-        <p style="margin:0;font-weight:700;color:var(--primary-dark)">Harap baca sebelum membuat pesanan:</p>
-        <ul>
-          <li><strong>Deposit:</strong> 50% deposit diperlukan semasa membuat pesanan.</li>
-          <li><strong>Masa Siap:</strong> Freshly baked upon order — biasanya 2–3 hari bergantung kepada kuantiti.</li>
-          <li><strong>Bayaran Penuh:</strong> Bayaran penuh perlu diselesaikan semasa pengambilan.</li>
-          <li><strong>Harga Jualan:</strong> Retail price dikawal bebas oleh reseller.</li>
-          <li><strong>Pembatalan:</strong> Pembatalan selepas 24 jam dari tempahan akan kehilangan deposit.</li>
-        </ul>
-      </div>
-    </section>
+    
+    <div class="grid grid-cols-3 gap-2 absolute left-4 right-4 -bottom-12">
+        
+        <a href="#shop" class="menu-card ring-2 ring-orange-100 ring-offset-2">
+            <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 grid place-items-center"><i class="fa-solid fa-boxes-stacked text-sm"></i></div>
+            <div>
+                <h3 class="font-bold text-xs text-slate-800">Beli Stok</h3>
+                <p class="text-[9px] text-slate-500 leading-tight">Restock</p>
+            </div>
+        </a>
 
-    <section id="products" class="section fade-up">
-      <h2 style="text-align:center;color:var(--primary-dark);margin-bottom:16px">Produk</h2>
+        <a href="RSDashboard.html" class="menu-card bg-slate-900 border-slate-900">
+            <div class="w-8 h-8 rounded-full bg-slate-700 text-white grid place-items-center"><i class="fa-solid fa-rocket text-sm"></i></div>
+            <div>
+                <h3 class="font-bold text-xs text-white">Dropship</h3>
+                <p class="text-[9px] text-gray-400 leading-tight">Bina Link</p>
+            </div>
+        </a>
 
-      <div class="products" id="product-grid">
-        </div>
-    </section>
-     
-     <section id="gallery">
-  <iframe
-      src="./gambar2reseller.html"
-      width="100%"
-      style="border:none; width:100%;"
-      id="galleryIframe"
-      scrolling="no">
-  </iframe>
+        <a href="gambar2reseller.html" class="menu-card">
+            <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 grid place-items-center"><i class="fa-regular fa-images text-sm"></i></div>
+            <div>
+                <h3 class="font-bold text-xs text-slate-800">Galeri</h3>
+                <p class="text-[9px] text-slate-500 leading-tight">Bahan Iklan</p>
+            </div>
+        </a>
 
-  <script>
-    // Auto‑resize iframe based on content height
-    window.addEventListener("message", function(e){
-      if (e.data && e.data.type === "resizeGallery"){
-        const h = parseInt(e.data.height || 0);
-        if (h > 0) document.getElementById("galleryIframe").style.height = h + "px";
-      }
-    });
-  </script>
-</section>
-
-    <section id="contact" class="section fade-up">
-      <h2>Hubungi Kami</h2>
-      <p class="lead">Untuk pesanan atau pertanyaan, hantarkan mesej melalui WhatsApp atau follow & chat di Shopee / TikTok / Facebook kami.</p>
-      <p><a class="btn secondary" href="#" onclick="window.open('https://wa.me/'+window.ORDER_WHATSAPP_NUMBER,'_blank')">Chat di WhatsApp</a></p>
-    </section>
-  </main>
-
-  <div id="zoom-modal" class="zoom-modal" onclick="closeZoomModal()">
-    <span class="close-zoom">&times;</span>
-    <img id="zoom-image" class="zoom-modal-content" src="" alt="Zoomed Product Image">
+    </div>
   </div>
 
-  <button id="cart-icon" aria-label="Troli" onclick="toggleCart()">
-    <span class="icon">🛒</span>
-    <span id="cart-badge" class="badge">0</span>
-  </button>
-
-  <aside id="cart-panel" class="cart-panel" aria-live="polite" aria-hidden="true">
-    <div class="cart-header">
-      <h3>Troli Anda</h3>
-      <button class="close-cart" onclick="toggleCart()">✕</button>
+  <div class="max-w-md mx-auto px-4 mt-20" id="shop">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="font-bold text-slate-800">Senarai Stok</h2>
+        <button onclick="alert('Beli minimum kuantiti untuk dapat Harga Ejen (Tier 2).')" class="text-xs font-bold text-blue-600 flex items-center gap-1"><i class="fa-regular fa-circle-question"></i> Info Harga</button>
     </div>
 
-    <ul id="cart-items" class="cart-items"></ul>
-
-    <div class="cart-summary">
-      <p id="cart-total">Jumlah: RM 0.00</p>
+    <div class="relative mb-6">
+        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400"></i>
+        <input type="text" id="search" onkeyup="renderProducts()" class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 ring-orange-500 transition" placeholder="Cari produk...">
     </div>
 
-    <div id="checkout-form" class="checkout-form hidden">
-      <label for="orderId">No. Pesanan</label>
-      <input type="text" id="orderId" name="orderId" readonly style="background:#f4f4f4;">
-      <input id="full-name" type="text" placeholder="Nama penuh" />
-      <textarea id="full-address" placeholder="Alamat penuh (boleh kosong untuk pickup)"></textarea>
-      
-      <label for="pickup-date" style="margin-top: 4px; font-weight: 600;">Tarikh Pengambilan (Pickup)</label>
-      <input type="date" id="pickup-date" name="pickup-date" required style="font-family: inherit;">
-      <button class="btn checkout" id="go-to-summary">Teruskan ke Ringkasan</button>
+    <div id="loading" class="text-center py-10">
+        <div class="animate-spin w-6 h-6 border-2 border-slate-300 border-t-slate-800 rounded-full mx-auto mb-2"></div>
+        <p class="text-xs text-slate-400">Memuatkan Stok...</p>
     </div>
-
-    <div class="cart-actions">
-      <button class="btn primary" id="open-checkout" onclick="showCheckoutForm()">Checkout</button>
-    </div>
-  </aside>
-
-
-<script src="pipah-product-config.js"></script>
-
-<script>
-// Data produk kini diambil dari config file (tetapi disalin ke variable 'products' 
-// untuk membolehkan logik sedia ada berfungsi tanpa banyak ubahsuai)
-
-// --- FIXED: ADDED SAFETY CHECK FOR CONFIG FILE ---
-if (typeof window.PRODUCTS_DATA === 'undefined') {
-    console.error("CRITICAL: pipah-product-config.js not loaded.");
-    alert("System Error: Config file not loaded.");
-}
-// ------------------------------------------------
-
-const WHATSAPP_NUMBER = window.ORDER_WHATSAPP_NUMBER; 
-const products = window.PRODUCTS_DATA.map(p => ({ 
-    id: p.id, 
-    title: p.title, 
-    images: p.images, 
-    oldPrice: p.oldPrice, 
-    tiers: p.tiers 
-}));
-
-// Fungsi untuk mendapatkan harga kini menggunakan fungsi global
-function getUnitPriceForQty(productId, qty){ 
-    return window.getResellerCost(productId, qty).cost; 
-}
-
-// BARU: Fungsi untuk mendapatkan tarikh minimum (2 hari selepas hari ini)
-function getMinPickupDate() {
-    const today = new Date();
-    // Tambah 2 hari
-    today.setDate(today.getDate() + 2); 
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0'); // Januari adalah 0!
-    const dd = String(today.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`; // Format YYYY-MM-DD
-}
-// Akhir BARU
-
-// ===== LOCAL STORAGE & INIT (unchanged) =====
-const CART_KEY = 'pipah_reseller_cart_v1';
-let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-
-const zoomModal = document.getElementById('zoom-modal');
-const zoomImage = document.getElementById('zoom-image');
-function openZoomModal(src){ zoomImage.src = src; zoomModal.classList.add('active'); zoomImage.onclick = (e)=> e.stopPropagation(); }
-function closeZoomModal(){ zoomModal.classList.remove('active'); zoomImage.src = ''; }
-
-document.addEventListener('DOMContentLoaded', ()=>{
-  renderProducts(); updateCartUI();
-  document.querySelectorAll('.fade-up').forEach((el,i)=> el.style.animationDelay = (i*80)+'ms');
-  const orderIdInput = document.getElementById('orderId'); if(orderIdInput) orderIdInput.value = getNextOrderNumber();
-  
-  // BARU: Setkan tarikh minimum pada input tarikh
-  const pickupDateInput = document.getElementById('pickup-date');
-  if(pickupDateInput) pickupDateInput.setAttribute('min', getMinPickupDate());
-  // Akhir BARU
-
-  document.getElementById('go-to-summary').addEventListener('click', ()=>{
-    const name = document.getElementById('full-name').value.trim();
-    const address = document.getElementById('full-address').value.trim();
     
-    // BARU: Ambil tarikh pengambilan
-    const pickupDate = pickupDateInput ? pickupDateInput.value : '';
+    <div class="grid grid-cols-2 gap-4" id="product-grid"></div>
+  </div>
 
-    if(!name){ alert('Sila isi nama penuh.'); return; }
-    // BARU: Semak tarikh pengambilan
-    if(!pickupDate){ alert('Sila pilih tarikh pengambilan. Tarikh terawal adalah 2 hari dari hari ini.'); return; }
+  <div class="fab-cart" onclick="window.location.href='reseller-checkout.html'">
+    <i class="fa-solid fa-cart-shopping"></i>
+    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full grid place-items-center border-2 border-slate-50" id="cart-count">0</span>
+  </div>
 
-    const order = { 
-        orderId: document.getElementById('orderId').value, 
-        name, 
-        address, 
-        pickupDate: pickupDate, 
-        // --- FIXED: CHANGED TIMEZONE TO MALAYSIA TIME ---
-        date: new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur', hour12: true }), 
-        // ------------------------------------------------
-        items: cart 
-    };
-    localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
-    window.open('reseller-checkout.html', '_blank');
-  });
-});
-
-function getNextOrderNumber(){ const n = localStorage.getItem('pipah_reseller_last_order') || '1000'; const next = parseInt(n)+1; localStorage.setItem('pipah_reseller_last_order', next); return 'RS-'+next; }
-
-function renderProducts(){ const grid = document.getElementById('product-grid'); grid.innerHTML=''; products.forEach(prod=>{
-  const card = document.createElement('article'); card.className='card product-card';
-  card.innerHTML = `
-      <div class="product-slider" data-id="${prod.id}">
-        <div class="slider-wrapper">
-          ${prod.images.map((src,i)=>`<img src="${src}" class="product-img" alt="${prod.title}" onclick="openZoomModal(this.src)">`).join('')}
-        </div>
-        <div class="slider-dots">
-          ${prod.images.map((_,i)=>`<span class="dot ${i===0?'active':''}" data-index="${i}"></span>`).join('')}
-        </div>
+  <div class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4 backdrop-blur-sm" id="modal" onclick="closeModal(event)">
+      <div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden animate-bounce-in shadow-2xl">
+          <div class="relative">
+              <img id="m-img" src="" class="w-full h-56 object-cover bg-slate-100">
+              <button onclick="closeModal({target:{id:'modal'}})" class="absolute top-3 right-3 w-8 h-8 bg-black/30 text-white rounded-full backdrop-blur"><i class="fa-solid fa-times"></i></button>
+          </div>
+          <div class="p-5">
+              <h2 id="m-title" class="text-xl font-bold text-slate-800 mb-1"></h2>
+              <p id="m-price" class="text-lg font-extrabold text-blue-600 mb-3"></p>
+              
+              <div class="bg-slate-50 p-3 rounded-xl mb-4 border border-slate-100">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Info Produk</p>
+                  <p id="m-desc" class="text-xs text-slate-600 leading-relaxed"></p>
+              </div>
+              
+              <button id="m-btn" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition">Tambah ke Cart</button>
+          </div>
       </div>
-      <h3>${prod.title}</h3>
-      <div class="qty-control">
-        <button class="qty-btn" data-action="minus" data-id="${prod.id}">−</button>
-        <input id="qty-${prod.id}" class="qty-input" type="number" value="0" min="0">
-        <button class="qty-btn" data-action="plus" data-id="${prod.id}">+</button>
-      </div>
-      <div style="margin-bottom:8px">Unit price: <strong id="unit-${prod.id}">RM ${getUnitPriceForQty(prod.id,1).toFixed(2)}</strong></div>
-      <button class="btn primary add-btn" data-id="${prod.id}">Tambah ke Troli</button>
-    `;
-  grid.appendChild(card);
-});
-  document.querySelectorAll('.product-slider').forEach(initSlider);
-  document.querySelectorAll('.qty-btn').forEach(b=> b.addEventListener('click', onQtyButton));
-  document.querySelectorAll('.qty-input').forEach(inp=> inp.addEventListener('input', onQtyInput));
-  document.querySelectorAll('.add-btn').forEach(b=> b.addEventListener('click', onAddToCart));
-}
-function initSlider(container){
-  try{
-    if(!container) return;
-    const wrapper = container.querySelector('.slider-wrapper');
-    if(!wrapper) return;
-    const slides = container.querySelectorAll('.product-img');
-    if(!slides || slides.length===0) return;
-    const dots = container.querySelectorAll('.dot');
-    let idx = 0;
-    function setSizes(){
-      const w = container.offsetWidth || container.getBoundingClientRect().width || window.innerWidth;
-      slides.forEach(s=> s.style.width = w + 'px');
-    }
-    function update(transition = true){
-      wrapper.style.transition = transition ? 'transform 0.3s ease-out' : 'none';
-      wrapper.style.transform = `translateX(${-idx * container.offsetWidth}px)`;
-      dots.forEach((d,i)=> d.classList.toggle('active', i===idx));
-    }
-    setSizes(); update(false);
-    dots.forEach((d,i)=> d.addEventListener('click', ()=>{ idx=i; update(); }));
-    let resizeTimeout = null;
-    window.addEventListener('resize', ()=>{ clearTimeout(resizeTimeout); resizeTimeout = setTimeout(()=>{ setSizes(); update(false); }, 120); });
-  }catch(err){
-    console.warn('initSlider error', err);
-  }
-}
-function onQtyButton(e){ const id = e.currentTarget.dataset.id; const action = e.currentTarget.dataset.action; const inp = document.getElementById('qty-'+id); let val = Math.max(0, parseInt(inp.value||'0')); val = action==='plus' ? val+1 : Math.max(0, val-1); inp.value = val; updateUnitPriceDisplay(id,val); }
-function onQtyInput(e){ const id = e.currentTarget.id.replace('qty-',''); let v = parseInt(e.currentTarget.value||'1'); if(isNaN(v)||v<0) v=0; e.currentTarget.value=v; updateUnitPriceDisplay(id,v); }
-function updateUnitPriceDisplay(id, qty){ const el = document.getElementById('unit-'+id); if(!el) return; const price = getUnitPriceForQty(id, qty); el.textContent = 'RM '+price.toFixed(2); }
-function onAddToCart(e){ 
-  const id = e.currentTarget.dataset.id; 
-  const qty = parseInt(document.getElementById('qty-'+id).value||'1'); 
-  if(qty<=0){ alert('Sila pilih kuantiti lebih dari 0'); return; } 
-  
-  // Ambil harga semasa dari display, yang telah dikira dengan getUnitPriceForQty
-  const unitPriceText = document.getElementById('unit-'+id).textContent;
-  const unit = parseFloat(unitPriceText.replace('RM ',''));
-  
-  const prod = products.find(p=>p.id===id); 
-  // Cart item kini menyimpan nama sebenar dan harga jualan unit yang dikira 
-  const existing = cart.find(i=> i.id===id && i.unitPrice===unit); 
-  if(existing){ 
-    existing.qty += qty; 
-  } else { 
-    cart.push({ id, name:prod.title, unitPrice:unit, qty }); 
-  } 
-  saveCart(); updateCartUI(); const icon = document.getElementById('cart-icon'); icon.classList.add('added'); setTimeout(()=> icon.classList.remove('added'),480); 
-}
-function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
-function updateCartUI(){ const list = document.getElementById('cart-items'); const totalEl = document.getElementById('cart-total'); const badge = document.getElementById('cart-badge'); list.innerHTML=''; let subtotal=0, count=0; cart.forEach((item,idx)=>{ subtotal += item.unitPrice*item.qty; count += item.qty; const li = document.createElement('li'); const left = document.createElement('div'); left.style.flex='1'; left.innerHTML = `<strong>${escapeHtml(item.name)}</strong><div style="font-size:12px;color:#666">${item.qty} × RM ${item.unitPrice.toFixed(2)} = RM ${(item.unitPrice*item.qty).toFixed(2)}</div>`; const middle = document.createElement('div'); const minus = document.createElement('button'); minus.textContent='−'; minus.onclick = ()=> changeCartQty(idx,-1); const qtySpan = document.createElement('span'); qtySpan.style.margin='0 8px'; qtySpan.textContent = item.qty; const plus = document.createElement('button'); plus.textContent = '+'; plus.onclick = ()=> changeCartQty(idx,1); middle.appendChild(minus); middle.appendChild(qtySpan); middle.appendChild(plus); const right = document.createElement('div'); right.style.marginLeft='8px'; right.innerHTML = `RM ${(item.unitPrice*item.qty).toFixed(2)} <button onclick="removeCartItem(${idx})">x</button>`; li.appendChild(left); li.appendChild(middle); li.appendChild(right); list.appendChild(li); }); badge.textContent = String(count); totalEl.textContent = 'Jumlah: RM ' + subtotal.toFixed(2); }
-function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]||c)); }
+  </div>
 
-// --- FIXED: UPDATE PRICE LOGIC WHEN CHANGING QTY IN CART ---
-function changeCartQty(idx, delta){ 
-    const item = cart[idx];
-    let newQty = item.qty + delta;
+  <div id="pwa-install-modal" class="fixed inset-0 z-50 hidden flex items-end md:items-center justify-center pointer-events-none">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity opacity-0" id="pwa-backdrop" onclick="dismissInstall()"></div>
+    <div class="bg-white w-full md:w-[400px] md:rounded-2xl rounded-t-2xl shadow-2xl pointer-events-auto transform translate-y-full transition-transform duration-300 p-6 relative" id="pwa-card">
+        <div class="flex items-start gap-4 mb-4">
+            <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white text-xl"><i class="fa-solid fa-cookie-bite"></i></div>
+            <div><h3 class="font-bold text-lg text-slate-800">Install App</h3><p class="text-sm text-slate-500">Akses lebih pantas & offline.</p></div>
+            <button onclick="dismissInstall()" class="ml-auto text-slate-400 hover:text-slate-600"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div id="btn-install-android" class="hidden"><button onclick="triggerInstall()" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-lg">Install App</button></div>
+        <div id="instruction-ios" class="hidden space-y-3">
+            <div class="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg"><i class="fa-solid fa-arrow-up-from-bracket text-lg text-blue-500"></i><span>1. Tekan butang <b>Share</b></span></div>
+            <div class="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg"><i class="fa-regular fa-square-plus text-lg text-slate-800"></i><span>2. Pilih <b>Add to Home Screen</b></span></div>
+        </div>
+    </div>
+  </div>
 
-    if (newQty <= 0) {
-        cart.splice(idx, 1);
-    } else {
-        item.qty = newQty;
-        // Recalculate price based on new quantity (Tier Pricing)
-        // Uses the getUnitPriceForQty wrapper defined earlier
-        item.unitPrice = getUnitPriceForQty(item.id, newQty);
-    }
+  <script>
+    const firebaseConfig = { apiKey: "AIzaSyA2Y2cOh3J7U916Ip0tnDDFVs2fK6sACl0", authDomain: "pipahcookies-21e38.firebaseapp.com", projectId: "pipahcookies-21e38", storageBucket: "pipahcookies-21e38.firebasestorage.app", messagingSenderId: "162482379926", appId: "1:162482379926:web:14d16f5a2444816876f6b7" };
     
-    saveCart();
-    updateCartUI();
-}
-// -----------------------------------------------------------
+    // --- DATABASE SETUP (OFFLINE CAPABLE) ---
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    
+    // Enable Offline Persistence
+    db.enablePersistence().catch(err => { console.log("Offline mode error:", err.code); });
 
-function removeCartItem(idx){ cart.splice(idx,1); saveCart(); updateCartUI(); }
-function toggleCart(){ const panel = document.getElementById('cart-panel'); panel.classList.toggle('show'); }
-function showCheckoutForm(){ document.getElementById('checkout-form').classList.toggle('hidden'); }
-function sendOrder(){ const name = document.getElementById('full-name').value.trim(); if(!name){ alert('Sila isi nama.'); return; } const itemsText = cart.map(i=> `${i.qty}x ${i.name} RM${i.unitPrice}`).join('\n'); const total = cart.reduce((s,i)=> s + i.qty*i.unitPrice,0).toFixed(2); const text = `Order ${getNextOrderNumber()}\nName: ${name}\nItems:\n${itemsText}\nTotal: RM${total}`; window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`,'_blank'); }
-   
-</script>
-<style>
-#pipahInstallPopup {
-  position: fixed;
-  bottom: -70px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,248,242,0.92);
-  border: 1.5px solid var(--primary,#A67734);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  padding: 8px 18px;
-  font-family: "Poppins",sans-serif;
-  text-align: center;
-  z-index: 9999;
-  display: none;
-  transition: bottom .4s ease, opacity .4s ease;
-  opacity: 0;
-}
-#pipahInstallPopup.show {
-  display: block;
-  bottom: 20px;
-  opacity: 1;
-}
-#pipahInstallPopup p {
-  color: var(--primary,#A67734);
-  font-weight: 600;
-  margin: 0;
-  cursor: pointer;
-}
-#pipahInstallPopup .closeBtn {
-  position: absolute;
-  top: 2px;
-  right: 8px;
-  font-size: 16px;
-  color: #666;
-  cursor: pointer;
-}
-</style>
+    // --- LOGIC ---
+    let PRODUCTS = [], CART = JSON.parse(localStorage.getItem('pipah_reseller_cart_v1') || '[]');
+    updateCart();
 
-<div id="pipahInstallPopup">
-  <span class="closeBtn" onclick="closePipahPopup()">×</span>
-  <p id="pipahInstallText"></p>
-</div>
-
-<script>
-let deferredPrompt = null;
-let installReady = false;
-let isInstalled = false;
-
-// ✅ Detect if app already installed
-window.addEventListener("appinstalled", () => {
-  isInstalled = true;
-  localStorage.setItem("pipahInstalled", "true");
-  closePipahPopup();
-});
-if (window.matchMedia('(display-mode: standalone)').matches || localStorage.getItem("pipahInstalled") === "true") {
-  isInstalled = true;
-}
-
-// ✅ Catch browser install prompt
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installReady = true;
-});
-
-// ✅ Update popup text based on device & availability
-function updateInstallText() {
-  const text = document.getElementById("pipahInstallText");
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-
-  if (isIOS) {
-    text.textContent = "Add to Homescreen ⬇️";
-    text.onclick = null;
-  } else if (installReady && deferredPrompt) {
-    text.textContent = "Install PipahCookies now";
-    text.onclick = async () => {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        console.log("PWA Installed!");
-        localStorage.setItem("pipahInstalled", "true");
-      }
-      deferredPrompt = null;
-      closePipahPopup();
-    };
-  } else {
-    text.textContent = "Install RS Portal now";
-    text.onclick = () => alert("Use Chrome, Edge, or Brave to install PipahCookies.");
-  }
-}
-
-// ✅ Show popup after 5 seconds if not installed
-window.addEventListener("load", () => {
-  if (!isInstalled) {
-    setTimeout(() => {
-      const popup = document.getElementById("pipahInstallPopup");
-      updateInstallText();
-      popup.style.display = "block";
-      setTimeout(() => popup.classList.add("show"), 50);
-    }, 5000);
-  }
-});
-
-// ✅ Close button function
-function closePipahPopup() {
-  const popup = document.getElementById("pipahInstallPopup");
-  popup.classList.remove("show");
-  setTimeout(() => popup.style.display = "none", 400);
-}
-</script>
-
-
-<script>
-  // Register the Service Worker - CHANGED TO RELATIVE PATH
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').then(reg => {
-      console.log('Service Worker registered: ', reg);
-    }).catch(err => {
-      console.error('Service Worker registration failed: ', err);
+    db.collection('products').where('available', '==', true).onSnapshot(snap => {
+        document.getElementById('loading').style.display = 'none'; 
+        PRODUCTS = [];
+        snap.forEach(doc => PRODUCTS.push({id:doc.id, ...doc.data()}));
+        renderProducts();
     });
-  });
-}
-</script>
 
+    function renderProducts() {
+        const grid = document.getElementById('product-grid'); grid.innerHTML = '';
+        const term = document.getElementById('search').value.toLowerCase();
+        
+        PRODUCTS.forEach(p => {
+            if(p.name.toLowerCase().includes(term)) {
+                // Tier Logic
+                let tierBadge = '';
+                if(p.minQty2 && p.priceTier2) {
+                    tierBadge = `
+                    <div class="mt-2 flex flex-wrap gap-1">
+                        <span class="bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded text-[9px] font-bold">RM${p.priceTier2} (Ejen)</span>
+                        <span class="bg-slate-100 text-slate-500 border border-slate-200 px-1.5 py-0.5 rounded text-[9px]">Min ${p.minQty2} unit</span>
+                    </div>`;
+                }
+
+                grid.innerHTML += `
+                <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col h-full hover:border-orange-200 transition">
+                    <div class="relative">
+                        <img src="${p.image}" class="w-full h-36 object-cover bg-slate-50" onclick="openModal('${p.id}')">
+                    </div>
+                    <div class="p-3 flex flex-col flex-1">
+                        <h3 class="font-bold text-xs text-slate-800 leading-snug line-clamp-2">${p.name}</h3>
+                        ${tierBadge}
+                        <div class="mt-auto flex items-center justify-between pt-3 border-t border-slate-50 mt-2">
+                            <span class="font-extrabold text-sm text-slate-700">RM${(p.priceTier1||p.price).toFixed(0)}</span>
+                            <button onclick="addToCart('${p.id}')" class="bg-slate-900 hover:bg-slate-800 text-white w-8 h-8 rounded-lg grid place-items-center transition active:scale-90"><i class="fa-solid fa-plus text-xs"></i></button>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        });
+    }
+
+    // Modal
+    window.openModal = (id) => {
+        const p = PRODUCTS.find(x=>x.id===id);
+        document.getElementById('m-img').src = p.image;
+        document.getElementById('m-title').innerText = p.name;
+        document.getElementById('m-price').innerText = `RM ${(p.priceTier1||p.price).toFixed(2)}`;
+        document.getElementById('m-desc').innerText = p.description || "Tiada deskripsi.";
+        document.getElementById('m-btn').onclick = () => { addToCart(id); closeModal({target:{id:'modal'}}); };
+        document.getElementById('modal').style.display = 'flex';
+    };
+    window.closeModal = (e) => { if(e.target.id==='modal') document.getElementById('modal').style.display = 'none'; };
+
+    // Cart
+    function addToCart(id) {
+        const exist = CART.find(c=>c.id===id);
+        if(exist) exist.qty++; else CART.push({id, qty:1});
+        localStorage.setItem('pipah_reseller_cart_v1', JSON.stringify(CART));
+        updateCart();
+        // Visual Feedback
+        const btn = document.querySelector('.fab-cart'); 
+        btn.style.transform = "scale(1.2)"; setTimeout(()=>btn.style.transform="scale(1)", 150);
+    }
+    function updateCart() { document.getElementById('cart-count').innerText = CART.reduce((a,b)=>a+b.qty,0); }
+
+    // --- PWA INSTALL LOGIC ---
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js'); }); }
+
+    let deferredPrompt;
+    const pwaModal = document.getElementById('pwa-install-modal'), pwaCard = document.getElementById('pwa-card'), pwaBackdrop = document.getElementById('pwa-backdrop');
+    const isDismissed = localStorage.getItem('pwa_dismissed_v1');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+    if (!isStandalone && !isDismissed) {
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; showPWA('android'); });
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream) setTimeout(() => showPWA('ios'), 3000);
+    }
+
+    function showPWA(type) {
+        pwaModal.classList.remove('hidden');
+        setTimeout(() => { pwaBackdrop.classList.remove('opacity-0'); pwaCard.classList.remove('translate-y-full'); }, 10);
+        if(type==='android') document.getElementById('btn-install-android').classList.remove('hidden');
+        if(type==='ios') document.getElementById('instruction-ios').classList.remove('hidden');
+    }
+
+    function dismissInstall() {
+        pwaBackdrop.classList.add('opacity-0'); pwaCard.classList.add('translate-y-full');
+        setTimeout(() => pwaModal.classList.add('hidden'), 300);
+        localStorage.setItem('pwa_dismissed_v1', 'true');
+    }
+
+    async function triggerInstall() {
+        if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if(outcome==='accepted') dismissInstall(); deferredPrompt = null; }
+    }
+  </script>
 </body>
 </html>
