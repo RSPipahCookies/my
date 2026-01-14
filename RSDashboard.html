@@ -7,8 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 120px; }
@@ -37,10 +39,35 @@
   <div class="max-w-md mx-auto px-4 mt-6 space-y-8">
     
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-        <div class="flex items-center gap-2 mb-4"><div class="step-badge">1</div><span class="font-bold text-sm uppercase">Shop Branding</span></div>
+        <div class="flex items-center gap-2 mb-4">
+            <div class="step-badge">1</div>
+            <span class="font-bold text-sm uppercase">Shop Branding</span>
+        </div>
+        
         <div class="space-y-4">
             <input type="tel" id="rs_wa" class="input-box" placeholder="WhatsApp Number" oninput="saveState()">
-            <input type="text" id="rs_name" class="input-box" placeholder="Shop Name (e.g. Kedai Cookies)" oninput="saveState()">
+            <input type="text" id="rs_name" class="input-box" placeholder="Shop Name (e.g. Kedai Cookies Lisa)" oninput="saveState()">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('file-logo').click()">
+                    <input type="file" id="file-logo" class="hidden" accept="image/*" onchange="uploadImage(this, 'logo-preview', 'rs_logo')">
+                    <input type="hidden" id="rs_logo">
+                    <img id="logo-preview" class="w-10 h-10 mx-auto rounded-full object-cover mb-1 bg-slate-100 hidden">
+                    <div id="logo-lbl" class="text-[10px] font-bold text-slate-400">
+                        <i class="fa-solid fa-camera mb-1 text-base"></i><br>Upload Logo<br>(Square)
+                    </div>
+                </div>
+
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('file-banner').click()">
+                    <input type="file" id="file-banner" class="hidden" accept="image/*" onchange="uploadImage(this, 'banner-preview', 'rs_banner')">
+                    <input type="hidden" id="rs_banner">
+                    <img id="banner-preview" class="w-10 h-16 mx-auto rounded object-cover mb-1 bg-slate-100 hidden">
+                    <div id="banner-lbl" class="text-[10px] font-bold text-slate-400">
+                        <i class="fa-solid fa-image mb-1 text-base"></i><br>Upload Hero<br>(Vertical)
+                    </div>
+                </div>
+            </div>
+
             <div>
                 <label class="text-xs font-bold text-slate-400 mb-2 block">Theme Color</label>
                 <div class="flex gap-3 overflow-x-auto pb-2" id="color-picker"></div>
@@ -51,7 +78,10 @@
 
     <div>
         <div class="flex items-center justify-between mb-3 px-1">
-            <div class="flex items-center gap-2"><div class="step-badge">2</div><span class="font-bold text-sm uppercase">Select Products</span></div>
+            <div class="flex items-center gap-2">
+                <div class="step-badge">2</div>
+                <span class="font-bold text-sm uppercase">Select Products</span>
+            </div>
             <button onclick="selectAll()" class="text-xs font-bold text-blue-600">Select All</button>
         </div>
         <div id="product-list" class="space-y-3">
@@ -68,21 +98,18 @@
 
   <script>
     const firebaseConfig = { apiKey: "AIzaSyA2Y2cOh3J7U916Ip0tnDDFVs2fK6sACl0", authDomain: "pipahcookies-21e38.firebaseapp.com", projectId: "pipahcookies-21e38", storageBucket: "pipahcookies-21e38.firebasestorage.app", messagingSenderId: "162482379926", appId: "1:162482379926:web:14d16f5a2444816876f6b7" };
+    
+    // 1. Initialize Firebase (Once)
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    // --- DATABASE INITIALIZATION ---
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
 
-const db = firebase.firestore();
+    // 2. Offline Persistence
+    db.enablePersistence().catch((err) => {
+        if (err.code == 'failed-precondition') console.log("Offline mode failed: Multiple tabs open");
+        else if (err.code == 'unimplemented') console.log("Browser doesn't support offline storage");
+    });
 
-// ENABLE OFFLINE PERSISTENCE
-db.enablePersistence()
-  .catch((err) => {
-      if (err.code == 'failed-precondition') {
-          console.log("Offline mode failed: Multiple tabs open");
-      } else if (err.code == 'unimplemented') {
-          console.log("Browser doesn't support offline storage");
-      }
-  });
     const COLORS = [{h:'#A67734'}, {h:'#ec4899'}, {h:'#3b82f6'}, {h:'#10b981'}, {h:'#ef4444'}, {h:'#0f172a'}];
 
     function init() { renderColors(); loadState(); fetchProducts(); }
@@ -101,9 +128,9 @@ db.enablePersistence()
             
             snap.forEach(doc => {
                 const p = doc.data();
-                // Logic: Profit calculated based on Agent Price (Tier 2)
                 const cost = p.priceTier2 || (p.priceTier1 * 0.8) || 0; 
                 const retail = p.priceTier1 || p.price || 0;
+                const fakePrice = (retail * 1.2).toFixed(2);
                 
                 list.innerHTML += `
                 <label class="relative block cursor-pointer select-none group">
@@ -118,17 +145,31 @@ db.enablePersistence()
                         
                         <div class="flex-1 min-w-0">
                             <h3 class="font-bold text-sm text-slate-800 truncate">${p.name}</h3>
-                            <p class="text-[10px] text-slate-500 leading-snug line-clamp-2 mt-0.5">${p.description || 'No description available.'}</p>
-                            <p class="text-[10px] text-slate-400 mt-1">Cost: RM${cost.toFixed(2)}</p>
-                        </div>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Cost: RM${cost.toFixed(2)}</p>
+                            
+                            <div class="flex items-center gap-2 mt-2 opacity-40 pointer-events-none transition" id="box-${doc.id}">
+                                
+                                <div class="flex-1">
+                                    <label class="text-[9px] font-bold text-green-600 uppercase block mb-0.5">Promo Price</label>
+                                    <div class="flex items-center border border-green-200 rounded bg-green-50 px-2 py-1">
+                                        <span class="text-[10px] font-bold text-green-700 mr-1">RM</span>
+                                        <input type="number" id="price-${doc.id}" value="${retail.toFixed(2)}" class="w-full bg-transparent font-bold text-sm text-green-800 outline-none p-0" onclick="event.preventDefault()" onkeyup="calc('${doc.id}', ${cost})">
+                                    </div>
+                                </div>
 
-                        <div class="flex flex-col items-end opacity-40 pointer-events-none transition" id="box-${doc.id}">
-                            <span class="text-[9px] font-bold text-slate-400 uppercase mb-1">Sell Price</span>
-                            <div class="flex items-center gap-1 mb-1">
-                                <span class="text-xs font-bold text-slate-400">RM</span>
-                                <input type="number" id="price-${doc.id}" value="${retail.toFixed(2)}" class="w-14 border rounded p-1 text-center font-bold text-sm text-slate-800" onclick="event.preventDefault()" onkeyup="calc('${doc.id}', ${cost})">
+                                <div class="flex-1">
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5 line-through decoration-red-500">Normal Price</label>
+                                    <div class="flex items-center border border-slate-200 rounded bg-slate-50 px-2 py-1">
+                                        <span class="text-[10px] font-bold text-slate-400 mr-1">RM</span>
+                                        <input type="number" id="old-price-${doc.id}" value="${fakePrice}" class="w-full bg-transparent font-bold text-sm text-slate-500 outline-none p-0" onclick="event.preventDefault()">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-[9px] font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full hidden" id="profit-${doc.id}">+ RM0.00</div>
+                            
+                            <div class="mt-2 text-[9px] font-bold text-white bg-green-500 px-2 py-0.5 rounded inline-block hidden" id="profit-${doc.id}">
+                                Profit: RM0.00
+                            </div>
+
                         </div>
                     </div>
                 </label>`;
@@ -158,44 +199,91 @@ db.enablePersistence()
 
     window.selectAll = () => { document.querySelectorAll('input[type="checkbox"]').forEach(c => { if(!c.checked) c.click(); }); }
     
-    function saveState() { 
-        localStorage.setItem('rs_v3', JSON.stringify({ 
-            wa: document.getElementById('rs_wa').value, 
-            name: document.getElementById('rs_name').value, 
-            color: document.getElementById('rs_color').value 
-        })); 
+    function saveState() {
+        localStorage.setItem('rs_v3', JSON.stringify({
+            wa: document.getElementById('rs_wa').value,
+            name: document.getElementById('rs_name').value,
+            color: document.getElementById('rs_color').value,
+            logo: document.getElementById('rs_logo').value,
+            banner: document.getElementById('rs_banner').value
+        }));
     }
-    
-    function loadState() { 
-        const s = JSON.parse(localStorage.getItem('rs_v3')||'{}'); 
-        if(s.wa) document.getElementById('rs_wa').value = s.wa; 
-        if(s.name) document.getElementById('rs_name').value = s.name; 
-        if(s.color) setColor(s.color); 
+
+    function loadState() {
+        const s = JSON.parse(localStorage.getItem('rs_v3')||'{}');
+        if(s.wa) document.getElementById('rs_wa').value = s.wa;
+        if(s.name) document.getElementById('rs_name').value = s.name;
+        if(s.color) setColor(s.color);
+        
+        if(s.logo) {
+            document.getElementById('rs_logo').value = s.logo;
+            document.getElementById('logo-preview').src = s.logo;
+            document.getElementById('logo-preview').classList.remove('hidden');
+            document.getElementById('logo-lbl').classList.add('hidden');
+        }
+        if(s.banner) {
+            document.getElementById('rs_banner').value = s.banner;
+            document.getElementById('banner-preview').src = s.banner;
+            document.getElementById('banner-preview').classList.remove('hidden');
+            document.getElementById('banner-lbl').classList.add('hidden');
+        }
     }
-    
+
     window.clearData = () => { if(confirm("Reset Form?")) { localStorage.removeItem('rs_v3'); location.reload(); } }
+
+    async function uploadImage(input, previewId, storageId) {
+        const file = input.files[0];
+        if(!file) return;
+
+        const lbl = input.parentElement.querySelector('div[id$="-lbl"]');
+        const originalText = lbl.innerHTML;
+        lbl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+
+        try {
+            const ref = storage.ref('reseller_uploads/' + Date.now() + '_' + file.name);
+            await ref.put(file);
+            const url = await ref.getDownloadURL();
+
+            document.getElementById(storageId).value = url;
+            const img = document.getElementById(previewId);
+            img.src = url;
+            img.classList.remove('hidden');
+            lbl.classList.add('hidden'); 
+            saveState();
+
+        } catch(e) {
+            console.error(e);
+            alert("Upload failed. Try again.");
+            lbl.innerHTML = originalText;
+        }
+    }
 
     window.generateLink = () => {
         const wa = document.getElementById('rs_wa').value.replace(/[^0-9]/g, '');
         const name = document.getElementById('rs_name').value;
         const color = document.getElementById('rs_color').value;
+        const logo = document.getElementById('rs_logo').value;
+        const banner = document.getElementById('rs_banner').value;
 
         if(!wa || !name) return alert("Please complete Step 1 (WhatsApp & Name)");
 
-        const items = [], prices = [];
+        const items = [], prices = [], oldPrices = [];
         document.querySelectorAll('input[type="checkbox"]:checked').forEach(c => {
             const id = c.id.replace('chk-','');
             items.push(id);
             prices.push(document.getElementById(`price-${id}`).value);
+            oldPrices.push(document.getElementById(`old-price-${id}`).value);
         });
 
         if(!items.length) return alert("Please select at least 1 product");
 
-        const data = JSON.stringify({ w:wa.startsWith('0')?'60'+wa.slice(1):wa, n:name, c:color, i:items, p:prices });
-        
-        // Base64 Encode
+        const data = JSON.stringify({ 
+            w: wa.startsWith('0') ? '60'+wa.slice(1) : wa, 
+            n: name, c: color, l: logo, b: banner, 
+            i: items, p: prices, op: oldPrices 
+        });
+
         const encoded = btoa(encodeURIComponent(data).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
-        
         const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','OrderNow.html')}?d=${encoded}`;
         
         if(navigator.share) navigator.share({title: name, url: url});
