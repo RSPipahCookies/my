@@ -104,20 +104,31 @@
       </div>
   </div>
 
-  <script>
+      <script>
+    // ⚠️ IMPORTANT: Ensure this Config matches your main app if you share the same inventory
     const firebaseConfig = {
-  apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
-  authDomain: "pipahcookies-order.firebaseapp.com",
-  databaseURL: "https://pipahcookies-order-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "pipahcookies-order",
-  storageBucket: "pipahcookies-order.firebasestorage.app",
-  messagingSenderId: "1038900448087",
-  appId: "1:1038900448087:web:a46586f21e9ae989708c12"
-};
+      apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
+      authDomain: "pipahcookies-order.firebaseapp.com",
+      databaseURL: "https://pipahcookies-order-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "pipahcookies-order",
+      storageBucket: "pipahcookies-order.firebasestorage.app",
+      messagingSenderId: "1038900448087",
+      appId: "1:1038900448087:web:a46586f21e9ae989708c12"
+    };
+
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    firebase.firestore().enablePersistence().catch(err => console.log(err));
-const db = firebase.firestore();
-    db.enablePersistence().catch(err => { console.log("Offline mode error:", err.code); });
+    
+    // FIX 1: Correct Offline Persistence (Only call this once)
+    firebase.firestore().enablePersistence()
+        .catch(err => {
+            if (err.code == 'failed-precondition') {
+                console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+            } else if (err.code == 'unimplemented') {
+                console.log('The current browser does not support all of the features required to enable persistence');
+            }
+        });
+
+    const db = firebase.firestore();
 
     // --- I18N CONFIG ---
     let curLang = 'ms';
@@ -143,7 +154,7 @@ const db = firebase.firestore();
         
         document.querySelectorAll('[data-i18n]').forEach(e => e.innerText = i18n[l][e.dataset.i18n]);
         document.getElementById('search').placeholder = i18n[l].ph_search;
-        renderProducts(); // Re-render to translate badges
+        renderProducts(); 
     }
 
     window.showInfo = () => alert(i18n[curLang].alert_info);
@@ -191,6 +202,7 @@ const db = firebase.firestore();
     // Modal & Cart
     window.openModal = (id) => {
         const p = PRODUCTS.find(x=>x.id===id);
+        if(!p) return;
         document.getElementById('m-img').src = p.image;
         document.getElementById('m-title').innerText = p.name;
         document.getElementById('m-price').innerText = `RM ${(p.priceTier1||p.price).toFixed(2)}`;
@@ -199,20 +211,38 @@ const db = firebase.firestore();
         document.getElementById('m-btn').onclick = () => { addToCart(id); closeModal({target:{id:'modal'}}); };
         document.getElementById('modal').style.display = 'flex';
     };
+    
     window.closeModal = (e) => { if(e.target.id==='modal') document.getElementById('modal').style.display = 'none'; };
+
+    // FIX 2: Save FULL product details to cart, not just ID
     function addToCart(id) {
-        const exist = CART.find(c=>c.id===id); if(exist) exist.qty++; else CART.push({id, qty:1});
-        localStorage.setItem('pipah_reseller_cart_v1', JSON.stringify(CART)); updateCart();
-        const btn = document.querySelector('.fab-cart'); btn.style.transform = "scale(1.2)"; setTimeout(()=>btn.style.transform="scale(1)", 150);
+        const product = PRODUCTS.find(x => x.id === id); // Get full data
+        const exist = CART.find(c => c.id === id); 
+        
+        if(exist) {
+            exist.qty++; 
+        } else {
+            // Save a copy of the product with qty
+            CART.push({...product, qty: 1}); 
+        }
+        
+        localStorage.setItem('pipah_reseller_cart_v1', JSON.stringify(CART)); 
+        updateCart();
+        
+        const btn = document.querySelector('.fab-cart'); 
+        btn.style.transform = "scale(1.2)"; 
+        setTimeout(() => btn.style.transform="scale(1)", 150);
     }
+
     function updateCart() { document.getElementById('cart-count').innerText = CART.reduce((a,b)=>a+b.qty,0); }
-if ('serviceWorker' in navigator) { 
-    window.addEventListener('load', () => { 
-        navigator.serviceWorker.register('./service-worker.js')
-            .then(reg => console.log('SW Registered'))
-            .catch(err => console.log('SW Fail', err)); 
-    }); 
-}
+
+    if ('serviceWorker' in navigator) { 
+        window.addEventListener('load', () => { 
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(reg => console.log('SW Registered'))
+                .catch(err => console.log('SW Fail', err)); 
+        }); 
+    }
   </script>
 </body>
 </html>
