@@ -2,277 +2,355 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ringkasan Pesanan — PipahCookies</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Reseller Checkout — PipahCookies</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
   <style>
-    :root{
-      --primary:#A67734;
-      --primary-dark:#d4b390;
-      --bg:#fff8f2;
-      --card:#ffffff;
-      --muted:#6b6b6b;
-      --whatsapp:#25d366;
-    }
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#222;padding:18px}
-    .wrap{max-width:920px;margin:22px auto;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.06)}
-    h1{font-family:Poppins, sans-serif;color:var(--primary-dark);margin:0 0 12px}
-    table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{padding:8px;border-bottom:1px solid #f1e6da;text-align:left;font-size:14px}
-    .muted{color:var(--muted)}
-    .controls{display:flex;gap:8px;flex-wrap:wrap; margin-top:12px}
-    .btn{padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer}
-    .btn.primary{background:var(--primary);color:#fff}
-    .btn.whatsapp{background:var(--whatsapp);color:#fff}
-    .btn.ghost{background:transparent;border:2px solid #eee}
-    input[type="text"], textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #eee}
-    .totals{margin-top:12px;font-weight:800;font-size:16px}
-    .small{font-size:13px;color:var(--muted)}
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 40px; }
+    .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+    .tier-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; }
+    .tier-1 { background: #e2e8f0; color: #64748b; } /* Retail */
+    .tier-2 { background: #dbeafe; color: #2563eb; } /* Agent */
+    .tier-3 { background: #dcfce7; color: #16a34a; } /* Bulk/Stockist */
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Ringkasan Pesanan</h1>
-    <p class="small">Semak pesanan anda — klik <strong>Submit Order</strong> untuk buka WhatsApp dengan mesej pesanan dan muat turun TXT automatik.</p>
 
-    <div id="meta">
-      <label>No. Pesanan</label>
-      <div><input type="text" id="orderId" readonly style="background:#f6f2ee"></div>
-      <label>Nama Penuh</label>
-      <div><input type="text" id="customerName" placeholder="Nama penuh"></div>
-      <label>Tarikh Pengambilan (Pickup)</label>
-      <div><input type="text" id="pickupDate" readonly style="background:#f6f2ee; font-weight: bold;"></div>
-      <label>Alamat (boleh kosong untuk pickup)</label>
-      <div><textarea id="customerAddress" rows="2" placeholder="Alamat penuh (optional)"></textarea></div>
+  <div class="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 py-3 flex items-center justify-between shadow-sm">
+    <div class="flex items-center gap-3">
+        <a href="index.html" class="w-8 h-8 rounded-full bg-slate-100 grid place-items-center text-slate-600 hover:bg-slate-200 transition"><i class="fa-solid fa-arrow-left"></i></a>
+        <h1 class="font-bold text-lg text-slate-800" data-i18n="title">Checkout Stok</h1>
     </div>
-
-    <div id="items-area">
-      <table id="items-table">
-        <thead>
-          <tr><th>Produk</th><th>Unit</th><th>Qty</th><th>Subtotal (RM)</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <div class="flex bg-slate-100 p-1 rounded-lg">
+        <button onclick="setLang('ms')" id="btn-ms" class="px-3 py-1 rounded-md text-xs font-bold transition bg-white shadow-sm text-slate-800">MY</button>
+        <button onclick="setLang('en')" id="btn-en" class="px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-slate-600 transition">EN</button>
     </div>
-
-    <div class="totals" id="total-display">Jumlah: RM 0.00</div>
-
-    <div class="controls">
-      <button class="btn btn.ghost" id="download-csv">Muat Turun TXT</button>
-      <button class="btn primary" id="refresh-from-storage">Refresh</button>
-      <button class="btn whatsapp" id="submit-order">Submit Order (WhatsApp)</button>
-    </div>
-
-    <p class="small" style="margin-top:12px">
-      Nota: Fail TXT akan dimuat turun automatik ke peranti anda. Aplikasi web tidak boleh melampirkan fail terus ke WhatsApp — selepas WhatsApp terbuka, sila lampirkan fail TXT jika perlu atau hantar mesej terus.
-    </p>
   </div>
 
-<script src="pipah-product-config.js"></script>
+  <div class="max-w-2xl mx-auto px-4 mt-6 space-y-6">
+    
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2" data-i18n="cart_title">Senarai Barang</h2>
+        
+        <div id="cart-items" class="space-y-4">
+            <div class="text-center py-8"><div class="loader mx-auto"></div></div>
+        </div>
 
-<script>
-/**
- * reseller-checkout.html
- */
+        <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
+            <span class="font-bold text-slate-500" data-i18n="total">Jumlah Besar</span>
+            <span class="text-2xl font-extrabold text-blue-600" id="grand-total">RM 0.00</span>
+        </div>
+    </div>
 
-// FIXED: Use variables from config file
-const WHATSAPP_NUMBER = window.ORDER_WHATSAPP_NUMBER || '60182806839'; 
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2" data-i18n="details_title">Butiran Reseller</h2>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="lbl_name">Nama Penuh</label>
+                <input type="text" id="r_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-slate-800 outline-none focus:ring-2 ring-blue-500 transition">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="lbl_date">Tarikh Pickup</label>
+                    <input type="date" id="r_date" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-slate-800 outline-none focus:ring-2 ring-blue-500 transition">
+                </div>
+                <div>
+                     <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="lbl_oid">No. Order</label>
+                     <input type="text" id="r_oid" readonly class="w-full bg-slate-100 border border-slate-200 rounded-xl p-3 font-mono text-xs text-slate-500 cursor-not-allowed">
+                </div>
+            </div>
 
-// FIXED: Match the key used in index.html
-const CART_KEY = 'pipah_reseller_cart_v1'; 
-const ORDER_KEY = 'pipah_reseller_order';
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="lbl_note">Nota Tambahan</label>
+                <textarea id="r_note" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:ring-2 ring-blue-500 transition"></textarea>
+            </div>
+        </div>
+    </div>
 
-function formatCurrency(n){ return Number(n).toFixed(2); }
+    <div class="space-y-3 pb-8">
+        <button id="btn-submit" onclick="submitOrder()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition active:scale-[0.98]">
+            <i class="fa-brands fa-whatsapp text-xl"></i>
+            <span data-i18n="btn_submit">Hantar Order</span>
+        </button>
+        
+        <button onclick="downloadTxt()" class="w-full bg-white border border-slate-200 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-50 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-file-lines"></i> <span data-i18n="btn_receipt">Simpan Resit (TXT)</span>
+        </button>
+    </div>
 
-function loadOrderFromStorage(){
-  const raw = localStorage.getItem(ORDER_KEY);
-  if(raw){
-    try { return JSON.parse(raw); } catch(e){ console.error('invalid order json', e); }
-  }
-  // fallback construct from cart if pipah_reseller_order not present
-  const cartRaw = localStorage.getItem(CART_KEY);
-  const cart = cartRaw ? JSON.parse(cartRaw) : [];
-  return {
-    orderId: getNextOrderNumber(),
-    name: '',
-    address: '',
-    // pickupDate will be undefined but will not break anything
-    date: new Date().toISOString(),
-    items: cart
-  };
-}
+  </div>
 
-function renderOrder(){
-  const order = loadOrderFromStorage();
-  document.getElementById('orderId').value = order.orderId || getNextOrderNumber();
-  document.getElementById('customerName').value = order.name || '';
-  
-  // Display Pickup Date
-  const pickupDateEl = document.getElementById('pickupDate');
-  if (order.pickupDate) {
-      pickupDateEl.value = new Date(order.pickupDate).toLocaleDateString('ms-MY', { year: 'numeric', month: 'long', day: 'numeric' });
-  } else {
-      pickupDateEl.value = 'Belum ditetapkan';
-  }
+  <script>
+    // --- FIREBASE SETUP ---
+    const firebaseConfig = { apiKey: "AIzaSyA2Y2cOh3J7U916Ip0tnDDFVs2fK6sACl0", authDomain: "pipahcookies-21e38.firebaseapp.com", projectId: "pipahcookies-21e38", storageBucket: "pipahcookies-21e38.firebasestorage.app", messagingSenderId: "162482379926", appId: "1:162482379926:web:14d16f5a2444816876f6b7" };
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    // --- DATABASE INITIALIZATION ---
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
-  document.getElementById('customerAddress').value = order.address || '';
-  const tbody = document.querySelector('#items-table tbody');
-  tbody.innerHTML = '';
-  let total = 0;
-  (order.items || []).forEach(it => {
-    const tr = document.createElement('tr');
+const db = firebase.firestore();
 
-    // safely read values (fallbacks)
-    const unitPrice = Number(it.unitPrice || it.price || 0);
-    const qty = Number(it.qty || it.quantity || 0);
-    const subtotal = unitPrice * qty;
-    total += subtotal;
-
-    tr.innerHTML = `<td>${escapeHtml(it.name || it.id || 'Produk')}</td>
-                    <td>RM ${formatCurrency(unitPrice)}</td>
-                    <td>${qty}</td>
-                    <td>RM ${formatCurrency(subtotal)}</td>`;
-    tbody.appendChild(tr);
+// ENABLE OFFLINE PERSISTENCE
+db.enablePersistence()
+  .catch((err) => {
+      if (err.code == 'failed-precondition') {
+          console.log("Offline mode failed: Multiple tabs open");
+      } else if (err.code == 'unimplemented') {
+          console.log("Browser doesn't support offline storage");
+      }
   });
-  document.getElementById('total-display').textContent = 'Jumlah: RM ' + formatCurrency(total);
-}
+    // --- CONFIGURATION ---
+    const HQ_WHATSAPP = "60182806839"; 
+    const CART_KEY = 'pipah_reseller_cart_v1';
+    let CART = [], PRODUCTS_MAP = {};
+    let curLang = 'ms';
 
-function escapeHtml(text){ return String(text).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+    // --- I18N DICTIONARY ---
+    const i18n = {
+        ms: {
+            title: "Checkout Stok", cart_title: "Senarai Barang", total: "Jumlah Besar", details_title: "Butiran Reseller",
+            lbl_name: "Nama Penuh", lbl_date: "Tarikh Pickup", lbl_oid: "No. Order", lbl_note: "Nota Tambahan (Optional)",
+            btn_submit: "Hantar Order (WhatsApp)", btn_receipt: "Simpan Resit (TXT)",
+            empty_cart: "Cart kosong", empty_sub: "Tiada barang dipilih", add_stock: "Tambah Stok +",
+            alert_name: "Sila isi Nama Penuh anda.", alert_cart: "Cart kosong.", alert_err: "Ralat sambungan.",
+            tier_1: "Harga Runcit", tier_2: "Harga Ejen", tier_3: "Harga Borong"
+        },
+        en: {
+            title: "Stock Checkout", cart_title: "Item List", total: "Grand Total", details_title: "Reseller Details",
+            lbl_name: "Full Name", lbl_date: "Pickup Date", lbl_oid: "Order ID", lbl_note: "Extra Note (Optional)",
+            btn_submit: "Submit Order (WhatsApp)", btn_receipt: "Save Receipt (TXT)",
+            empty_cart: "Cart is empty", empty_sub: "No items selected", add_stock: "Add Stock +",
+            alert_name: "Please enter your Full Name.", alert_cart: "Cart is empty.", alert_err: "Connection error.",
+            tier_1: "Retail Price", tier_2: "Agent Price", tier_3: "Bulk Price"
+        }
+    };
 
-// Plain Text generator
-function orderToText(order){
-  const lines = [];
+    // --- INITIALIZATION ---
+    async function init() {
+        generateOrderId();
+        
+        // 1. Load Cart
+        const raw = localStorage.getItem(CART_KEY);
+        if(raw) CART = JSON.parse(raw);
 
-  lines.push('======================================');
-  lines.push('  P I P A H C O O K I E S - O R D E R  ');
-  lines.push('======================================');
-  lines.push(`No. Pesanan: ${order.orderId || ''}`);
-  lines.push(`Tarikh Dibuat: ${new Date(order.date).toLocaleString() || ''}`);
-  lines.push(`Nama Penuh: ${order.name || '-'}`);
-  lines.push(`Tarikh Pengambilan: ${order.pickupDate || 'Belum ditetapkan'}`);
-  lines.push(`Alamat: ${order.address || 'Pickup/Tiada Alamat'}`);
-  lines.push('--------------------------------------');
-  
-  lines.push('ITEM | HARGA UNIT | KUANTITI | SUBTOTAL');
-  lines.push('--------------------------------------');
-  let total = 0;
-  (order.items || []).forEach(it=>{
-    const unitPrice = Number(it.unitPrice||0);
-    const qty = Number(it.qty||0);
-    const sub = unitPrice * qty;
-    total += sub;
-    const line = `${(it.name || it.id).padEnd(25).slice(0, 25)} | RM ${unitPrice.toFixed(2).padEnd(6)} | ${String(qty).padEnd(8)} | RM ${sub.toFixed(2)}`;
-    lines.push(line);
-  });
-  lines.push('--------------------------------------');
-  
-  lines.push(`TOTAL JUMLAH: RM ${formatCurrency(total)}`);
-  lines.push('======================================');
-  lines.push('Sila semak dan sahkan. Terima kasih!');
-  
-  return lines.join('\n');
-}
-
-// Trigger download 
-function downloadText(filename, textContent){
-  const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-// Open WhatsApp
-function openWhatsApp(order){
-  const lines = [];
-  lines.push(`PipahCookies — Pesanan Baru`);
-  lines.push(`No. Pesanan: ${order.orderId}`);
-  lines.push(`Nama: ${order.name || '-'}`);
-  if(order.pickupDate) lines.push(`Tarikh Pengambilan: ${new Date(order.pickupDate).toLocaleDateString('ms-MY', { year: 'numeric', month: 'long', day: 'numeric' })}`);
-  if(order.address) lines.push(`Alamat: ${order.address}`);
-  lines.push('');
-  lines.push('Items:');
-  let total = 0;
-  (order.items || []).forEach(it => {
-    const sub = (it.unitPrice||0) * (it.qty||0);
-    total += sub;
-    lines.push(`- ${it.name}  | ${it.qty} x RM ${formatCurrency(it.unitPrice)} = RM ${formatCurrency(sub)}`);
-  });
-  lines.push('');
-  lines.push(`Jumlah: RM ${formatCurrency(total)}`);
-  lines.push('');
-  lines.push('Sila semak dan sahkan. Terima kasih!');
-
-  const text = encodeURIComponent(lines.join('\n'));
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`;
-  window.open(url, '_blank');
-}
-
-function getNextOrderNumber(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); return formatOrderId(last+1); }
-function formatOrderId(num){ return 'PC' + String(num).padStart(8,'0'); }
-function incrementOrderCounter(){ let last = parseInt(localStorage.getItem('orderCounter')||'0',10); localStorage.setItem('orderCounter', String(last+1)); }
-
-function gatherOrderFromForm(){
-  const base = loadOrderFromStorage();
-  const order = {
-    orderId: document.getElementById('orderId').value || base.orderId || getNextOrderNumber(),
-    date: base.date || new Date().toISOString(),
-    name: document.getElementById('customerName').value.trim(),
-    address: document.getElementById('customerAddress').value.trim(),
-    pickupDate: base.pickupDate, 
-    items: base.items || []
-  };
-  return order;
-}
-
-// handlers
-document.getElementById('refresh-from-storage').addEventListener('click', ()=>{
-  renderOrder();
-});
-
-document.getElementById('download-csv').addEventListener('click', ()=>{
-  const order = gatherOrderFromForm();
-  const text = orderToText(order);
-  const fn = `${order.orderId || 'order'}_${(new Date()).toISOString().slice(0,19).replace(/[:T]/g,'-')}.txt`;
-  downloadText(fn, text);
-});
-
-document.getElementById('submit-order').addEventListener('click', ()=>{
-  const order = gatherOrderFromForm();
-  if(!order.name){ alert('Sila isi nama penuh sebelum hantar pesanan.'); return; }
-
-  // 1) auto-download TXT
-  const text = orderToText(order);
-  const fn = `${order.orderId || 'order'}.txt`;
-  downloadText(fn, text);
-
-  // 2) open WhatsApp
-  openWhatsApp(order);
-
-  // 3) persist final order record
-  localStorage.setItem('pipah_reseller_order', JSON.stringify(order));
-
-  // 4) increment order counter
-  incrementOrderCounter();
-
-  // 5) clear the cart
-  try { localStorage.removeItem(CART_KEY); } catch(e){}
-
-  // 6) confirmation
-  alert('Order prepared — WhatsApp opened in new tab and TXT file telah dimuat turun. Sila semak dan hantar mesej di WhatsApp.');
-});
-
-// Check if config loaded
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof window.ORDER_WHATSAPP_NUMBER === 'undefined') {
-        alert("Warning: pipah-product-config.js not loaded properly.");
+        // 2. Fetch Latest Prices & Tier Info from DB
+        try {
+            const snap = await db.collection('products').get();
+            snap.forEach(doc => PRODUCTS_MAP[doc.id] = doc.data());
+            renderCart();
+        } catch(e) {
+            console.error(e);
+            alert("Error loading product data. Please check internet.");
+        }
     }
-    renderOrder();
-});
 
-</script>
+    function generateOrderId() {
+        const date = new Date();
+        const str = date.getFullYear().toString().substr(-2) + (date.getMonth()+1).toString().padStart(2,'0') + date.getDate().toString().padStart(2,'0');
+        const rand = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('r_oid').value = `STK-${str}-${rand}`;
+    }
+
+    // --- LANGUAGE LOGIC ---
+    window.setLang = (lang) => {
+        curLang = lang;
+        // Toggle Button Styles
+        document.getElementById('btn-ms').className = lang==='ms' 
+            ? "px-3 py-1 rounded-md text-xs font-bold transition bg-white shadow-sm text-slate-800" 
+            : "px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-slate-600 transition";
+        document.getElementById('btn-en').className = lang==='en' 
+            ? "px-3 py-1 rounded-md text-xs font-bold transition bg-white shadow-sm text-slate-800" 
+            : "px-3 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-slate-600 transition";
+
+        // Update Text
+        document.querySelectorAll('[data-i18n]').forEach(e => {
+            if(i18n[lang][e.dataset.i18n]) e.innerText = i18n[lang][e.dataset.i18n];
+        });
+        
+        // Update Placeholders
+        document.getElementById('r_name').placeholder = lang==='ms' ? "Nama anda" : "Your name";
+        document.getElementById('r_note').placeholder = lang==='ms' ? "Contoh: Pickup pukul 3..." : "E.g. Pickup at 3pm...";
+        
+        renderCart(); // Re-render cart to translate tier badges
+    }
+
+    // --- TIER PRICING LOGIC ---
+    function getPriceForQty(product, qty) {
+        // Default to Retail (Tier 1)
+        let finalPrice = product.priceTier1 || product.price || 0;
+        let tierName = i18n[curLang].tier_1;
+        let tierClass = "tier-1";
+
+        // Check Tier 2 (Agent/Bulk) - defined in Admin
+        // Logic: If Qty >= MinQty2, apply Tier 2
+        const minQty2 = product.minQty2 || 99999; // Default high if not set
+        if (qty >= minQty2) {
+            finalPrice = product.priceTier2 || finalPrice;
+            tierName = i18n[curLang].tier_2;
+            tierClass = "tier-2";
+        }
+
+        // Future-proof: Logic for Tier 3 if you add it to Admin later
+        // const minQty3 = product.minQty3 || 99999;
+        // if (qty >= minQty3) { ... }
+
+        return { price: finalPrice, label: tierName, css: tierClass };
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cart-items');
+        container.innerHTML = '';
+        let total = 0;
+
+        if(CART.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fa-solid fa-basket-shopping text-4xl text-slate-200 mb-2"></i>
+                    <p class="text-slate-400 font-bold">${i18n[curLang].empty_cart}</p>
+                    <a href="index.html" class="text-blue-500 text-sm font-bold mt-2 inline-block">${i18n[curLang].add_stock}</a>
+                </div>`;
+            document.getElementById('grand-total').innerText = "RM 0.00";
+            document.getElementById('btn-submit').classList.add('opacity-50', 'pointer-events-none');
+            return;
+        }
+
+        document.getElementById('btn-submit').classList.remove('opacity-50', 'pointer-events-none');
+
+        CART.forEach(item => {
+            const p = PRODUCTS_MAP[item.id] || {};
+            const name = p.name || "Product"; 
+            
+            // Calculate Tier
+            const pricing = getPriceForQty(p, item.qty);
+            const subtotal = pricing.price * item.qty;
+            total += subtotal;
+
+            container.innerHTML += `
+            <div class="flex justify-between items-start border-b border-slate-50 last:border-0 pb-3 last:pb-0">
+                <div class="flex items-start gap-3">
+                    <div class="bg-blue-50 text-blue-600 w-10 h-10 rounded-lg grid place-items-center font-bold text-sm mt-0.5">${item.qty}x</div>
+                    <div>
+                        <h4 class="font-bold text-slate-700 text-sm leading-tight">${name}</h4>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-xs text-slate-400">@ RM ${pricing.price.toFixed(2)}</span>
+                            <span class="tier-badge ${pricing.css}">${pricing.label}</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="font-bold text-slate-800 mt-0.5">RM ${subtotal.toFixed(2)}</span>
+            </div>`;
+        });
+
+        document.getElementById('grand-total').innerText = `RM ${total.toFixed(2)}`;
+    }
+
+    // --- SUBMIT ORDER ---
+    async function submitOrder() {
+        const name = document.getElementById('r_name').value.trim();
+        const date = document.getElementById('r_date').value;
+        const oid = document.getElementById('r_oid').value;
+        const note = document.getElementById('r_note').value;
+
+        if(!name) return alert(i18n[curLang].alert_name);
+        
+        const btn = document.getElementById('btn-submit');
+        const oldHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<div class="loader"></div>`;
+
+        try {
+            // Recalculate everything securely
+            let grandTotal = 0;
+            const itemsToSave = CART.map(c => {
+                const p = PRODUCTS_MAP[c.id];
+                // Use the same tier logic for final calculation
+                const pricing = getPriceForQty(p, c.qty);
+                grandTotal += pricing.price * c.qty;
+                return { 
+                    id: c.id, 
+                    name: p.name || c.id, 
+                    qty: c.qty, 
+                    price: pricing.price, // Save the actual tier price used
+                    tier: pricing.label 
+                };
+            });
+
+            // Database Write
+            const batch = db.batch();
+            const orderRef = db.collection('orders').doc(oid);
+            batch.set(orderRef, {
+                orderId: oid,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                customerName: name,
+                resellerName: name,
+                type: 'restock',
+                pickupDate: date,
+                note: note,
+                items: itemsToSave,
+                totalPrice: grandTotal,
+                status: 'new'
+            });
+
+            itemsToSave.forEach(i => {
+                const prodRef = db.collection('products').doc(i.id);
+                batch.update(prodRef, { soldCount: firebase.firestore.FieldValue.increment(i.qty) });
+            });
+
+            await batch.commit();
+
+            // WhatsApp
+            let msg = `*RESTOCK ORDER: ${oid}* 📦\n`;
+            msg += `👤 ${name}\n`;
+            if(date) msg += `📅 ${date}\n`;
+            msg += `\n*ITEMS:*`;
+            itemsToSave.forEach(i => {
+                msg += `\n▪️ ${i.qty}x ${i.name} (RM${i.price})`;
+            });
+            msg += `\n\n*TOTAL: RM ${grandTotal.toFixed(2)}*`;
+            if(note) msg += `\n📝 ${note}`;
+
+            localStorage.removeItem(CART_KEY);
+            window.location.href = `https://wa.me/${HQ_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+
+        } catch (error) {
+            console.error(error);
+            alert(i18n[curLang].alert_err);
+            btn.disabled = false;
+            btn.innerHTML = oldHtml;
+        }
+    }
+
+    function downloadTxt() {
+        const name = document.getElementById('r_name').value || "Reseller";
+        const oid = document.getElementById('r_oid').value;
+        let content = `PIPAH COOKIES - RESTOCK ORDER\n================================\n`;
+        content += `Order ID: ${oid}\nName: ${name}\nDate: ${new Date().toLocaleString()}\n--------------------------------\n`;
+        
+        let total = 0;
+        CART.forEach(c => {
+            const p = PRODUCTS_MAP[c.id] || {};
+            const pricing = getPriceForQty(p, c.qty);
+            const sub = pricing.price * c.qty;
+            total += sub;
+            content += `${c.qty}x ${p.name || 'Item'} @ RM${pricing.price} = RM${sub.toFixed(2)}\n`;
+        });
+        
+        content += `--------------------------------\nTOTAL: RM ${total.toFixed(2)}\n================================\n`;
+        const blob = new Blob([content], {type: "text/plain"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${oid}.txt`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    init();
+  </script>
 </body>
 </html>
