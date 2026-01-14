@@ -1,169 +1,203 @@
 <!doctype html>
-<html lang="en">
+<html lang="ms">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>Order Form</title>
+  <title>Order Cookies</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; background-color: #F9FAFB; padding-bottom: 120px; }
-    .qty-btn { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .sticky-footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
-    .img-thumb { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #eee; }
+    :root { --brand: #A67734; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 120px; }
+    
+    /* Dynamic Theme Classes */
+    .text-brand { color: var(--brand); }
+    .bg-brand { background-color: var(--brand); }
+    .border-brand { border-color: var(--brand); }
+    .ring-brand { --tw-ring-color: var(--brand); }
+
+    .qty-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; transition: 0.1s; cursor: pointer; user-select: none; }
+    .qty-btn:active { transform: scale(0.9); }
+    
+    .product-card { transition: transform 0.2s; }
+    .product-card:active { transform: scale(0.98); }
+    
+    /* Hide scrollbar for category list */
+    .hide-scroll::-webkit-scrollbar { display: none; }
+    .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body>
 
-<div class="max-w-md mx-auto px-4 pt-6">
-  <div class="text-center mb-6">
-    <h1 id="brandTitle" class="text-2xl font-extrabold text-[#A67734]">PIPAHCOOKIES</h1>
-    <p class="text-sm text-gray-500">Borang Pesanan</p>
+  <div class="relative w-full h-48 bg-gray-900 overflow-hidden shadow-lg">
+    <div class="absolute inset-0 bg-brand opacity-80" id="hero-bg"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+    
+    <div class="absolute bottom-5 left-5 right-5 text-white z-10">
+        <div class="flex items-center gap-2 mb-1">
+            <span class="bg-white/20 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">Official Agent</span>
+        </div>
+        <h1 id="shop-name" class="text-3xl font-extrabold leading-tight">PipahCookies Store</h1>
+        <p id="shop-tagline" class="text-sm text-white/90 font-medium mt-1">Fresh cookies delivered to you</p>
+    </div>
   </div>
 
-  <form id="order-form">
-    <div class="bg-white p-4 rounded-xl shadow-sm border mb-4 space-y-3">
-        <input type="text" id="cName" class="w-full border p-3 rounded-lg" placeholder="Nama Penuh" required>
-        <input type="tel" id="cPhone" class="w-full border p-3 rounded-lg" placeholder="No. WhatsApp" required>
-        <textarea id="cAddr" class="w-full border p-3 rounded-lg" placeholder="Alamat" required></textarea>
+  <div class="max-w-md mx-auto px-4 -mt-6 relative z-20">
+    
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4 mb-6">
+        <h3 class="text-xs font-bold text-gray-400 uppercase">Your Details</h3>
+        <input type="text" id="c_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold outline-none focus:ring-2 ring-brand transition" placeholder="Full Name">
+        <textarea id="c_addr" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold outline-none focus:ring-2 ring-brand transition" placeholder="Delivery Address / Notes"></textarea>
     </div>
 
-    <div id="product-list" class="space-y-3">
-        <div class="text-center py-10 text-gray-400">Loading products...</div>
+    <h3 class="text-lg font-bold text-gray-800 mb-3 px-1">Menu</h3>
+    <div id="product-list" class="grid grid-cols-1 gap-3">
+        </div>
+
+    <div id="payment-info" class="hidden mt-6 bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-600">
+        <p class="font-bold text-gray-800 mb-1">Payment Info:</p>
+        <p id="bank-details" class="whitespace-pre-line"></p>
     </div>
 
-    <!-- Footer -->
-    <div class="sticky-footer flex justify-between items-center gap-4 max-w-md mx-auto">
-      <div>
-        <p class="text-xs text-gray-500">Total</p>
-        <p id="grand-total" class="text-xl font-bold">RM 0.00</p>
-      </div>
-      <button type="submit" id="submitBtn" class="flex-1 bg-green-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg">
-        Hantar WhatsApp
-      </button>
+  </div>
+
+  <div class="fixed bottom-4 left-4 right-4 z-50 max-w-md mx-auto">
+    <div class="bg-gray-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between transition-all transform translate-y-24 opacity-0" id="cart-bar">
+        <div>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Total Order</p>
+            <p class="text-xl font-bold leading-none" id="grand-total">RM 0.00</p>
+        </div>
+        <button onclick="submitOrder()" class="bg-brand text-white font-bold py-2.5 px-6 rounded-xl hover:brightness-110 active:scale-95 transition flex items-center gap-2">
+            <span>WhatsApp</span>
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.304-5.291c0-5.435 4.414-9.855 9.869-9.855 2.636 0 5.115 1.026 6.979 2.891s2.89 4.346 2.891 6.983c-.001 5.435-4.415 9.854-9.866 9.854"/></svg>
+        </button>
     </div>
-  </form>
-</div>
+  </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  <script src="pipah-product-config.js"></script>
+  <script>
+    let SHOP_DATA = {};
+    let CART = [];
 
-  const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.firebasestorage.app",
-            messagingSenderId: "...",
-            appId: "..."
-  };
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const encoded = urlParams.get('d');
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+        if(encoded) {
+            try {
+                // Decode Safe Base64
+                const jsonStr = decodeURIComponent(atob(encoded).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                
+                SHOP_DATA = JSON.parse(jsonStr);
+                
+                // 1. Apply Theme
+                if(SHOP_DATA.c) document.documentElement.style.setProperty('--brand', SHOP_DATA.c);
+                if(SHOP_DATA.n) document.getElementById('shop-name').innerText = SHOP_DATA.n;
+                if(SHOP_DATA.t) document.getElementById('shop-tagline').innerText = SHOP_DATA.t;
+                
+                // 2. Show Bank Info if exists
+                if(SHOP_DATA.b) {
+                    document.getElementById('payment-info').classList.remove('hidden');
+                    document.getElementById('bank-details').innerText = SHOP_DATA.b;
+                }
 
-  // Parse URL Params
-  const params = new URLSearchParams(window.location.search);
-  const p_ids = (params.get('p_ids') || '').split(',');
-  const p_prices = (params.get('p_prices') || '').split(',');
-  const rsBrand = params.get('rs_brand');
-  const rsWa = params.get('rs_wa');
+                // 3. Render Products
+                const list = document.getElementById('product-list');
+                SHOP_DATA.i.forEach((id, idx) => {
+                    const p = window.getProductById(id);
+                    const price = parseFloat(SHOP_DATA.p[idx]);
+                    
+                    if(p) {
+                        CART.push({ id, name: p.name, price, qty: 0 });
+                        const cartIdx = CART.length - 1;
 
-  if(rsBrand) document.getElementById('brandTitle').innerText = rsBrand;
+                        list.innerHTML += `
+                        <div class="product-card bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex gap-4 items-center">
+                            <img src="${p.img}" class="w-20 h-20 rounded-xl object-cover bg-gray-100 shadow-inner">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-800 leading-tight mb-1">${p.name}</h4>
+                                <p class="text-brand font-extrabold">RM ${price.toFixed(2)}</p>
+                            </div>
+                            <div class="flex flex-col items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                                <div class="qty-btn text-brand bg-white shadow-sm border" onclick="updateQty(${cartIdx}, 1)">+</div>
+                                <span class="font-bold text-sm w-6 text-center" id="qty-${cartIdx}">0</span>
+                                <div class="qty-btn text-gray-400" onclick="updateQty(${cartIdx}, -1)">-</div>
+                            </div>
+                        </div>`;
+                    }
+                });
 
-  async function renderOrderForm() {
-      const container = document.getElementById('product-list');
-      container.innerHTML = '';
-      
-      let hasItems = false;
-
-      // Fetch details for each ID in URL
-      for (let i = 0; i < p_ids.length; i++) {
-          const pid = p_ids[i];
-          if(!pid) continue;
-
-          try {
-            const docRef = doc(db, "products", pid);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                hasItems = true;
-                const p = docSnap.data();
-                const price = parseFloat(p_prices[i]);
-                const img = p.images && p.images[0] ? p.images[0] : '';
-
-                const div = document.createElement('div');
-                div.className = "bg-white p-3 rounded-xl shadow-sm border flex items-center gap-3";
-                div.innerHTML = `
-                    <img src="${img}" class="img-thumb">
-                    <div class="flex-grow">
-                        <h3 class="font-bold text-gray-800 text-sm">${p.name}</h3>
-                        <p class="text-[#A67734] font-bold">RM ${price.toFixed(2)}</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" class="qty-btn bg-gray-100" onclick="updateQty('${pid}', -1)">-</button>
-                        <span id="qty-${pid}" class="w-6 text-center font-bold" data-price="${price}" data-name="${p.name}">0</span>
-                        <button type="button" class="qty-btn bg-green-100 text-green-700" onclick="updateQty('${pid}', 1)">+</button>
-                    </div>
-                `;
-                container.appendChild(div);
+            } catch(e) {
+                console.error(e);
+                alert("Shop link is invalid or corrupted.");
             }
-          } catch (e) { console.error("Err loading product", pid); }
-      }
+        }
+    });
 
-      if(!hasItems) container.innerHTML = `<div class="text-center p-4 bg-red-50 text-red-500">Invalid Link.</div>`;
-  }
+    window.updateQty = (idx, delta) => {
+        const item = CART[idx];
+        const newQty = item.qty + delta;
+        if(newQty < 0) return;
+        
+        item.qty = newQty;
+        document.getElementById(`qty-${idx}`).innerText = newQty;
+        recalc();
+    };
 
-  // --- GLOBAL HELPERS ---
-  window.updateQty = (id, delta) => {
-      const el = document.getElementById(`qty-${id}`);
-      let v = parseInt(el.innerText) + delta;
-      if(v < 0) v = 0;
-      el.innerText = v;
-      
-      let total = 0;
-      document.querySelectorAll('[id^="qty-"]').forEach(item => {
-          total += parseInt(item.innerText) * parseFloat(item.dataset.price);
-      });
-      document.getElementById('grand-total').innerText = `RM ${total.toFixed(2)}`;
-  };
+    function recalc() {
+        let total = 0;
+        let count = 0;
+        CART.forEach(c => {
+            total += c.qty * c.price;
+            count += c.qty;
+        });
+        
+        document.getElementById('grand-total').innerText = "RM " + total.toFixed(2);
+        
+        // Toggle Cart Bar
+        const bar = document.getElementById('cart-bar');
+        if(count > 0) {
+            bar.classList.remove('translate-y-24', 'opacity-0');
+        } else {
+            bar.classList.add('translate-y-24', 'opacity-0');
+        }
+    }
 
-  // --- SUBMIT ---
-  document.getElementById('order-form').onsubmit = async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      btn.innerText = "Processing..."; btn.disabled = true;
+    window.submitOrder = () => {
+        const name = document.getElementById('c_name').value.trim();
+        const addr = document.getElementById('c_addr').value.trim();
+        
+        if(!name) {
+            document.getElementById('c_name').focus();
+            return alert("Please enter your name");
+        }
 
-      const customer = {
-          name: document.getElementById('cName').value,
-          phone: document.getElementById('cPhone').value,
-          addr: document.getElementById('cAddr').value
-      };
+        const items = CART.filter(c => c.qty > 0);
+        let msg = `*NEW ORDER FOR ${SHOP_DATA.n.toUpperCase()}* 🍪\n`;
+        msg += `👤 Customer: ${name}\n`;
+        if(addr) msg += `📍 Info: ${addr}\n`;
+        msg += `\n*ORDER LIST:*`;
+        
+        let total = 0;
+        items.forEach(i => {
+            const sub = i.qty * i.price;
+            total += sub;
+            msg += `\n▪️ ${i.qty}x ${i.name} (RM${sub.toFixed(2)})`;
+        });
 
-      let items = [], total = 0;
-      document.querySelectorAll('[id^="qty-"]').forEach(el => {
-          const q = parseInt(el.innerText);
-          if(q > 0) {
-              const sub = q * parseFloat(el.dataset.price);
-              items.push({ name: el.dataset.name, qty: q, sub: sub });
-              total += sub;
-          }
-      });
+        msg += `\n\n*TOTAL: RM ${total.toFixed(2)}*`;
+        
+        if(SHOP_DATA.b) {
+            msg += `\n\n📝 *PAYMENT INFO:*\n${SHOP_DATA.b}`;
+        }
+        
+        msg += `\n\n_Generated by PipahCookies_`;
 
-      if(items.length === 0) { alert("Pilih produk."); btn.disabled = false; return; }
-
-      // Save to DB
-      await addDoc(collection(db, "orders"), {
-          reseller_wa: rsWa, reseller_brand: rsBrand, customer, items, total,
-          created_at: serverTimestamp(), date_str: new Date().toLocaleString()
-      });
-
-      // WhatsApp
-      const txt = items.map(i => `\n🍪 ${i.name} x${i.qty} (RM${i.sub.toFixed(2)})`).join('');
-      const msg = `*PESANAN BARU* 📝\nNama: ${customer.name}\nTel: ${customer.phone}\nAlamat: ${customer.addr}\n\n*ORDER:*${txt}\n\n*TOTAL: RM ${total.toFixed(2)}*`;
-      window.location.href = `https://wa.me/${rsWa || '60182806839'}?text=${encodeURIComponent(msg)}`;
-  };
-
-  renderOrderForm();
-</script>
+        const url = `https://wa.me/${SHOP_DATA.w}?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+    };
+  </script>
 </body>
 </html>
