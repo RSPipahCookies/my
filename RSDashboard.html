@@ -2,133 +2,219 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Reseller Portal</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>RS Shop Builder</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root{ --primary: #A67734; --bg: #F9F7F5; }
-    body{font-family:'Inter', sans-serif;background:var(--bg);color:#333}
-    .card{background:white;padding:15px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.05);transition:0.2s; border: 2px solid transparent;}
-    .card.selected{border-color:#0ea5e9;box-shadow:0 0 15px rgba(14, 165, 233, 0.2);}
-    .loading-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background: #e5e7eb; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; color: #334155; padding-bottom: 100px; }
+    .section-title { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94A3B8; margin-bottom: 0.75rem; }
+    .input-box { width: 100%; background: white; border: 1px solid #E2E8F0; padding: 12px; border-radius: 10px; font-weight: 600; outline: none; transition: 0.2s; }
+    .input-box:focus { border-color: #A67734; ring: 2px solid #A67734; }
+    .color-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
+    .color-dot.active { border-color: white; box-shadow: 0 0 0 2px #333; transform: scale(1.1); }
   </style>
 </head>
 <body>
-  <div class="max-w-4xl mx-auto p-4">
-    <div class="bg-white p-6 rounded-xl shadow-lg mt-10">
-      <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Jana Pautan Jualan</h2>
-      
-      <!-- INPUTS -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div><label class="block font-bold text-sm mb-1">No. WhatsApp</label><input type="tel" id="whatsappNumber" class="w-full p-3 border rounded-lg bg-gray-50"></div>
-        <div><label class="block font-bold text-sm mb-1">Nama Brand</label><input type="text" id="brandName" class="w-full p-3 border rounded-lg bg-gray-50"></div>
-      </div>
 
-      <!-- PRODUCT GRID -->
-      <h3 class="font-bold text-gray-700 mb-4">Pilih Produk & Tetapkan Harga</h3>
-      <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4 min-h-[200px]">
-          <!-- Loader -->
-          <div class="col-span-full text-center py-10 text-gray-400">Loading products from HQ...</div>
-      </div>
+  <div class="bg-white border-b sticky top-0 z-30 px-4 py-3 flex justify-between items-center shadow-sm">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-[#A67734] rounded-lg flex items-center justify-center text-white font-bold">RS</div>
+      <h1 class="font-bold text-gray-800">Shop Builder</h1>
+    </div>
+    <a href="index.html" class="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full">Exit</a>
+  </div>
 
-      <button onclick="generateLink()" class="mt-8 bg-green-500 text-white font-bold p-3 w-full rounded-lg shadow-lg hover:bg-green-600">Jana Link</button>
-      
-      <div id="resultArea" class="hidden mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <input type="text" id="finalLink" readonly class="w-full bg-transparent text-sm mb-2 text-center">
-        <div class="text-center"><button onclick="copyLink()" class="text-blue-600 font-bold underline">Copy Link</button></div>
+  <div class="max-w-md mx-auto px-4 mt-6 space-y-8">
+
+    <section>
+      <p class="section-title">Step 1: Store Identity</p>
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+        
+        <div>
+          <label class="text-xs font-bold text-gray-400">WhatsApp Number (Required)</label>
+          <input type="tel" id="rs_wa" class="input-box" placeholder="e.g. 60123456789" oninput="saveState()">
+        </div>
+
+        <div class="grid grid-cols-1 gap-4">
+            <div>
+                <label class="text-xs font-bold text-gray-400">Shop Name</label>
+                <input type="text" id="rs_name" class="input-box" placeholder="e.g. Kak Lisa Cookies" oninput="saveState()">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400">Slogan / Location</label>
+                <input type="text" id="rs_tagline" class="input-box" placeholder="e.g. Agent Sah Ampang" oninput="saveState()">
+            </div>
+        </div>
+
+        <div>
+           <label class="text-xs font-bold text-gray-400 mb-2 block">Theme Color</label>
+           <div class="flex gap-3" id="color-picker">
+              </div>
+           <input type="hidden" id="rs_color" value="#A67734">
+        </div>
+
       </div>
+    </section>
+
+    <section>
+        <p class="section-title">Step 2: Payment Instructions</p>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+            <label class="text-xs font-bold text-gray-400">Bank Details (Shown at Checkout)</label>
+            <textarea id="rs_bank" rows="2" class="input-box text-sm font-normal" placeholder="e.g. Maybank 1122334455 (Siti Nurhaliza). Send resit selepas bayar." oninput="saveState()"></textarea>
+        </div>
+    </section>
+
+    <section>
+        <p class="section-title">Step 3: Manage Inventory</p>
+        <div id="product-list" class="space-y-3">
+            </div>
+    </section>
+
+  </div>
+
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40">
+    <div class="max-w-md mx-auto">
+      <button onclick="generateLink()" class="w-full bg-slate-900 text-white font-bold text-lg py-3.5 rounded-xl shadow-lg hover:bg-slate-800 transition active:scale-95 flex items-center justify-center gap-2">
+        <span>🚀 Launch Shop Link</span>
+      </button>
+      <p id="toast" class="text-center text-xs font-bold text-green-600 mt-2 hidden">Link Copied to Clipboard!</p>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script src="pipah-product-config.js"></script>
+<script>
+    const COLORS = [
+        { hex: '#A67734', name: 'Gold' },
+        { hex: '#EC4899', name: 'Pink' },
+        { hex: '#3B82F6', name: 'Blue' },
+        { hex: '#10B981', name: 'Green' },
+        { hex: '#111827', name: 'Black' }
+    ];
 
-    const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.firebasestorage.app",
-            messagingSenderId: "...",
-            appId: "..."
+    document.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        renderColors();
+        renderProducts();
+    });
+
+    // --- RENDERERS ---
+    function renderColors() {
+        const container = document.getElementById('color-picker');
+        const current = document.getElementById('rs_color').value;
+        
+        container.innerHTML = COLORS.map(c => `
+            <div class="color-dot ${c.hex === current ? 'active' : ''}" 
+                 style="background:${c.hex}" 
+                 onclick="selectColor('${c.hex}')">
+            </div>
+        `).join('');
+    }
+
+    function renderProducts() {
+        const list = document.getElementById('product-list');
+        list.innerHTML = window.PRODUCTS_DATA.map(p => `
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex gap-3 items-center">
+                <input type="checkbox" id="chk-${p.id}" class="w-5 h-5 accent-slate-900" onchange="togglePriceInput('${p.id}')">
+                <img src="${p.img}" class="w-12 h-12 rounded bg-gray-100 object-cover">
+                <div class="flex-1">
+                    <h3 class="font-bold text-sm text-gray-800">${p.name}</h3>
+                </div>
+                <div class="flex items-center gap-1 opacity-50 pointer-events-none transition" id="price-box-${p.id}">
+                    <span class="text-xs text-gray-400">RM</span>
+                    <input type="number" id="price-${p.id}" value="${p.rrp.toFixed(2)}" class="w-16 border rounded p-1 text-center font-bold text-sm">
+                </div>
+            </div>
+        `).join('');
+        
+        // Restore checked state logic handled in loadState usually, simplified here
+    }
+
+    // --- LOGIC ---
+    window.selectColor = (hex) => {
+        document.getElementById('rs_color').value = hex;
+        renderColors();
+        saveState();
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    let PRODUCTS_DATA = [];
+    window.togglePriceInput = (id) => {
+        const chk = document.getElementById(`chk-${id}`);
+        const box = document.getElementById(`price-box-${id}`);
+        if(chk.checked) {
+            box.classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+            box.classList.add('opacity-50', 'pointer-events-none');
+        }
+    };
 
-    // 1. FETCH PRODUCTS
-    async function loadProducts() {
-        const grid = document.getElementById('product-grid');
-        try {
-            const snap = await getDocs(collection(db, 'products'));
-            PRODUCTS_DATA = [];
-            grid.innerHTML = '';
+    // --- SAVE/LOAD ---
+    function saveState() {
+        const state = {
+            wa: document.getElementById('rs_wa').value,
+            name: document.getElementById('rs_name').value,
+            tagline: document.getElementById('rs_tagline').value,
+            bank: document.getElementById('rs_bank').value,
+            color: document.getElementById('rs_color').value
+        };
+        localStorage.setItem('rs_profile', JSON.stringify(state));
+    }
 
-            snap.forEach(doc => {
-                const p = doc.data();
-                p.id = doc.id; // Critical: Use Firestore ID
-                PRODUCTS_DATA.push(p);
-
-                const imgUrl = p.images && p.images[0] ? p.images[0] : 'https://placehold.co/100';
-                
-                grid.innerHTML += `
-                    <div id="card_${p.id}" class="card">
-                        <div class="flex items-center gap-2 mb-2">
-                            <input type="checkbox" id="chk_${p.id}" value="${p.id}" onchange="toggleCard('${p.id}')" class="w-5 h-5">
-                            <span class="text-xs font-bold text-gray-500">Pilih</span>
-                        </div>
-                        <img src="${imgUrl}" class="w-16 h-16 rounded-lg mx-auto mb-2 object-cover">
-                        <h4 class="text-sm font-bold text-center leading-tight mb-2 h-10 overflow-hidden">${p.name}</h4>
-                        <input type="number" id="price_${p.id}" value="${p.rrp}" class="w-full text-center border rounded p-1 font-bold text-gray-700">
-                    </div>
-                `;
-            });
-        } catch (e) {
-            grid.innerHTML = `<p class="text-red-500 col-span-full text-center">Failed to load products. Check Config.</p>`;
+    function loadState() {
+        const raw = localStorage.getItem('rs_profile');
+        if(raw) {
+            const s = JSON.parse(raw);
+            if(s.wa) document.getElementById('rs_wa').value = s.wa;
+            if(s.name) document.getElementById('rs_name').value = s.name;
+            if(s.tagline) document.getElementById('rs_tagline').value = s.tagline;
+            if(s.bank) document.getElementById('rs_bank').value = s.bank;
+            if(s.color) document.getElementById('rs_color').value = s.color;
         }
     }
 
-    // 2. EXPOSE FUNCTIONS TO WINDOW (Module Scope Fix)
-    window.toggleCard = (id) => {
-        const el = document.getElementById(`card_${id}`);
-        const chk = document.getElementById(`chk_${id}`);
-        if(chk.checked) el.classList.add('selected'); else el.classList.remove('selected');
-    };
-
+    // --- GENERATE LINK ---
     window.generateLink = () => {
-        let wa = document.getElementById('whatsappNumber').value.replace(/[^0-9]/g, '');
-        let brand = document.getElementById('brandName').value.trim();
-        if(wa.startsWith('0')) wa = '60' + wa.substring(1);
+        const wa = document.getElementById('rs_wa').value.replace(/[^0-9]/g, '');
+        if(!wa) return alert("Please enter WhatsApp number");
 
-        let p_ids = [], p_prices = [];
-        PRODUCTS_DATA.forEach(p => {
-            const chk = document.getElementById(`chk_${p.id}`);
-            if(chk && chk.checked) {
-                p_ids.push(p.id);
-                p_prices.push(document.getElementById(`price_${p.id}`).value);
+        // Collect Products
+        const items = [];
+        const prices = [];
+        
+        window.PRODUCTS_DATA.forEach(p => {
+            const chk = document.getElementById(`chk-${p.id}`);
+            if(chk.checked) {
+                items.push(p.id);
+                prices.push(document.getElementById(`price-${p.id}`).value);
             }
         });
 
-        if(p_ids.length === 0) return alert("Pilih produk dahulu.");
+        if(items.length === 0) return alert("Select at least 1 product");
 
-        const params = new URLSearchParams({ rs_wa: wa, rs_brand: brand, p_ids: p_ids.join(','), p_prices: p_prices.join(',') });
-        const url = window.location.href.replace('RSDashboard.html', 'OrderNow.html') + '?' + params.toString();
+        // Construct Payload
+        const payload = {
+            w: wa.startsWith('0') ? '60'+wa.substring(1) : wa, // Phone
+            n: document.getElementById('rs_name').value.trim(), // Shop Name
+            t: document.getElementById('rs_tagline').value.trim(), // Tagline
+            b: document.getElementById('rs_bank').value.trim(), // Bank Info
+            c: document.getElementById('rs_color').value, // Color
+            i: items,
+            p: prices
+        };
+
+        // Safer Base64 Encoding for Unicode (Emojis/Malay text)
+        const jsonStr = JSON.stringify(payload);
+        const encoded = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g,
+            function toSolidBytes(match, p1) {
+                return String.fromCharCode('0x' + p1);
+        }));
+
+        const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','OrderNow.html')}?d=${encoded}`;
         
-        document.getElementById('resultArea').classList.remove('hidden');
-        document.getElementById('finalLink').value = url;
+        navigator.clipboard.writeText(url);
+        const toast = document.getElementById('toast');
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3000);
     };
-
-    window.copyLink = () => {
-        const link = document.getElementById('finalLink');
-        link.select();
-        document.execCommand('copy');
-        alert("Copied!");
-    };
-
-    loadProducts();
-  </script>
+</script>
 </body>
 </html>
