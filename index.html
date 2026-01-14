@@ -28,47 +28,44 @@
   <div class="header-bg relative">
     <div class="flex justify-between items-start mb-4">
         <div>
-            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Reseller Portal</p>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1" data-i18n="subtitle">Reseller Portal</p>
             <h1 class="text-2xl font-extrabold">PipahCookies</h1>
         </div>
         <div class="bg-white/10 p-1 rounded-full flex">
-            <div class="px-2 py-0.5 bg-white text-slate-900 rounded-full text-[10px] font-bold">MY</div>
+            <button onclick="setLang('ms')" id="btn-ms" class="px-3 py-1 bg-white text-slate-900 rounded-full text-[10px] font-bold transition">MY</button>
+            <button onclick="setLang('en')" id="btn-en" class="px-3 py-1 text-white/70 hover:bg-white/10 rounded-full text-[10px] font-bold transition">EN</button>
         </div>
     </div>
     
     <div class="grid grid-cols-3 gap-2 absolute left-4 right-4 -bottom-12">
-        
         <a href="#shop" class="menu-card ring-2 ring-orange-100 ring-offset-2">
             <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 grid place-items-center"><i class="fa-solid fa-boxes-stacked text-sm"></i></div>
             <div>
-                <h3 class="font-bold text-xs text-slate-800">Beli Stok</h3>
-                <p class="text-[9px] text-slate-500 leading-tight">Restock</p>
+                <h3 class="font-bold text-xs text-slate-800" data-i18n="menu_stock">Beli Stok</h3>
+                <p class="text-[9px] text-slate-500 leading-tight" data-i18n="desc_stock">Restock</p>
             </div>
         </a>
-
         <a href="RSDashboard.html" class="menu-card bg-slate-900 border-slate-900">
             <div class="w-8 h-8 rounded-full bg-slate-700 text-white grid place-items-center"><i class="fa-solid fa-rocket text-sm"></i></div>
             <div>
                 <h3 class="font-bold text-xs text-white">Dropship</h3>
-                <p class="text-[9px] text-gray-400 leading-tight">Bina Link</p>
+                <p class="text-[9px] text-gray-400 leading-tight" data-i18n="desc_link">Bina Link</p>
             </div>
         </a>
-
         <a href="gambar2reseller.html" class="menu-card">
             <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 grid place-items-center"><i class="fa-regular fa-images text-sm"></i></div>
             <div>
-                <h3 class="font-bold text-xs text-slate-800">Galeri</h3>
-                <p class="text-[9px] text-slate-500 leading-tight">Bahan Iklan</p>
+                <h3 class="font-bold text-xs text-slate-800" data-i18n="menu_gallery">Galeri</h3>
+                <p class="text-[9px] text-slate-500 leading-tight" data-i18n="desc_gallery">Bahan Iklan</p>
             </div>
         </a>
-
     </div>
   </div>
 
   <div class="max-w-md mx-auto px-4 mt-20" id="shop">
     <div class="flex justify-between items-center mb-4">
-        <h2 class="font-bold text-slate-800">Senarai Stok</h2>
-        <button onclick="alert('Beli minimum kuantiti untuk dapat Harga Ejen (Tier 2).')" class="text-xs font-bold text-blue-600 flex items-center gap-1"><i class="fa-regular fa-circle-question"></i> Info Harga</button>
+        <h2 class="font-bold text-slate-800" data-i18n="stock_list">Senarai Stok</h2>
+        <button onclick="showInfo()" class="text-xs font-bold text-blue-600 flex items-center gap-1"><i class="fa-regular fa-circle-question"></i> <span data-i18n="info_price">Info Harga</span></button>
     </div>
 
     <div class="relative mb-6">
@@ -78,7 +75,7 @@
 
     <div id="loading" class="text-center py-10">
         <div class="animate-spin w-6 h-6 border-2 border-slate-300 border-t-slate-800 rounded-full mx-auto mb-2"></div>
-        <p class="text-xs text-slate-400">Memuatkan Stok...</p>
+        <p class="text-xs text-slate-400">Loading...</p>
     </div>
     
     <div class="grid grid-cols-2 gap-4" id="product-grid"></div>
@@ -98,50 +95,56 @@
           <div class="p-5">
               <h2 id="m-title" class="text-xl font-bold text-slate-800 mb-1"></h2>
               <p id="m-price" class="text-lg font-extrabold text-blue-600 mb-3"></p>
-              
               <div class="bg-slate-50 p-3 rounded-xl mb-4 border border-slate-100">
-                  <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Info Produk</p>
+                  <p class="text-[10px] font-bold text-slate-400 uppercase mb-1" data-i18n="info_prod">Info Produk</p>
                   <p id="m-desc" class="text-xs text-slate-600 leading-relaxed"></p>
               </div>
-              
-              <button id="m-btn" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition">Tambah ke Cart</button>
+              <button id="m-btn" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition" data-i18n="add_cart">Tambah ke Cart</button>
           </div>
       </div>
   </div>
 
-  <div id="pwa-install-modal" class="fixed inset-0 z-50 hidden flex items-end md:items-center justify-center pointer-events-none">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity opacity-0" id="pwa-backdrop" onclick="dismissInstall()"></div>
-    <div class="bg-white w-full md:w-[400px] md:rounded-2xl rounded-t-2xl shadow-2xl pointer-events-auto transform translate-y-full transition-transform duration-300 p-6 relative" id="pwa-card">
-        <div class="flex items-start gap-4 mb-4">
-            <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white text-xl"><i class="fa-solid fa-cookie-bite"></i></div>
-            <div><h3 class="font-bold text-lg text-slate-800">Install App</h3><p class="text-sm text-slate-500">Akses lebih pantas & offline.</p></div>
-            <button onclick="dismissInstall()" class="ml-auto text-slate-400 hover:text-slate-600"><i class="fa-solid fa-times"></i></button>
-        </div>
-        <div id="btn-install-android" class="hidden"><button onclick="triggerInstall()" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-lg">Install App</button></div>
-        <div id="instruction-ios" class="hidden space-y-3">
-            <div class="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg"><i class="fa-solid fa-arrow-up-from-bracket text-lg text-blue-500"></i><span>1. Tekan butang <b>Share</b></span></div>
-            <div class="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg"><i class="fa-regular fa-square-plus text-lg text-slate-800"></i><span>2. Pilih <b>Add to Home Screen</b></span></div>
-        </div>
-    </div>
-  </div>
-
   <script>
     const firebaseConfig = { apiKey: "AIzaSyA2Y2cOh3J7U916Ip0tnDDFVs2fK6sACl0", authDomain: "pipahcookies-21e38.firebaseapp.com", projectId: "pipahcookies-21e38", storageBucket: "pipahcookies-21e38.firebasestorage.app", messagingSenderId: "162482379926", appId: "1:162482379926:web:14d16f5a2444816876f6b7" };
-    
-    // --- DATABASE SETUP (OFFLINE CAPABLE) ---
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    
-    // Enable Offline Persistence
     db.enablePersistence().catch(err => { console.log("Offline mode error:", err.code); });
 
-    // --- LOGIC ---
+    // --- I18N CONFIG ---
+    let curLang = 'ms';
+    const i18n = {
+        ms: {
+            subtitle:"Portal Reseller", menu_stock:"Beli Stok", desc_stock:"Restock", desc_link:"Bina Link",
+            menu_gallery:"Galeri", desc_gallery:"Bahan Iklan", stock_list:"Senarai Stok", info_price:"Info Harga",
+            ph_search:"Cari produk...", info_prod:"Info Produk", add_cart:"Tambah ke Cart",
+            agent_price:"Harga Ejen", min_buy:"Min Beli", unit:"unit", alert_info:"Beli minimum kuantiti untuk dapat Harga Ejen (Tier 2)."
+        },
+        en: {
+            subtitle:"Reseller Portal", menu_stock:"Buy Stock", desc_stock:"Restock", desc_link:"Build Link",
+            menu_gallery:"Gallery", desc_gallery:"Marketing Ads", stock_list:"Stock List", info_price:"Price Info",
+            ph_search:"Search products...", info_prod:"Product Info", add_cart:"Add to Cart",
+            agent_price:"Agent Price", min_buy:"Min Buy", unit:"units", alert_info:"Buy minimum quantity to get Agent Price (Tier 2)."
+        }
+    };
+
+    window.setLang = (l) => {
+        curLang = l;
+        document.getElementById('btn-ms').className = l==='ms' ? "px-3 py-1 bg-white text-slate-900 rounded-full text-[10px] font-bold transition" : "px-3 py-1 text-white/70 hover:bg-white/10 rounded-full text-[10px] font-bold transition";
+        document.getElementById('btn-en').className = l==='en' ? "px-3 py-1 bg-white text-slate-900 rounded-full text-[10px] font-bold transition" : "px-3 py-1 text-white/70 hover:bg-white/10 rounded-full text-[10px] font-bold transition";
+        
+        document.querySelectorAll('[data-i18n]').forEach(e => e.innerText = i18n[l][e.dataset.i18n]);
+        document.getElementById('search').placeholder = i18n[l].ph_search;
+        renderProducts(); // Re-render to translate badges
+    }
+
+    window.showInfo = () => alert(i18n[curLang].alert_info);
+
+    // --- MAIN LOGIC ---
     let PRODUCTS = [], CART = JSON.parse(localStorage.getItem('pipah_reseller_cart_v1') || '[]');
     updateCart();
 
     db.collection('products').where('available', '==', true).onSnapshot(snap => {
-        document.getElementById('loading').style.display = 'none'; 
-        PRODUCTS = [];
+        document.getElementById('loading').style.display = 'none'; PRODUCTS = [];
         snap.forEach(doc => PRODUCTS.push({id:doc.id, ...doc.data()}));
         renderProducts();
     });
@@ -152,21 +155,17 @@
         
         PRODUCTS.forEach(p => {
             if(p.name.toLowerCase().includes(term)) {
-                // Tier Logic
                 let tierBadge = '';
                 if(p.minQty2 && p.priceTier2) {
                     tierBadge = `
                     <div class="mt-2 flex flex-wrap gap-1">
-                        <span class="bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded text-[9px] font-bold">RM${p.priceTier2} (Ejen)</span>
-                        <span class="bg-slate-100 text-slate-500 border border-slate-200 px-1.5 py-0.5 rounded text-[9px]">Min ${p.minQty2} unit</span>
+                        <span class="bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded text-[9px] font-bold">RM${p.priceTier2} (${i18n[curLang].agent_price})</span>
+                        <span class="bg-slate-100 text-slate-500 border border-slate-200 px-1.5 py-0.5 rounded text-[9px]">${i18n[curLang].min_buy} ${p.minQty2}</span>
                     </div>`;
                 }
-
                 grid.innerHTML += `
                 <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col h-full hover:border-orange-200 transition">
-                    <div class="relative">
-                        <img src="${p.image}" class="w-full h-36 object-cover bg-slate-50" onclick="openModal('${p.id}')">
-                    </div>
+                    <img src="${p.image}" class="w-full h-36 object-cover bg-slate-50" onclick="openModal('${p.id}')">
                     <div class="p-3 flex flex-col flex-1">
                         <h3 class="font-bold text-xs text-slate-800 leading-snug line-clamp-2">${p.name}</h3>
                         ${tierBadge}
@@ -180,59 +179,25 @@
         });
     }
 
-    // Modal
+    // Modal & Cart
     window.openModal = (id) => {
         const p = PRODUCTS.find(x=>x.id===id);
         document.getElementById('m-img').src = p.image;
         document.getElementById('m-title').innerText = p.name;
         document.getElementById('m-price').innerText = `RM ${(p.priceTier1||p.price).toFixed(2)}`;
-        document.getElementById('m-desc').innerText = p.description || "Tiada deskripsi.";
+        document.getElementById('m-desc').innerText = p.description || (curLang==='ms'?"Tiada deskripsi.":"No description.");
+        document.getElementById('m-btn').innerText = i18n[curLang].add_cart;
         document.getElementById('m-btn').onclick = () => { addToCart(id); closeModal({target:{id:'modal'}}); };
         document.getElementById('modal').style.display = 'flex';
     };
     window.closeModal = (e) => { if(e.target.id==='modal') document.getElementById('modal').style.display = 'none'; };
-
-    // Cart
     function addToCart(id) {
-        const exist = CART.find(c=>c.id===id);
-        if(exist) exist.qty++; else CART.push({id, qty:1});
-        localStorage.setItem('pipah_reseller_cart_v1', JSON.stringify(CART));
-        updateCart();
-        // Visual Feedback
-        const btn = document.querySelector('.fab-cart'); 
-        btn.style.transform = "scale(1.2)"; setTimeout(()=>btn.style.transform="scale(1)", 150);
+        const exist = CART.find(c=>c.id===id); if(exist) exist.qty++; else CART.push({id, qty:1});
+        localStorage.setItem('pipah_reseller_cart_v1', JSON.stringify(CART)); updateCart();
+        const btn = document.querySelector('.fab-cart'); btn.style.transform = "scale(1.2)"; setTimeout(()=>btn.style.transform="scale(1)", 150);
     }
     function updateCart() { document.getElementById('cart-count').innerText = CART.reduce((a,b)=>a+b.qty,0); }
-
-    // --- PWA INSTALL LOGIC ---
-    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js'); }); }
-
-    let deferredPrompt;
-    const pwaModal = document.getElementById('pwa-install-modal'), pwaCard = document.getElementById('pwa-card'), pwaBackdrop = document.getElementById('pwa-backdrop');
-    const isDismissed = localStorage.getItem('pwa_dismissed_v1');
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-    if (!isStandalone && !isDismissed) {
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; showPWA('android'); });
-        if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream) setTimeout(() => showPWA('ios'), 3000);
-    }
-
-    function showPWA(type) {
-        pwaModal.classList.remove('hidden');
-        setTimeout(() => { pwaBackdrop.classList.remove('opacity-0'); pwaCard.classList.remove('translate-y-full'); }, 10);
-        if(type==='android') document.getElementById('btn-install-android').classList.remove('hidden');
-        if(type==='ios') document.getElementById('instruction-ios').classList.remove('hidden');
-    }
-
-    function dismissInstall() {
-        pwaBackdrop.classList.add('opacity-0'); pwaCard.classList.add('translate-y-full');
-        setTimeout(() => pwaModal.classList.add('hidden'), 300);
-        localStorage.setItem('pwa_dismissed_v1', 'true');
-    }
-
-    async function triggerInstall() {
-        if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if(outcome==='accepted') dismissInstall(); deferredPrompt = null; }
-    }
+    if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
   </script>
 </body>
 </html>
