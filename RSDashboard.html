@@ -2,106 +2,152 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>Shop Builder</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Reseller Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 120px; }
-    .step-badge { width: 24px; height: 24px; background: #0f172a; color: white; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: bold; }
-    .input-box { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 12px; outline: none; font-size: 14px; }
-    .input-box:focus { border-color: #A67734; ring: 2px solid #A67734; }
-    .color-dot { width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 1px #cbd5e1; transition: 0.2s; }
-    .color-dot.active { transform: scale(1.1); box-shadow: 0 0 0 2px #0f172a; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F1F5F9; padding-bottom: 140px; -webkit-tap-highlight-color: transparent; }
     
-    /* Custom Checkbox Animation */
-    .custom-check { transition: all 0.2s ease; }
-    .peer:checked ~ .card-body .custom-check { background-color: #A67734; border-color: #A67734; color: white; }
-    .peer:checked ~ .card-body { border-color: #A67734; background-color: #fffaf0; }
+    /* Glass & Gradients */
+    .glass-header { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); }
+    .input-group:focus-within label { color: #f97316; }
+    .input-group:focus-within input { border-color: #f97316; box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1); }
+    
+    /* Custom Toggle Switch */
+    .toggle-checkbox:checked { right: 0; border-color: #10b981; }
+    .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+    
+    /* Color Dot Animation */
+    .color-dot { transition: transform 0.2s, box-shadow 0.2s; }
+    .color-dot.active { transform: scale(1.15); box-shadow: 0 0 0 2px white, 0 0 0 4px #0f172a; }
+
+    /* Hide Scrollbar */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none;  scrollbar-width: none; }
   </style>
 </head>
-<body>
+<body class="select-none">
 
-  <div class="bg-white/80 backdrop-blur border-b border-slate-200 sticky top-0 z-30 px-4 py-3 flex justify-between items-center">
-    <div class="flex items-center gap-3">
-      <a href="index.html" class="w-8 h-8 rounded-full bg-slate-100 grid place-items-center text-slate-600"><i class="fa-solid fa-arrow-left text-sm"></i></a>
-      <h1 class="font-bold text-slate-800">Shop Builder</h1>
+  <div class="glass-header text-white sticky top-0 z-40 pb-4 rounded-b-[2rem] shadow-xl">
+    <div class="px-5 py-4 flex justify-between items-center">
+        <div>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Reseller Portal</p>
+            <h1 class="text-xl font-bold">Create Shop</h1>
+        </div>
+        <button onclick="clearData()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:bg-red-500 hover:text-white transition">
+            <i class="fa-solid fa-rotate-right text-xs"></i>
+        </button>
     </div>
-    <button onclick="clearData()" class="text-xs text-red-500 font-bold">Reset</button>
+
+    <div class="flex px-6 gap-6 overflow-x-auto no-scrollbar">
+        <div class="flex flex-col items-center gap-1 opacity-100 transition">
+            <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center font-bold text-sm shadow-lg shadow-orange-500/50">1</div>
+            <span class="text-[10px] font-bold text-orange-400">Branding</span>
+        </div>
+        <div class="h-[1px] bg-white/10 w-8 mt-4"></div>
+        <div class="flex flex-col items-center gap-1 opacity-60">
+            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-sm">2</div>
+            <span class="text-[10px] font-bold">Products</span>
+        </div>
+        <div class="h-[1px] bg-white/10 w-8 mt-4"></div>
+        <div class="flex flex-col items-center gap-1 opacity-60">
+            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center font-bold text-sm">3</div>
+            <span class="text-[10px] font-bold">Share</span>
+        </div>
+    </div>
   </div>
 
-  <div class="max-w-md mx-auto px-4 mt-6 space-y-8">
+  <div class="max-w-md mx-auto px-4 mt-6 space-y-6">
     
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-        <div class="flex items-center gap-2 mb-4">
-            <div class="step-badge">1</div>
-            <span class="font-bold text-sm uppercase">Shop Branding</span>
-        </div>
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <h3 class="font-bold text-slate-800 text-sm uppercase mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-store text-orange-500"></i> Shop Identity
+        </h3>
         
         <div class="space-y-4">
-            <input type="tel" id="rs_wa" class="input-box" placeholder="WhatsApp Number" oninput="saveState()">
-            <input type="text" id="rs_name" class="input-box" placeholder="Shop Name (e.g. Kedai Cookies Lisa)" oninput="saveState()">
-            
-            <div class="grid grid-cols-2 gap-3">
-                <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('file-logo').click()">
+            <div class="relative h-32 w-full rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 overflow-hidden group hover:border-orange-400 transition cursor-pointer" onclick="document.getElementById('file-banner').click()">
+                 <input type="file" id="file-banner" class="hidden" accept="image/*" onchange="uploadImage(this, 'banner-preview', 'rs_banner')">
+                 <img id="banner-preview" class="absolute inset-0 w-full h-full object-cover hidden">
+                 <div id="banner-lbl" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 group-hover:text-orange-500">
+                     <i class="fa-solid fa-image text-xl mb-1"></i>
+                     <span class="text-[10px] font-bold uppercase">Upload Cover</span>
+                 </div>
+                 <div class="absolute -bottom-2 left-4 w-16 h-16 rounded-full border-4 border-white bg-slate-200 shadow-md flex items-center justify-center overflow-hidden cursor-pointer hover:brightness-95 transition z-10" onclick="event.stopPropagation(); document.getElementById('file-logo').click()">
                     <input type="file" id="file-logo" class="hidden" accept="image/*" onchange="uploadImage(this, 'logo-preview', 'rs_logo')">
-                    <input type="hidden" id="rs_logo">
-                    <img id="logo-preview" class="w-10 h-10 mx-auto rounded-full object-cover mb-1 bg-slate-100 hidden">
-                    <div id="logo-lbl" class="text-[10px] font-bold text-slate-400">
-                        <i class="fa-solid fa-camera mb-1 text-base"></i><br>Upload Logo<br>(Square)
+                    <img id="logo-preview" class="w-full h-full object-cover hidden">
+                    <div id="logo-lbl" class="text-slate-400 text-center">
+                        <i class="fa-solid fa-camera text-xs"></i>
                     </div>
-                </div>
-
-                <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('file-banner').click()">
-                    <input type="file" id="file-banner" class="hidden" accept="image/*" onchange="uploadImage(this, 'banner-preview', 'rs_banner')">
-                    <input type="hidden" id="rs_banner">
-                    <img id="banner-preview" class="w-10 h-16 mx-auto rounded object-cover mb-1 bg-slate-100 hidden">
-                    <div id="banner-lbl" class="text-[10px] font-bold text-slate-400">
-                        <i class="fa-solid fa-image mb-1 text-base"></i><br>Upload Hero<br>(Vertical)
-                    </div>
-                </div>
+                 </div>
+                 <input type="hidden" id="rs_banner">
+                 <input type="hidden" id="rs_logo">
             </div>
+            
+            <div class="pt-4 space-y-3">
+                <div class="input-group">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block transition">WhatsApp Number</label>
+                    <div class="relative">
+                        <i class="fa-brands fa-whatsapp absolute left-4 top-3.5 text-slate-400"></i>
+                        <input type="tel" id="rs_wa" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-800 outline-none transition" placeholder="e.g. 0123456789" oninput="saveState()">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block transition">Shop Name</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-tag absolute left-4 top-3.5 text-slate-400"></i>
+                        <input type="text" id="rs_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-800 outline-none transition" placeholder="e.g. Cookies Sedap Nina" oninput="saveState()">
+                    </div>
+                </div>
 
-            <div>
-                <label class="text-xs font-bold text-slate-400 mb-2 block">Theme Color</label>
-                <div class="flex gap-3 overflow-x-auto pb-2" id="color-picker"></div>
-                <input type="hidden" id="rs_color" value="#A67734">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-2 block">Theme Color</label>
+                    <div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar px-1" id="color-picker"></div>
+                    <input type="hidden" id="rs_color" value="#f97316">
+                </div>
             </div>
         </div>
     </div>
 
     <div>
-        <div class="flex items-center justify-between mb-3 px-1">
-            <div class="flex items-center gap-2">
-                <div class="step-badge">2</div>
-                <span class="font-bold text-sm uppercase">Select Products</span>
-            </div>
-            <button onclick="selectAll()" class="text-xs font-bold text-blue-600">Select All</button>
+        <div class="flex items-center justify-between mb-3 px-2">
+            <h3 class="font-bold text-slate-800 text-sm uppercase flex items-center gap-2"><i class="fa-solid fa-boxes-stacked text-orange-500"></i> Select Products</h3>
+            <button onclick="selectAll()" class="text-[10px] font-bold text-white bg-slate-800 px-3 py-1 rounded-full">Select All</button>
         </div>
+        
         <div id="product-list" class="space-y-3">
-             <div class="text-center py-10 text-slate-400">Loading products...</div>
+            <div class="flex flex-col items-center justify-center py-10">
+                <div class="w-8 h-8 border-4 border-slate-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
+                <p class="text-xs font-bold text-slate-400">Syncing Products...</p>
+            </div>
         </div>
     </div>
     
-    <div class="mt-8 mb-24">
-        <div class="flex items-center justify-between mb-4 px-1">
-            <h3 class="font-bold text-slate-800 text-sm uppercase">My Created Links</h3>
-            <button onclick="clearHistory()" class="text-xs text-red-400">Clear List</button>
+    <div class="mb-20">
+        <div class="flex items-center justify-between mb-3 px-2">
+            <h3 class="font-bold text-slate-800 text-sm uppercase">My Active Shops</h3>
+            <button onclick="clearHistory()" class="text-[10px] text-red-400 font-bold hover:text-red-600">Clear</button>
         </div>
-        <div id="history-list" class="space-y-3">
-            <p class="text-center text-slate-400 text-sm py-4">No links created yet.</p>
-        </div>
+        <div id="history-list" class="space-y-3 pb-8"></div>
     </div>
   </div>
 
-  <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40 pb-8 safe-area-bottom">
-      <button onclick="generateLink()" id="gen-btn" class="w-full bg-[#A67734] text-white font-bold text-lg py-3.5 rounded-xl shadow-xl flex items-center justify-center gap-2">
-        <i class="fa-solid fa-share-nodes"></i> Share Shop Link
-      </button>
+  <div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 z-50 pb-8 safe-area-bottom shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+      <div class="max-w-md mx-auto flex items-center gap-4">
+          <div class="flex-1">
+              <p class="text-[10px] font-bold text-slate-400 uppercase">Selected Items</p>
+              <p class="text-xl font-extrabold text-slate-800 leading-none" id="sel-count">0</p>
+          </div>
+          <button onclick="generateLink()" id="gen-btn" class="flex-[2] bg-slate-900 text-white font-bold text-lg py-3 rounded-xl shadow-xl shadow-slate-900/20 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition">
+            <span>Create Link</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+      </div>
   </div>
 
   <script>
@@ -118,61 +164,49 @@
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     
-    db.enablePersistence().catch((err) => {
-        if (err.code == 'failed-precondition') console.log("Offline mode failed");
-        else if (err.code == 'unimplemented') console.log("Browser doesn't support offline storage");
-    });
+    // OFFLINE SUPPORT
+    db.enablePersistence().catch(err => console.log("Persistence disabled"));
 
-    // 1. Expanded Color List
+    // COLORS
     const COLORS = [
+        {h:'#f97316'}, // Orange (Default)
         {h:'#A67734'}, // Gold
         {h:'#ec4899'}, // Pink
         {h:'#3b82f6'}, // Blue
         {h:'#10b981'}, // Green
         {h:'#ef4444'}, // Red
-        {h:'#0f172a'}, // Black
+        {h:'#0f172a'}, // Dark
         {h:'#8b5cf6'}, // Purple
-        {h:'#f59e0b'}, // Orange
-        {h:'#06b6d4'}, // Cyan
-        {h:'#84cc16'}  // Lime
     ];
 
     function init() { 
         renderColors(); 
         loadState(); 
         fetchProducts(); 
-        renderHistory(); // Load history on start
+        renderHistory(); 
     }
 
     function renderColors() {
         const c = document.getElementById('rs_color').value;
-        
-        // Generate Preset Dots
         let html = COLORS.map(col => 
-            `<div class="color-dot flex-shrink-0 ${col.h==c?'active':''}" style="background:${col.h}" onclick="setColor('${col.h}')"></div>`
+            `<div class="color-dot w-8 h-8 rounded-full cursor-pointer border border-black/10 flex-shrink-0 ${col.h==c?'active':''}" style="background:${col.h}" onclick="setColor('${col.h}')"></div>`
         ).join('');
 
-        // Add "Custom Color" Rainbow Button
+        // Custom Color Button
         html += `
-        <label class="color-dot flex-shrink-0 flex items-center justify-center cursor-pointer bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 border-white shadow-sm relative overflow-hidden transition-transform active:scale-95" title="Custom Color">
-            <i class="fa-solid fa-droplet text-white text-[10px] drop-shadow-md"></i>
+        <label class="color-dot w-8 h-8 rounded-full cursor-pointer bg-gradient-to-br from-pink-500 to-yellow-500 border border-black/10 flex items-center justify-center relative flex-shrink-0">
+            <i class="fa-solid fa-plus text-white text-[10px]"></i>
             <input type="color" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" oninput="setColor(this.value)" value="${c}">
-        </label>
-        `;
+        </label>`;
 
         document.getElementById('color-picker').innerHTML = html;
-        document.getElementById('gen-btn').style.background = c;
         
-        // Highlight custom button if needed
-        const isPreset = COLORS.some(col => col.h.toLowerCase() === c.toLowerCase());
-        if(!isPreset) {
-            const customBtn = document.getElementById('color-picker').lastElementChild;
-            customBtn.classList.add('active');
-            customBtn.style.border = "2px solid #0f172a";
-        }
+        // Update Theme Live
+        const btn = document.getElementById('gen-btn');
+        btn.style.backgroundColor = c;
+        btn.style.boxShadow = `0 10px 15px -3px ${c}40`;
     }
     
-    // !!! FIXED: This function was missing !!!
     window.setColor = (hex) => { 
         document.getElementById('rs_color').value = hex; 
         renderColors(); 
@@ -188,75 +222,100 @@
                 const p = doc.data();
                 const cost = p.priceTier2 || (p.priceTier1 * 0.8) || 0; 
                 const retail = p.priceTier1 || p.price || 0;
-                const fakePrice = (retail * 1.2).toFixed(2);
                 
                 list.innerHTML += `
-                <label class="relative block cursor-pointer select-none group">
-                    <input type="checkbox" id="chk-${doc.id}" class="peer sr-only" onchange="toggleItem('${doc.id}', ${cost})">
+                <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 transition-all duration-300 relative overflow-hidden group" id="card-${doc.id}">
                     
-                    <div class="card-body bg-white p-3 rounded-xl border border-slate-200 flex gap-3 items-start transition duration-200">
-                        <div class="custom-check w-6 h-6 flex-shrink-0 mt-1 rounded border-2 border-slate-300 bg-white text-transparent grid place-items-center">
-                            <i class="fa-solid fa-check text-xs"></i>
-                        </div>
-                        
-                        <img src="${p.image}" class="w-16 h-16 rounded-lg bg-gray-100 object-cover border border-slate-100">
+                    <div class="flex items-center gap-4">
+                        <img src="${p.image}" class="w-16 h-16 rounded-xl object-cover bg-slate-100 shadow-sm">
                         
                         <div class="flex-1 min-w-0">
-                            <h3 class="font-bold text-sm text-slate-800 truncate">${p.name}</h3>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Cost: RM${cost.toFixed(2)}</p>
-                            
-                            <div class="flex items-center gap-2 mt-2 opacity-40 pointer-events-none transition" id="box-${doc.id}">
-                                
-                                <div class="flex-1">
-                                    <label class="text-[9px] font-bold text-green-600 uppercase block mb-0.5">Promo Price</label>
-                                    <div class="flex items-center border border-green-200 rounded bg-green-50 px-2 py-1">
-                                        <span class="text-[10px] font-bold text-green-700 mr-1">RM</span>
-                                        <input type="number" id="price-${doc.id}" value="${retail.toFixed(2)}" class="w-full bg-transparent font-bold text-sm text-green-800 outline-none p-0" onclick="event.preventDefault()" onkeyup="calc('${doc.id}', ${cost})">
-                                    </div>
-                                </div>
+                            <h3 class="font-bold text-slate-800 text-sm truncate leading-tight">${p.name}</h3>
+                            <p class="text-[10px] font-bold text-slate-400 mt-1">Cost: RM ${cost.toFixed(2)}</p>
+                        </div>
 
-                                <div class="flex-1">
-                                    <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5 line-through decoration-red-500">Normal Price</label>
-                                    <div class="flex items-center border border-slate-200 rounded bg-slate-50 px-2 py-1">
-                                        <span class="text-[10px] font-bold text-slate-400 mr-1">RM</span>
-                                        <input type="number" id="old-price-${doc.id}" value="${fakePrice}" class="w-full bg-transparent font-bold text-sm text-slate-500 outline-none p-0" onclick="event.preventDefault()">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mt-2 text-[9px] font-bold text-white bg-green-500 px-2 py-0.5 rounded inline-block hidden" id="profit-${doc.id}">
-                                Profit: RM0.00
-                            </div>
-
+                        <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" id="chk-${doc.id}" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 left-0" style="top:2px; border-color:#cbd5e1;" onchange="toggleItem('${doc.id}', ${cost})"/>
+                            <label for="chk-${doc.id}" class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-200 cursor-pointer"></label>
                         </div>
                     </div>
-                </label>`;
+
+                    <div id="edit-${doc.id}" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out opacity-50">
+                        <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-400 uppercase">Selling Price</label>
+                                <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 mt-1 focus-within:ring-2 ring-orange-100">
+                                    <span class="text-xs font-bold text-slate-400 mr-1">RM</span>
+                                    <input type="number" id="price-${doc.id}" value="${retail.toFixed(2)}" class="w-full bg-transparent font-bold text-slate-800 outline-none text-sm" onkeyup="calc('${doc.id}', ${cost})">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-400 uppercase">Old Price (Fake)</label>
+                                <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 mt-1">
+                                    <span class="text-xs font-bold text-slate-400 mr-1">RM</span>
+                                    <input type="number" id="old-price-${doc.id}" value="${(retail*1.2).toFixed(2)}" class="w-full bg-transparent font-bold text-slate-400 outline-none text-sm">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 flex justify-end">
+                            <div class="bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm border border-green-200" id="profit-${doc.id}">
+                                <i class="fa-solid fa-arrow-trend-up"></i> Profit: RM ${(retail-cost).toFixed(2)}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>`;
             });
         });
     }
 
     window.toggleItem = (id, cost) => {
         const chk = document.getElementById(`chk-${id}`);
-        const box = document.getElementById(`box-${id}`);
-        const badge = document.getElementById(`profit-${id}`);
-        if(chk.checked) { 
-            box.classList.remove('opacity-40', 'pointer-events-none'); 
-            badge.classList.remove('hidden'); 
-        } else { 
-            box.classList.add('opacity-40', 'pointer-events-none'); 
-            badge.classList.add('hidden'); 
+        const editBox = document.getElementById(`edit-${id}`);
+        const card = document.getElementById(`card-${id}`);
+        
+        if(chk.checked) {
+            editBox.style.maxHeight = "200px";
+            editBox.classList.remove('opacity-50');
+            card.classList.add('ring-2', 'ring-orange-500', 'ring-offset-2');
+            
+            // Toggle Animation
+            chk.style.right = "0";
+            chk.style.borderColor = document.getElementById('rs_color').value;
+            chk.nextElementSibling.style.backgroundColor = document.getElementById('rs_color').value;
+
+        } else {
+            editBox.style.maxHeight = "0";
+            editBox.classList.add('opacity-50');
+            card.classList.remove('ring-2', 'ring-orange-500', 'ring-offset-2');
+            
+            // Toggle Animation Reset
+            chk.style.right = "auto";
+            chk.style.left = "0";
+            chk.style.borderColor = "#cbd5e1";
+            chk.nextElementSibling.style.backgroundColor = "#e2e8f0";
         }
+        
+        updateCounter();
         calc(id, cost);
     }
 
     window.calc = (id, cost) => {
         const val = parseFloat(document.getElementById(`price-${id}`).value) || 0;
         const profit = val - cost;
-        document.getElementById(`profit-${id}`).innerText = `Profit: RM${profit.toFixed(2)}`;
+        document.getElementById(`profit-${id}`).innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> Profit: RM ${profit.toFixed(2)}`;
     }
 
-    window.selectAll = () => { document.querySelectorAll('input[type="checkbox"]').forEach(c => { if(!c.checked) c.click(); }); }
+    window.updateCounter = () => {
+        const count = document.querySelectorAll('input[type="checkbox"]:checked').length;
+        document.getElementById('sel-count').innerText = count;
+    }
+
+    window.selectAll = () => { document.querySelectorAll('input[type="checkbox"]').forEach(c => { if(!c.checked) { c.click(); } }); }
     
+    // --- STATE & UPLOAD (Same Logic, Better UI) ---
     function saveState() {
         localStorage.setItem('rs_v3', JSON.stringify({
             wa: document.getElementById('rs_wa').value,
@@ -286,29 +345,23 @@
             document.getElementById('banner-lbl').classList.add('hidden');
         }
     }
+    window.clearData = () => { if(confirm("Start Fresh? This clears your draft.")) { localStorage.removeItem('rs_v3'); location.reload(); } }
 
-    window.clearData = () => { if(confirm("Reset Form?")) { localStorage.removeItem('rs_v3'); location.reload(); } }
-
-    // --- IMGBB UPLOAD LOGIC ---
-    const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37";
+    // --- IMGBB UPLOAD ---
+    const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37"; // User Provided Key
 
     async function uploadImage(input, previewId, storageId) {
         const file = input.files[0];
         if(!file) return;
 
-        const lbl = input.parentElement.querySelector('div[id$="-lbl"]');
-        const originalText = lbl.innerHTML;
-        lbl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+        const container = input.parentElement;
+        const originalIcon = container.querySelector('div[id$="-lbl"] i').className;
+        container.querySelector('div[id$="-lbl"] i').className = "fa-solid fa-spinner fa-spin text-2xl";
 
         try {
             const formData = new FormData();
             formData.append("image", file);
-
-            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                method: "POST",
-                body: formData
-            });
-
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
             const result = await response.json();
 
             if (result.success) {
@@ -317,80 +370,64 @@
                 const img = document.getElementById(previewId);
                 img.src = url;
                 img.classList.remove('hidden');
-                lbl.classList.add('hidden'); 
+                
+                // Keep the label hidden
+                container.querySelector('div[id$="-lbl"]').classList.add('hidden');
                 saveState();
-            } else {
-                throw new Error("ImgBB Error: " + (result.error ? result.error.message : "Unknown"));
-            }
+            } else throw new Error("Upload Failed");
 
         } catch(e) {
-            console.error(e);
-            alert("Upload failed. Ensure image is JPG/PNG and < 32MB.");
-            lbl.innerHTML = originalText;
+            alert("Upload failed. Try a smaller image.");
+            container.querySelector('div[id$="-lbl"] i').className = originalIcon;
         }
     }
 
-    // --- HISTORY FUNCTIONS (NEW) ---
+    // --- HISTORY UI UPDATE ---
     function renderHistory() {
         const history = JSON.parse(localStorage.getItem('rs_history') || '[]');
         const list = document.getElementById('history-list');
         
         if(history.length === 0) {
-            list.innerHTML = '<p class="text-center text-slate-400 text-sm py-4">No links created yet.</p>';
+            list.innerHTML = '<div class="text-center p-6 bg-white rounded-2xl border border-dashed border-slate-300"><p class="text-slate-400 text-sm">No active shops yet.<br>Create one above!</p></div>';
             return;
         }
 
         list.innerHTML = history.map(h => `
-            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div class="overflow-hidden">
-                    <p class="font-bold text-sm text-slate-800 truncate">${h.name}</p>
-                    <p class="text-[10px] text-slate-400">${new Date(h.date).toLocaleDateString()}</p>
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-orange-200 transition">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 grid place-items-center font-bold text-lg"><i class="fa-solid fa-shop"></i></div>
+                    <div class="min-w-0">
+                        <p class="font-bold text-slate-800 text-sm truncate">${h.name}</p>
+                        <p class="text-[10px] text-slate-400 font-medium">${new Date(h.date).toLocaleDateString()}</p>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <a href="OrderNow.html?id=${h.id}" target="_blank" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 grid place-items-center"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
-                    <button onclick="deleteShop('${h.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 grid place-items-center"><i class="fa-solid fa-trash text-xs"></i></button>
+                <div class="flex gap-2">
+                    <a href="OrderNow.html?id=${h.id}" target="_blank" class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
+                    <button onclick="deleteShop('${h.id}')" class="w-9 h-9 rounded-full bg-red-50 border border-red-100 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition"><i class="fa-solid fa-trash text-xs"></i></button>
                 </div>
             </div>
         `).join('');
     }
-
+    
+    // --- ACTIONS ---
     window.deleteShop = async (id) => {
-        if(!confirm("Permanently delete this shop link? Customers won't be able to access it.")) return;
-        
-        const btn = event.currentTarget;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-        try {
+        if(confirm("Delete this shop link?")) {
             await db.collection('shops').doc(id).delete();
-            let history = JSON.parse(localStorage.getItem('rs_history') || '[]');
-            history = history.filter(h => h.id !== id);
-            localStorage.setItem('rs_history', JSON.stringify(history));
-            renderHistory();
-            alert("Shop deleted successfully.");
-        } catch(e) {
-            console.error(e);
-            alert("Error deleting shop. Check internet.");
+            let h = JSON.parse(localStorage.getItem('rs_history')||'[]');
+            h = h.filter(x => x.id !== id);
+            localStorage.setItem('rs_history', JSON.stringify(h));
             renderHistory();
         }
     }
+    window.clearHistory = () => { if(confirm("Clear history list?")) { localStorage.removeItem('rs_history'); renderHistory(); } }
 
-    window.clearHistory = () => {
-        if(confirm("Clear this list from your phone? (The links will still work for customers)")) {
-            localStorage.removeItem('rs_history');
-            renderHistory();
-        }
-    }
-
-    // --- GENERATE LINK (UPDATED) ---
     window.generateLink = async () => {
         const wa = document.getElementById('rs_wa').value.replace(/[^0-9]/g, '');
         const name = document.getElementById('rs_name').value;
         const color = document.getElementById('rs_color').value;
-        const logo = document.getElementById('rs_logo').value;
-        const banner = document.getElementById('rs_banner').value;
-
-        if(!wa || !name) return alert("Please complete Step 1 (WhatsApp & Name)");
-
+        
+        if(!wa || !name) return alert("Fill in WhatsApp & Shop Name first.");
+        
         const items = [], prices = [], oldPrices = [];
         document.querySelectorAll('input[type="checkbox"]:checked').forEach(c => {
             const id = c.id.replace('chk-','');
@@ -399,52 +436,35 @@
             oldPrices.push(document.getElementById(`old-price-${id}`).value);
         });
 
-        if(!items.length) return alert("Please select at least 1 product");
+        if(!items.length) return alert("Select at least 1 product.");
 
         const btn = document.getElementById('gen-btn');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Creating Link...';
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Creating...';
         btn.disabled = true;
 
         try {
-            const shopData = { 
+            const docRef = await db.collection('shops').add({
                 w: wa.startsWith('0') ? '60'+wa.slice(1) : wa, 
-                n: name, 
-                c: color, 
-                l: logo, 
-                b: banner, 
-                i: items, 
-                p: prices, 
-                op: oldPrices,
+                n: name, c: color, 
+                l: document.getElementById('rs_logo').value, 
+                b: document.getElementById('rs_banner').value, 
+                i: items, p: prices, op: oldPrices,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
+            });
 
-            const docRef = await db.collection('shops').add(shopData);
-
-            // SAVE TO HISTORY
-            const history = JSON.parse(localStorage.getItem('rs_history') || '[]');
-            history.unshift({ id: docRef.id, name: name, date: Date.now() });
-            localStorage.setItem('rs_history', JSON.stringify(history));
+            const hist = JSON.parse(localStorage.getItem('rs_history') || '[]');
+            hist.unshift({ id: docRef.id, name: name, date: Date.now() });
+            localStorage.setItem('rs_history', JSON.stringify(hist));
             renderHistory();
 
             const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','OrderNow.html')}?id=${docRef.id}`;
-            
-            if(navigator.share) {
-                await navigator.share({title: name, url: url});
-            } else {
-                navigator.clipboard.writeText(url);
-                alert("Short link copied to clipboard!");
-            }
+            if(navigator.share) await navigator.share({title: name, url: url});
+            else { prompt("Copy Link:", url); }
 
-        } catch (error) {
-            console.error("Error creating shop:", error);
-            alert("Failed to create link. Please check your internet connection.");
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
+        } catch (e) { alert("Error."); console.error(e); } 
+        finally { btn.innerHTML = '<span>Create Link</span><i class="fa-solid fa-arrow-right"></i>'; btn.disabled = false; }
     }
-
+    
     init();
   </script>
 </body>
