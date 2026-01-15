@@ -94,7 +94,7 @@
       </button>
   </div>
 
-  <script>
+     <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
       authDomain: "pipahcookies-order.firebaseapp.com",
@@ -105,12 +105,10 @@
       appId: "1:1038900448087:web:a46586f21e9ae989708c12"
     };
 
-    // 1. Initialize Firebase (Once)
+    // 1. Initialize Firebase
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     
-    // Note: storage is NOT initialized here because we use ImgBB API
-
     // 2. Offline Persistence
     db.enablePersistence().catch((err) => {
         if (err.code == 'failed-precondition') console.log("Offline mode failed: Multiple tabs open");
@@ -239,13 +237,12 @@
     window.clearData = () => { if(confirm("Reset Form?")) { localStorage.removeItem('rs_v3'); location.reload(); } }
 
     // --- IMGBB UPLOAD LOGIC ---
-    const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37"; // YOUR KEY
+    const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37";
 
     async function uploadImage(input, previewId, storageId) {
         const file = input.files[0];
         if(!file) return;
 
-        // UI: Show loading
         const lbl = input.parentElement.querySelector('div[id$="-lbl"]');
         const originalText = lbl.innerHTML;
         lbl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
@@ -254,7 +251,6 @@
             const formData = new FormData();
             formData.append("image", file);
 
-            // Upload to ImgBB
             const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
                 method: "POST",
                 body: formData
@@ -263,9 +259,7 @@
             const result = await response.json();
 
             if (result.success) {
-                const url = result.data.url; // Direct link
-
-                // Update UI
+                const url = result.data.url;
                 document.getElementById(storageId).value = url;
                 const img = document.getElementById(previewId);
                 img.src = url;
@@ -283,7 +277,8 @@
         }
     }
 
-    window.generateLink = () => {
+    // --- NEW GENERATE LINK LOGIC (SHORT URL) ---
+    window.generateLink = async () => {
         const wa = document.getElementById('rs_wa').value.replace(/[^0-9]/g, '');
         const name = document.getElementById('rs_name').value;
         const color = document.getElementById('rs_color').value;
@@ -302,20 +297,52 @@
 
         if(!items.length) return alert("Please select at least 1 product");
 
-        const data = JSON.stringify({ 
-            w: wa.startsWith('0') ? '60'+wa.slice(1) : wa, 
-            n: name, c: color, l: logo, b: banner, 
-            i: items, p: prices, op: oldPrices 
-        });
+        // UI: Loading State
+        const btn = document.getElementById('gen-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Creating Link...';
+        btn.disabled = true;
 
-        const encoded = btoa(encodeURIComponent(data).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
-        const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','OrderNow.html')}?d=${encoded}`;
-        
-        if(navigator.share) navigator.share({title: name, url: url});
-        else { navigator.clipboard.writeText(url); alert("Link copied to clipboard!"); }
+        try {
+            // 1. Prepare Data
+            const shopData = { 
+                w: wa.startsWith('0') ? '60'+wa.slice(1) : wa, 
+                n: name, 
+                c: color, 
+                l: logo, 
+                b: banner, 
+                i: items, 
+                p: prices, 
+                op: oldPrices,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp() // Optional: Timestamp
+            };
+
+            // 2. Save to Firestore (Collection: 'shops')
+            const docRef = await db.collection('shops').add(shopData);
+
+            // 3. Generate Short URL using ID
+            // NOTE: Ensure your OrderNow.html is updated to read '?id='
+            const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','OrderNow.html')}?id=${docRef.id}`;
+            
+            // 4. Share or Copy
+            if(navigator.share) {
+                await navigator.share({title: name, url: url});
+            } else {
+                navigator.clipboard.writeText(url);
+                alert("Short link copied to clipboard!");
+            }
+
+        } catch (error) {
+            console.error("Error creating shop:", error);
+            alert("Failed to create link. Please check your internet connection.");
+        } finally {
+            // Restore Button
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
     }
 
     init();
   </script>
-</body>
+     </body>
 </html>
