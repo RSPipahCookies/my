@@ -10,8 +10,6 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
         .sidebar-link.active { background: #eff6ff; color: #2563eb; }
@@ -167,8 +165,10 @@
 
         if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const storage = firebase.storage();
         
+        // ImgBB API Key
+        const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37";
+
         let PRODUCTS = [];
         let CURRENT_EDIT_ID = null;
 
@@ -306,6 +306,7 @@
             } 
         }
 
+        // --- FIXED SAVE FUNCTION WITH IMGBB ---
         async function saveProduct() {
             const btn = document.getElementById('btn-save'); 
             const oldText = btn.innerHTML;
@@ -320,18 +321,30 @@
                 const desc = document.getElementById('p-desc').value;
                 const file = document.getElementById('p-file').files[0];
                 
-                if(!name) throw new Error("Name is required");
+                if(!name) throw new Error("Product Name is required");
 
                 let img = "https://via.placeholder.com/150";
+                
+                // Keep existing image if editing and no new file selected
                 if(CURRENT_EDIT_ID) {
                     const existing = PRODUCTS.find(x => x.id === CURRENT_EDIT_ID);
-                    if(existing) img = existing.image;
+                    if(existing && existing.image) img = existing.image;
                 }
 
+                // Upload to ImgBB if file selected
                 if(file) { 
-                    const ref = storage.ref('prod/'+Date.now()); 
-                    await ref.put(file); 
-                    img = await ref.getDownloadURL(); 
+                    const formData = new FormData();
+                    formData.append("image", file);
+                    
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                        method: "POST",
+                        body: formData
+                    });
+                    
+                    const result = await res.json();
+                    if(!result.success) throw new Error("Image upload failed: " + (result.error ? result.error.message : "Unknown error"));
+                    
+                    img = result.data.url;
                 }
                 
                 const data = { 
@@ -339,7 +352,7 @@
                     priceTier1: p1, 
                     priceTier2: p2, 
                     minQty2: mq, 
-                    price: p1, 
+                    price: p1, // Backward compatibility
                     description: desc, 
                     image: img, 
                     available: document.getElementById('p-avail').checked 
@@ -352,7 +365,8 @@
                 }
                 closeModal();
             } catch(e) {
-                alert(e.message);
+                console.error(e);
+                alert("Error: " + e.message);
             } finally {
                 btn.innerHTML = oldText; 
                 btn.disabled = false;
