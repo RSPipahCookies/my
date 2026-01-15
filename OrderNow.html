@@ -133,7 +133,7 @@
                 <p id="m-old-price" class="text-sm text-slate-400 line-through hidden">RM 0.00</p>
             </div>
           </div>
-          <p class="text-slate-500 text-sm leading-relaxed mb-6">Premium quality homemade cookies made with pure butter and high-quality chocolate. Freshly baked daily for the best taste.</p>
+          <p id="m-desc" class="text-slate-500 text-sm leading-relaxed mb-6">Loading description...</p>
           
           <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-100">
               <span class="font-bold text-slate-600 text-sm">Quantity</span>
@@ -239,11 +239,13 @@
             SHOP.i.forEach((id, idx) => {
                 const p = DB_PRODUCTS[id];
                 if(p) {
+                    // ✅ FIXED: Save Description from DB to CART
                     CART.push({ 
                         id, name: p.name, 
                         price: parseFloat(SHOP.p[idx]), 
                         oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0,
-                        qty: 0, image: p.image 
+                        qty: 0, image: p.image,
+                        description: p.description // Added this line
                     });
                 }
             });
@@ -311,6 +313,9 @@
         document.getElementById('m-name').innerText = item.name;
         document.getElementById('m-price').innerText = `RM ${item.price.toFixed(2)}`;
         document.getElementById('m-qty').innerText = item.qty;
+        
+        // ✅ FIXED: Show Dynamic Description with fallback
+        document.getElementById('m-desc').innerText = item.description || "Premium quality homemade cookies made with pure butter and high-quality chocolate. Freshly baked daily for the best taste.";
         
         if(item.oldPrice > item.price){
             const op = document.getElementById('m-old-price');
