@@ -105,7 +105,7 @@
                     </div>
                 </div>
 
-                <div class="input-group">
+                <div class="input-group mt-3">
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Promo Banner (Moving Text)</label>
                     <div class="relative">
                         <i class="fa-solid fa-bullhorn absolute left-4 top-3.5 text-slate-400"></i>
@@ -172,7 +172,6 @@
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     
-    // OFFLINE SUPPORT
     db.enablePersistence().catch(err => console.log("Persistence disabled"));
 
     // COLORS
@@ -200,7 +199,6 @@
             `<div class="color-dot w-8 h-8 rounded-full cursor-pointer border border-black/10 flex-shrink-0 ${col.h==c?'active':''}" style="background:${col.h}" onclick="setColor('${col.h}')"></div>`
         ).join('');
 
-        // Custom Color Button
         html += `
         <label class="color-dot w-8 h-8 rounded-full cursor-pointer bg-gradient-to-br from-pink-500 to-yellow-500 border border-black/10 flex items-center justify-center relative flex-shrink-0">
             <i class="fa-solid fa-plus text-white text-[10px]"></i>
@@ -208,8 +206,6 @@
         </label>`;
 
         document.getElementById('color-picker').innerHTML = html;
-        
-        // Update Theme Live
         const btn = document.getElementById('gen-btn');
         btn.style.backgroundColor = c;
         btn.style.boxShadow = `0 10px 15px -3px ${c}40`;
@@ -357,7 +353,6 @@
     }
     window.clearData = () => { if(confirm("Start Fresh? This clears your draft.")) { localStorage.removeItem('rs_v3'); location.reload(); } }
 
-    // --- IMGBB UPLOAD ---
     const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37"; 
 
     async function uploadImage(input, previewId, storageId) {
@@ -380,8 +375,6 @@
                 const img = document.getElementById(previewId);
                 img.src = url;
                 img.classList.remove('hidden');
-                
-                // Keep the label hidden
                 container.querySelector('div[id$="-lbl"]').classList.add('hidden');
                 saveState();
             } else throw new Error("Upload Failed");
@@ -392,7 +385,7 @@
         }
     }
 
-    // --- HISTORY UI UPDATE ---
+    // --- HISTORY & LINK GENERATION (FIXED) ---
     function renderHistory() {
         const history = JSON.parse(localStorage.getItem('rs_history') || '[]');
         const list = document.getElementById('history-list');
@@ -412,14 +405,13 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <a href="ordernow.html?id=${h.id}" target="_blank" class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
+                    <a href="OrderNow.html?id=${h.id}" target="_blank" class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
                     <button onclick="deleteShop('${h.id}')" class="w-9 h-9 rounded-full bg-red-50 border border-red-100 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition"><i class="fa-solid fa-trash text-xs"></i></button>
                 </div>
             </div>
         `).join('');
     }
     
-    // --- ACTIONS ---
     window.deleteShop = async (id) => {
         if(confirm("Delete this shop link?")) {
             await db.collection('shops').doc(id).delete();
@@ -470,8 +462,11 @@
             localStorage.setItem('rs_history', JSON.stringify(hist));
             renderHistory();
 
-            // FIXED: Lowercase filename
-            const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','Ordernow.html')}?id=${docRef.id}`;
+            // ✅ OPTION 2 FIX: Robust Replace logic
+            // This replaces 'rsdashboard.html' (case insensitive) with 'OrderNow.html' (CamelCase)
+            let path = window.location.pathname;
+            path = path.replace(/rsdashboard\.html/i, 'OrderNow.html');
+            const url = `${window.location.origin}${path}?id=${docRef.id}`;
             
             if(navigator.share) await navigator.share({title: name, url: url});
             else { prompt("Copy Link:", url); }
