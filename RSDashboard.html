@@ -114,17 +114,49 @@
         if (err.code == 'failed-precondition') console.log("Offline mode failed: Multiple tabs open");
         else if (err.code == 'unimplemented') console.log("Browser doesn't support offline storage");
     });
+    // 1. Expanded Color List
+    const COLORS = [
+        {h:'#A67734'}, // Gold
+        {h:'#ec4899'}, // Pink
+        {h:'#3b82f6'}, // Blue
+        {h:'#10b981'}, // Green
+        {h:'#ef4444'}, // Red
+        {h:'#0f172a'}, // Black
+        {h:'#8b5cf6'}, // Purple
+        {h:'#f59e0b'}, // Orange
+        {h:'#06b6d4'}, // Cyan
+        {h:'#84cc16'}  // Lime
+    ];
 
-    const COLORS = [{h:'#A67734'}, {h:'#ec4899'}, {h:'#3b82f6'}, {h:'#10b981'}, {h:'#ef4444'}, {h:'#0f172a'}];
-
-    function init() { renderColors(); loadState(); fetchProducts(); }
-
+    // 2. Updated Render Function (With Custom Picker)
     function renderColors() {
         const c = document.getElementById('rs_color').value;
-        document.getElementById('color-picker').innerHTML = COLORS.map(col => `<div class="color-dot ${col.h==c?'active':''}" style="background:${col.h}" onclick="setColor('${col.h}')"></div>`).join('');
+        
+        // Generate Preset Dots
+        let html = COLORS.map(col => 
+            `<div class="color-dot flex-shrink-0 ${col.h==c?'active':''}" style="background:${col.h}" onclick="setColor('${col.h}')"></div>`
+        ).join('');
+
+        // Add "Custom Color" Rainbow Button
+        html += `
+        <label class="color-dot flex-shrink-0 flex items-center justify-center cursor-pointer bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500 border-white shadow-sm relative overflow-hidden transition-transform active:scale-95" title="Custom Color">
+            <i class="fa-solid fa-droplet text-white text-[10px] drop-shadow-md"></i>
+            <input type="color" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" oninput="setColor(this.value)" value="${c}">
+        </label>
+        `;
+
+        document.getElementById('color-picker').innerHTML = html;
         document.getElementById('gen-btn').style.background = c;
+        
+        // If the current color isn't in the preset list, highlight the custom button
+        const isPreset = COLORS.some(col => col.h.toLowerCase() === c.toLowerCase());
+        if(!isPreset) {
+            const customBtn = document.getElementById('color-picker').lastElementChild;
+            customBtn.classList.add('active');
+            customBtn.style.border = "2px solid #0f172a";
+        }
     }
-    window.setColor = (hex) => { document.getElementById('rs_color').value = hex; renderColors(); saveState(); }
+
 
     function fetchProducts() {
         db.collection('products').where('available', '==', true).get().then(snap => {
