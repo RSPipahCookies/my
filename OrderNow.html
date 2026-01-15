@@ -68,7 +68,7 @@
     
     <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-lg flex items-center gap-2 theme-bg overflow-hidden">
         <i class="fa-solid fa-bullhorn animate-pulse"></i>
-        <marquee scrollamount="5" data-i18n="promo_text">Selamat Datang! Dapatkan biskut premium fresh dari oven sekarang.</marquee>
+        <marquee id="shop-promo" scrollamount="5" data-i18n="promo_text">Selamat Datang! Dapatkan biskut premium fresh dari oven sekarang.</marquee>
     </div>
 
     <div class="bg-white p-2 rounded-xl shadow-md border border-slate-100 flex items-center gap-3 sticky top-4 z-30 transition-shadow focus-within:shadow-xl">
@@ -198,6 +198,13 @@
                 SHOP = JSON.parse(str);
             } else {
                 throw new Error("Invalid Link");
+            }
+
+            // ✅ CUSTOM PROMO TEXT LOGIC
+            if (SHOP.pm) {
+                document.getElementById('shop-promo').innerText = SHOP.pm;
+            } else {
+                document.getElementById('shop-promo').innerText = "Welcome! Order delicious cookies now."; 
             }
             
             document.getElementById('shop-name').innerText = SHOP.n || 'PipahCookies';
@@ -399,7 +406,8 @@
             items.forEach(i => { batch.update(db.collection('products').doc(i.id), { soldCount: firebase.firestore.FieldValue.increment(i.qty) }); });
             await batch.commit();
 
-            let msg = `*NEW ORDER: ${SHOP.n.toUpperCase()}* 🍪\n\n👤 *${name}*\n`;
+            // ✅ SAFETY FIX: Added default fallback for SHOP.n to prevent crash
+            let msg = `*NEW ORDER: ${(SHOP.n || 'RESELLER').toUpperCase()}* 🍪\n\n👤 *${name}*\n`;
             if(addr) msg += `📍 ${addr}\n`;
             msg += `\n*ORDER LIST:*`;
             items.forEach(i => { msg += `\n▪️ ${i.qty}x ${i.name}`; });
