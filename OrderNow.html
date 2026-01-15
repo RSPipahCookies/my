@@ -74,8 +74,8 @@
     </div>
   </div>
 
-  <script>
-    // ⚠️ REPLACE THIS WITH YOUR NEW FIREBASE CONFIG
+<script>
+    // ⚠️ FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
       authDomain: "pipahcookies-order.firebaseapp.com",
@@ -105,55 +105,69 @@
         document.getElementById('c_addr').placeholder = i18n[l].ph_addr;
     }
 
+    // --- UPDATED LOADING LOGIC ---
     document.addEventListener('DOMContentLoaded', async () => {
-        const encoded = new URLSearchParams(window.location.search).get('d');
-        if(encoded) {
-            try {
+        const params = new URLSearchParams(window.location.search);
+        const shopId = params.get('id'); // NEW: Short ID
+        const encoded = params.get('d'); // OLD: Long Data
+
+        try {
+            // 1. FETCH PRODUCTS FIRST (Needed for images/names)
+            const snap = await db.collection('products').get();
+            snap.forEach(d => DB_PRODUCTS[d.id] = d.data());
+
+            // 2. GET SHOP DATA (Either from DB or URL)
+            if (shopId) {
+                // Method A: Fetch from Firestore (Short Link)
+                const doc = await db.collection('shops').doc(shopId).get();
+                if (!doc.exists) throw new Error("Shop not found in database");
+                SHOP = doc.data();
+            } else if (encoded) {
+                // Method B: Decode from URL (Old Link)
                 const str = decodeURIComponent(atob(encoded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
                 SHOP = JSON.parse(str);
-                
-                // 1. SETUP BRANDING (Banner, Logo, Color)
-                document.getElementById('shop-name').innerText = SHOP.n || 'Reseller Shop';
-                
-                if (SHOP.b) {
-                    const bg = document.getElementById('header-bg');
-                    bg.style.backgroundImage = `url('${SHOP.b}')`;
-                    bg.style.opacity = '0.5';
-                    document.getElementById('header-container').style.height = '320px'; // Taller for hero
-                }
+            } else {
+                throw new Error("Invalid Link");
+            }
+            
+            // 3. SETUP BRANDING
+            document.getElementById('shop-name').innerText = SHOP.n || 'Reseller Shop';
+            
+            if (SHOP.b) {
+                const bg = document.getElementById('header-bg');
+                bg.style.backgroundImage = `url('${SHOP.b}')`;
+                bg.style.opacity = '0.5';
+                document.getElementById('header-container').style.height = '320px';
+            }
 
-                if (SHOP.l) {
-                    const logo = document.getElementById('shop-logo');
-                    logo.src = SHOP.l;
-                    logo.classList.remove('hidden');
-                }
+            if (SHOP.l) {
+                const logo = document.getElementById('shop-logo');
+                logo.src = SHOP.l;
+                logo.classList.remove('hidden');
+            }
 
-                // Apply Theme Color to Buttons/Accents if needed (Optional)
-                if (SHOP.c) {
-                    // You can apply SHOP.c to specific elements if desired
+            // 4. BUILD CART
+            SHOP.i.forEach((id, idx) => {
+                const p = DB_PRODUCTS[id];
+                if(p) {
+                    CART.push({ 
+                        id, 
+                        name: p.name, 
+                        price: parseFloat(SHOP.p[idx]), 
+                        oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0,
+                        qty: 0, 
+                        image: p.image 
+                    });
                 }
+            });
+            render();
+            document.getElementById('loader').classList.add('hidden');
 
-                // 2. FETCH PRODUCTS
-                const snap = await db.collection('products').get();
-                snap.forEach(d => DB_PRODUCTS[d.id] = d.data());
-                
-                // 3. BUILD CART (With Old Price Logic)
-                SHOP.i.forEach((id, idx) => {
-                    const p = DB_PRODUCTS[id];
-                    if(p) {
-                        CART.push({ 
-                            id, 
-                            name: p.name, 
-                            price: parseFloat(SHOP.p[idx]), 
-                            oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, // Unpack Old Price
-                            qty: 0, 
-                            image: p.image 
-                        });
-                    }
-                });
-                render();
-                document.getElementById('loader').classList.add('hidden');
-            } catch(e) { console.error(e); alert("Invalid Link"); }
+        } catch(e) { 
+            console.error(e); 
+            // Show error in the loader
+            document.querySelector('#loader .loader').style.display = 'none';
+            document.querySelector('#loader p').innerHTML = '<span class="text-red-500">Shop Not Found or Deleted</span>';
         }
     });
 
