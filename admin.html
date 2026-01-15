@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Pipah Admin Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -15,15 +15,23 @@
         .sidebar-link.active { background: #eff6ff; color: #2563eb; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Custom scrollbar for better mobile feel in modal */
+        
+        /* Custom scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* PREVENT IOS ZOOM on inputs */
+        input, select, textarea { font-size: 16px !important; }
+
+        /* SAFE AREA UTILITIES */
+        .safe-top { padding-top: env(safe-area-inset-top); }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
-<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+<body class="text-slate-800 h-[100dvh] w-screen flex flex-col overflow-hidden bg-slate-50">
 
-    <div id="auth-screen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-[60] px-4">
+    <div id="auth-screen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-[100] px-4">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
             <h1 class="text-xl font-bold mb-4">Admin Login</h1>
             <input type="tel" id="pin-code" class="w-full border p-3 rounded-xl mb-4 text-center text-xl font-bold bg-slate-50 outline-none focus:ring-2 ring-blue-500" placeholder="PIN" maxlength="4">
@@ -31,9 +39,11 @@
         </div>
     </div>
 
-    <header class="bg-white border-b h-16 flex items-center px-4 justify-between shrink-0 z-20">
+    <header class="bg-white border-b flex items-center px-4 justify-between shrink-0 z-40 safe-top box-content h-16 relative shadow-sm">
         <div class="flex items-center gap-3">
-            <button onclick="toggleSidebar()" class="md:hidden text-slate-600"><i class="fa-solid fa-bars text-xl"></i></button>
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-600 w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 active:bg-slate-200 transition">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
             <h2 class="font-bold text-lg">Pipah<span class="text-blue-600">Admin</span></h2>
         </div>
         <button onclick="initData(this)" class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 grid place-items-center hover:bg-slate-200 transition">
@@ -42,8 +52,13 @@
     </header>
 
     <div class="flex-1 flex overflow-hidden relative">
-        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r transform -translate-x-full md:translate-x-0 transition z-30 flex flex-col pt-16 md:pt-0">
-            <nav class="p-4 space-y-2 flex-1">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-50 flex flex-col pt-0 md:pt-0 h-[100dvh]">
+            <div class="md:hidden h-16 shrink-0 flex items-center px-4 border-b safe-top box-content bg-slate-50">
+                <span class="font-bold text-slate-400">Menu</span>
+                <button onclick="toggleSidebar()" class="ml-auto w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-sm text-slate-600"><i class="fa-solid fa-times"></i></button>
+            </div>
+
+            <nav class="p-4 space-y-2 flex-1 overflow-y-auto">
                 <button onclick="nav('overview')" class="w-full text-left p-3 rounded-xl font-bold text-slate-500 sidebar-link active" id="btn-overview">
                     <i class="fa-solid fa-chart-pie w-6"></i> Overview
                 </button>
@@ -54,14 +69,14 @@
                     <i class="fa-solid fa-users w-6"></i> Leaderboard
                 </button>
             </nav>
-            <div class="p-4 border-t"><button onclick="location.reload()" class="w-full text-red-500 font-bold text-sm">Log Out</button></div>
+            <div class="p-4 border-t safe-bottom"><button onclick="location.reload()" class="w-full text-red-500 font-bold text-sm py-2">Log Out</button></div>
         </aside>
 
-        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden glass transition-opacity"></div>
 
-        <main class="flex-1 bg-slate-50 overflow-y-auto p-4 md:p-8 md:ml-64">
+        <main class="flex-1 bg-slate-50 overflow-y-auto overflow-x-hidden p-4 md:p-8 md:ml-64 w-full">
             
-            <div id="view-overview">
+            <div id="view-overview" class="w-full max-w-5xl mx-auto">
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                         <p class="text-[10px] text-slate-400 font-bold uppercase">Total Sales</p>
@@ -74,77 +89,81 @@
                 </div>
             </div>
 
-            <div id="view-manage" class="hidden">
-                <div class="flex justify-between items-center mb-4">
+            <div id="view-manage" class="hidden w-full max-w-5xl mx-auto">
+                <div class="flex justify-between items-center mb-4 sticky top-0 bg-slate-50 z-10 py-2">
                     <h2 class="font-bold text-xl">Inventory</h2>
-                    <button onclick="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg hover:bg-blue-700 transition">+ Add Product</button>
+                    <button onclick="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg hover:bg-blue-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Add Product</span>
+                    </button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20" id="manage-grid"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24" id="manage-grid"></div>
             </div>
 
-            <div id="view-resellers" class="hidden">
+            <div id="view-resellers" class="hidden w-full max-w-5xl mx-auto">
                 <h2 class="font-bold text-xl mb-4">Top Resellers</h2>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-2" id="reseller-list"></div>
             </div>
+            
+            <div class="h-10 safe-bottom"></div>
         </main>
     </div>
 
-    <div id="product-modal" class="fixed inset-0 z-50 hidden flex items-end md:items-center justify-center pointer-events-none">
-        <div class="absolute inset-0 bg-black/50 pointer-events-auto" onclick="closeModal()"></div>
+    <div id="product-modal" class="fixed inset-0 z-[60] hidden flex items-end md:items-center justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/60 pointer-events-auto backdrop-blur-sm" onclick="closeModal()"></div>
         
-        <div class="bg-white w-full md:w-[500px] md:rounded-2xl rounded-t-2xl shadow-2xl pointer-events-auto max-h-[90vh] flex flex-col z-10 relative">
-            <div class="p-4 border-b flex justify-between bg-slate-50 rounded-t-2xl">
+        <div class="bg-white w-full md:w-[500px] md:rounded-2xl rounded-t-2xl shadow-2xl pointer-events-auto max-h-[90dvh] flex flex-col z-10 relative safe-bottom">
+            <div class="p-4 border-b flex justify-between bg-slate-50 rounded-t-2xl shrink-0">
                 <h3 class="font-bold">Product Details</h3>
-                <button onclick="closeModal()"><i class="fa-solid fa-times text-slate-400 text-xl"></i></button>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center bg-slate-200 rounded-full"><i class="fa-solid fa-times text-slate-500"></i></button>
             </div>
             
-            <div class="p-5 space-y-4 overflow-y-auto custom-scroll">
+            <div class="p-5 space-y-4 overflow-y-auto custom-scroll flex-1">
                 <input type="hidden" id="p-id">
                 
                 <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('p-file').click()">
                     <img id="p-preview" class="h-32 mx-auto object-contain hidden rounded-lg">
                     <div id="p-upload-ui">
                         <i class="fa-solid fa-camera text-2xl text-slate-300 mb-2"></i>
-                        <p class="text-xs font-bold text-slate-400">Click to Upload Image</p>
+                        <p class="text-xs font-bold text-slate-400">Tap to Upload Image</p>
                     </div>
                     <input type="file" id="p-file" class="hidden" accept="image/*" onchange="previewImage(event)">
                 </div>
 
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase">Product Name</label>
-                    <input type="text" id="p-name" class="w-full border border-slate-300 rounded-lg p-2.5 font-bold outline-none focus:border-blue-500" placeholder="e.g. Nutella Tart">
+                    <input type="text" id="p-name" class="w-full border border-slate-300 rounded-lg p-3 font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="e.g. Nutella Tart">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase">Description</label>
-                    <textarea id="p-desc" rows="2" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500" placeholder="Shown in shop..."></textarea>
+                    <textarea id="p-desc" rows="2" class="w-full border border-slate-300 rounded-lg p-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Shown in shop..."></textarea>
                 </div>
 
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
                     <p class="text-xs font-extrabold text-blue-800 uppercase flex items-center gap-2"><i class="fa-solid fa-tags"></i> Pricing Config</p>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-[10px] font-bold text-slate-500">Retail Price (Tier 1)</label>
-                            <input type="number" id="p-retail" step="0.01" class="w-full bg-white border border-blue-200 p-2 rounded-lg font-bold" placeholder="0.00">
+                            <label class="text-[10px] font-bold text-slate-500">Retail (RM)</label>
+                            <input type="number" id="p-retail" step="0.01" class="w-full bg-white border border-blue-200 p-2 rounded-lg font-bold outline-none focus:border-blue-500" placeholder="0.00">
                         </div>
                         <div>
-                            <label class="text-[10px] font-bold text-slate-500">Agent Price (Tier 2)</label>
-                            <input type="number" id="p-agent" step="0.01" class="w-full bg-white border border-blue-200 p-2 rounded-lg font-bold" placeholder="0.00">
+                            <label class="text-[10px] font-bold text-slate-500">Agent (RM)</label>
+                            <input type="number" id="p-agent" step="0.01" class="w-full bg-white border border-blue-200 p-2 rounded-lg font-bold outline-none focus:border-blue-500" placeholder="0.00">
                         </div>
                         <div class="col-span-2">
                             <label class="text-[10px] font-bold text-slate-500">Min Qty for Agent Price</label>
-                            <input type="number" id="p-minqty" class="w-full bg-white border border-blue-200 p-2 rounded-lg font-bold" placeholder="e.g. 10">
+                            <input type="number" id="p-minqty" class="w-full bg-white border border-blue-200 p-2 rounded-lg font-bold outline-none focus:border-blue-500" placeholder="e.g. 10">
                         </div>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" id="p-avail" class="w-5 h-5 accent-blue-600" checked>
+                <div class="flex items-center gap-2 pb-4">
+                    <input type="checkbox" id="p-avail" class="w-6 h-6 accent-blue-600 rounded" checked>
                     <label class="font-bold text-sm text-slate-700">Available in Stock</label>
                 </div>
             </div>
             
-            <div class="p-4 border-t bg-white safe-area-bottom rounded-b-2xl">
-                <button onclick="saveProduct()" id="btn-save" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-blue-700 transition flex items-center justify-center gap-2">
+            <div class="p-4 border-t bg-white safe-bottom rounded-b-2xl shrink-0">
+                <button onclick="saveProduct()" id="btn-save" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition flex items-center justify-center gap-2">
                     Save Product
                 </button>
             </div>
@@ -166,7 +185,6 @@
         if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         
-        // ImgBB API Key
         const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37";
 
         let PRODUCTS = [];
@@ -192,7 +210,9 @@
             document.getElementById('view-'+v).classList.remove('hidden'); 
             document.querySelectorAll('.sidebar-link').forEach(e=>e.classList.remove('active')); 
             document.getElementById('btn-'+v).classList.add('active'); 
-            if(window.innerWidth<768) {
+            
+            // Auto close sidebar on mobile when link clicked
+            if(window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
                 document.getElementById('sidebar-overlay').classList.add('hidden');
             }
@@ -204,7 +224,6 @@
             loadStats(); 
         }
 
-        // Database Logic
         function loadProducts() {
             db.collection('products').onSnapshot(snap => {
                 const grid = document.getElementById('manage-grid'); 
@@ -221,14 +240,14 @@
                              <img src="${p.image}" class="w-full h-full object-cover rounded-lg">
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h4 class="font-bold text-sm text-slate-800 truncate">${p.name}</h4>
+                            <h4 class="font-bold text-sm text-slate-800 truncate pr-8">${p.name}</h4>
                             <div class="text-[10px] text-slate-500 mt-1 space-y-1">
                                 <div class="flex justify-between"><span>Retail:</span> <span class="font-bold text-slate-700">RM${(p.priceTier1||0).toFixed(0)}</span></div>
                                 <div class="flex justify-between bg-blue-50 px-1.5 py-0.5 rounded text-blue-700"><span>Agent:</span> <span class="font-bold">RM${(p.priceTier2||0).toFixed(0)}</span></div>
                             </div>
                             <div class="mt-1 text-[10px] text-slate-400">Min Qty: <b>${p.minQty2||0}</b></div>
                         </div>
-                        <button onclick="editItem('${p.id}')" class="absolute top-2 right-2 w-8 h-8 bg-slate-50 text-slate-500 hover:text-blue-600 rounded-lg"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="editItem('${p.id}')" class="absolute top-2 right-2 w-8 h-8 bg-slate-50 text-slate-500 hover:text-blue-600 rounded-lg shadow-sm border border-slate-100 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
                     </div>`;
                 });
             });
@@ -265,7 +284,6 @@
             });
         }
 
-        // Modal Logic
         function openModal() { 
             CURRENT_EDIT_ID=null; 
             ['p-name','p-desc','p-retail','p-agent','p-minqty'].forEach(i=>document.getElementById(i).value=''); 
@@ -306,7 +324,6 @@
             } 
         }
 
-        // --- FIXED SAVE FUNCTION WITH IMGBB ---
         async function saveProduct() {
             const btn = document.getElementById('btn-save'); 
             const oldText = btn.innerHTML;
@@ -325,44 +342,28 @@
 
                 let img = "https://via.placeholder.com/150";
                 
-                // Keep existing image if editing and no new file selected
                 if(CURRENT_EDIT_ID) {
                     const existing = PRODUCTS.find(x => x.id === CURRENT_EDIT_ID);
                     if(existing && existing.image) img = existing.image;
                 }
 
-                // Upload to ImgBB if file selected
                 if(file) { 
                     const formData = new FormData();
                     formData.append("image", file);
-                    
-                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                        method: "POST",
-                        body: formData
-                    });
-                    
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
                     const result = await res.json();
-                    if(!result.success) throw new Error("Image upload failed: " + (result.error ? result.error.message : "Unknown error"));
-                    
+                    if(!result.success) throw new Error("Upload failed");
                     img = result.data.url;
                 }
                 
                 const data = { 
-                    name, 
-                    priceTier1: p1, 
-                    priceTier2: p2, 
-                    minQty2: mq, 
-                    price: p1, // Backward compatibility
-                    description: desc, 
-                    image: img, 
-                    available: document.getElementById('p-avail').checked 
+                    name, priceTier1: p1, priceTier2: p2, minQty2: mq, price: p1, 
+                    description: desc, image: img, available: document.getElementById('p-avail').checked 
                 };
 
-                if(CURRENT_EDIT_ID) {
-                    await db.collection('products').doc(CURRENT_EDIT_ID).update(data);
-                } else {
-                    await db.collection('products').add(data);
-                }
+                if(CURRENT_EDIT_ID) await db.collection('products').doc(CURRENT_EDIT_ID).update(data);
+                else await db.collection('products').add(data);
+                
                 closeModal();
             } catch(e) {
                 console.error(e);
