@@ -427,5 +427,18 @@
         }
     }
   </script>
+  <script>
+    // TRACK VISITORS PER SHOP
+    const params = new URLSearchParams(window.location.search);
+    const currentReseller = params.get('r'); 
+
+    if(currentReseller) {
+        // Save count specifically for this reseller
+        db.collection('reseller_visits').doc(currentReseller).set({
+            count: firebase.firestore.FieldValue.increment(1),
+            lastVisit: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    }
+  </script>
 </body>
 </html>
