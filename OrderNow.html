@@ -2,78 +2,149 @@
 <html lang="ms">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Order Cookies</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 140px; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 140px; -webkit-tap-highlight-color: transparent; }
     .loader { border: 3px solid #f3f3f3; border-top: 3px solid #ea580c; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    /* Hide scrollbar for clean UI */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Modal Animation */
+    .modal-enter { transform: translateY(100%); opacity: 0; }
+    .modal-enter-active { transform: translateY(0); opacity: 1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal-exit { transform: translateY(100%); opacity: 0; transition: all 0.2s ease-in; }
+    
+    .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
   </style>
 </head>
-<body>
+<body class="select-none">
 
   <div id="loader" class="fixed inset-0 bg-white z-[60] flex flex-col items-center justify-center">
     <div class="loader mb-4"></div>
     <p class="font-bold text-slate-400 text-sm animate-pulse">Loading Shop...</p>
   </div>
 
-  <div class="relative w-full bg-slate-900 overflow-hidden shadow-2xl transition-all duration-500 theme-bg-dark" id="header-container" style="min-height: 250px; border-radius: 0 0 2.5rem 2.5rem;">
-    <div id="header-bg" class="absolute inset-0 bg-cover bg-center transition-opacity duration-500" style="opacity: 0.3;"></div>
-    
-    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+  <div class="relative w-full bg-slate-900 overflow-hidden shadow-2xl transition-all duration-500 theme-bg-dark" id="header-container" style="min-height: 280px; border-radius: 0 0 2.5rem 2.5rem;">
+    <div id="header-bg" class="absolute inset-0 bg-cover bg-center transition-opacity duration-500" style="opacity: 0.4;"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
 
-    <div class="absolute top-4 right-4 z-20 flex bg-black/30 backdrop-blur rounded-full p-1">
-        <button onclick="setLang('ms')" id="l-ms" class="px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold">MY</button>
-        <button onclick="setLang('en')" id="l-en" class="px-3 py-1 text-white/70 rounded-full text-[10px] font-bold">EN</button>
+    <div class="absolute top-0 left-0 right-0 p-4 z-20 flex justify-between items-start">
+        <div class="flex bg-black/30 backdrop-blur rounded-full p-1 border border-white/10">
+            <button onclick="setLang('ms')" id="l-ms" class="px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold transition">MY</button>
+            <button onclick="setLang('en')" id="l-en" class="px-3 py-1 text-white/70 rounded-full text-[10px] font-bold transition">EN</button>
+        </div>
+        <button onclick="shareShop()" class="w-9 h-9 bg-white/10 backdrop-blur rounded-full text-white flex items-center justify-center border border-white/20 active:scale-95 transition">
+            <i class="fa-solid fa-share-nodes"></i>
+        </button>
     </div>
 
-    <div class="absolute bottom-0 left-0 right-0 p-6 text-white z-10 flex flex-col items-center text-center pb-10">
-        <img id="shop-logo" class="w-20 h-20 rounded-full border-4 border-white shadow-xl mb-3 object-cover hidden bg-white">
+    <div class="absolute bottom-0 left-0 right-0 p-6 text-white z-10 flex flex-col items-center text-center pb-12">
+        <div class="relative">
+            <img id="shop-logo" class="w-24 h-24 rounded-full border-4 border-white shadow-xl mb-3 object-cover hidden bg-white">
+            <div class="absolute -bottom-1 -right-1 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white theme-bg">
+                <i class="fa-solid fa-check-circle"></i> VERIFIED
+            </div>
+        </div>
         
-        <div class="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2 border border-white/10 theme-border" data-i18n="agent_badge">Official Agent</div>
-        
-        <h1 id="shop-name" class="text-3xl font-extrabold leading-tight mb-2 text-shadow">...</h1>
-        <p class="text-white/80 text-sm flex items-center gap-2"><i class="fa-solid fa-truck-fast"></i> <span data-i18n="secure_msg">Fast Delivery & Secure</span></p>
+        <h1 id="shop-name" class="text-3xl font-extrabold leading-tight mb-1 text-shadow tracking-tight">...</h1>
+        <div class="flex items-center gap-2 text-xs font-medium text-white/80 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
+            <i class="fa-solid fa-star text-yellow-400"></i> 5.0 (120+ Reviews)
+        </div>
     </div>
   </div>
 
-  <div class="max-w-md mx-auto px-4 -mt-6 relative z-20 space-y-6">
+  <div class="max-w-md mx-auto px-4 -mt-8 relative z-20 space-y-6">
     
+    <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-lg flex items-center gap-2 theme-bg overflow-hidden">
+        <i class="fa-solid fa-bullhorn animate-pulse"></i>
+        <marquee scrollamount="5" data-i18n="promo_text">Selamat Datang! Dapatkan biskut premium fresh dari oven sekarang.</marquee>
+    </div>
+
+    <div class="bg-white p-2 rounded-xl shadow-md border border-slate-100 flex items-center gap-3 sticky top-4 z-30 transition-shadow focus-within:shadow-xl">
+        <i class="fa-solid fa-magnifying-glass text-slate-400 ml-2"></i>
+        <input type="text" id="search-input" onkeyup="filterProducts()" class="flex-1 bg-transparent outline-none text-sm font-semibold text-slate-700 placeholder-slate-400 h-10" placeholder="Search cookies...">
+    </div>
+
     <div class="bg-white p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
         <div class="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
             <div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 grid place-items-center theme-icon-bg theme-text"><i class="fa-regular fa-user"></i></div>
             <h3 class="text-sm font-bold text-slate-700 uppercase" data-i18n="your_info">Maklumat Anda</h3>
         </div>
-        <div class="space-y-3">
-            <input type="text" id="c_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-orange-500 transition theme-ring" placeholder="Nama Penuh">
-            <textarea id="c_addr" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:ring-2 ring-orange-500 transition theme-ring" placeholder="Alamat Penghantaran"></textarea>
+        <div class="space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block" data-i18n="lbl_name">Nama</label>
+                <input type="text" id="c_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-orange-500 transition theme-ring" placeholder="Nama Penuh">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block" data-i18n="lbl_addr">Alamat</label>
+                <textarea id="c_addr" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:ring-2 ring-orange-500 transition theme-ring" placeholder="Alamat Penghantaran"></textarea>
+            </div>
         </div>
     </div>
 
     <div>
-        <h3 class="font-bold text-slate-800 mb-3 px-1" data-i18n="menu">Menu Pilihan</h3>
-        <div id="product-list" class="space-y-3"></div>
+        <div class="flex justify-between items-end mb-3 px-1">
+            <h3 class="font-bold text-slate-800 text-lg" data-i18n="menu">Menu Pilihan</h3>
+            <span class="text-xs font-semibold text-slate-400" id="item-count">0 Items</span>
+        </div>
+        <div id="product-list" class="space-y-3 pb-10"></div>
     </div>
   </div>
 
-  <div class="fixed bottom-6 left-4 right-4 z-40 max-w-md mx-auto transition-all duration-300 transform translate-y-40" id="cart-bar">
-    <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700 theme-bg-dark">
-        <div>
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider" data-i18n="total">Jumlah Besar</p>
-            <p class="text-2xl font-bold leading-none" id="grand-total">RM 0.00</p>
+  <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] pb-6 pt-3 px-4 transition-transform duration-300 transform translate-y-full" id="cart-bar">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+        <div class="flex flex-col">
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider" data-i18n="total">Jumlah Besar</span>
+            <div class="flex items-baseline gap-1">
+                <span class="text-2xl font-extrabold text-slate-800" id="grand-total">RM 0.00</span>
+                <span class="text-xs text-slate-400 font-medium" id="total-qty">(0 items)</span>
+            </div>
         </div>
-        <button onclick="submitOrder()" class="bg-green-500 hover:brightness-110 text-white font-bold py-3 px-6 rounded-xl transition flex items-center gap-2 shadow-lg active:scale-95 theme-bg">
-            <i class="fa-brands fa-whatsapp text-xl"></i>
-            <span data-i18n="btn_order">Order</span>
+        <button onclick="submitOrder()" class="bg-green-500 hover:brightness-110 text-white font-bold py-3 px-8 rounded-full transition flex items-center gap-2 shadow-lg shadow-green-500/30 active:scale-95 theme-bg">
+            <span data-i18n="btn_order">Checkout</span>
+            <i class="fa-solid fa-arrow-right"></i>
         </button>
     </div>
+  </div>
+
+  <div id="modal-backdrop" class="fixed inset-0 bg-black/60 z-[70] hidden transition-opacity duration-300 opacity-0 backdrop-blur-sm" onclick="closeModal()"></div>
+  <div id="product-modal" class="fixed bottom-0 left-0 right-0 z-[80] bg-white rounded-t-3xl shadow-2xl transform translate-y-full transition-transform duration-300 max-h-[85vh] overflow-y-auto hidden">
+      <div class="relative">
+          <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-8 h-8 bg-black/20 text-white rounded-full flex items-center justify-center backdrop-blur"><i class="fa-solid fa-xmark"></i></button>
+          <img id="m-img" class="w-full h-64 object-cover">
+          <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent"></div>
+      </div>
+      <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h2 id="m-name" class="text-2xl font-bold text-slate-900 leading-tight w-3/4">Product Name</h2>
+            <div class="text-right">
+                <p id="m-price" class="text-xl font-extrabold text-orange-600 theme-text">RM 0.00</p>
+                <p id="m-old-price" class="text-sm text-slate-400 line-through hidden">RM 0.00</p>
+            </div>
+          </div>
+          <p class="text-slate-500 text-sm leading-relaxed mb-6">Premium quality homemade cookies made with pure butter and high-quality chocolate. Freshly baked daily for the best taste.</p>
+          
+          <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <span class="font-bold text-slate-600 text-sm">Quantity</span>
+              <div class="flex items-center gap-4">
+                  <button class="w-10 h-10 bg-white border border-slate-200 rounded-full shadow-sm text-slate-600 font-bold text-lg active:scale-90 transition" onclick="updateModalQty(-1)">-</button>
+                  <span id="m-qty" class="font-bold text-xl w-6 text-center">0</span>
+                  <button class="w-10 h-10 bg-slate-900 text-white rounded-full shadow-lg shadow-slate-900/30 font-bold text-lg active:scale-90 transition theme-bg-dark" onclick="updateModalQty(1)">+</button>
+              </div>
+          </div>
+          <button onclick="confirmModal()" class="w-full mt-4 bg-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-600/30 active:scale-95 transition theme-bg" data-i18n="add_to_cart">Update Cart</button>
+      </div>
   </div>
 
   <script>
@@ -91,19 +162,22 @@
     const db = firebase.firestore();
 
     let SHOP = {}, CART = [], DB_PRODUCTS = {}, curLang='ms';
+    let currentModalIdx = -1;
+
     const i18n = {
-        ms: { agent_badge:"Ejen Sah", secure_msg:"Pantas & Selamat", your_info:"Maklumat Anda", menu:"Menu Pilihan", total:"Jumlah Besar", btn_order:"Order WhatsApp", ph_name:"Nama Penuh", ph_addr:"Alamat Penghantaran", alert_name:"Sila isi nama.", alert_item:"Sila pilih biskut." },
-        en: { agent_badge:"Official Agent", secure_msg:"Fast & Secure", your_info:"Your Details", menu:"Menu Selection", total:"Grand Total", btn_order:"Order via WhatsApp", ph_name:"Full Name", ph_addr:"Delivery Address", alert_name:"Please enter name.", alert_item:"Please select items." }
+        ms: { your_info:"Maklumat Anda", menu:"Menu Pilihan", total:"Jumlah Besar", btn_order:"Hantar Order", ph_name:"Nama Penuh", ph_addr:"Alamat Penghantaran", alert_name:"Sila isi nama.", alert_item:"Sila pilih biskut.", promo_text:"Selamat Datang! Dapatkan biskut premium fresh dari oven sekarang.", lbl_name:"NAMA", lbl_addr:"ALAMAT", add_to_cart:"Simpan Pilihan" },
+        en: { your_info:"Your Details", menu:"Menu", total:"Grand Total", btn_order:"Send Order", ph_name:"Full Name", ph_addr:"Delivery Address", alert_name:"Please enter name.", alert_item:"Please select items.", promo_text:"Welcome! Get premium fresh cookies directly from the oven.", lbl_name:"NAME", lbl_addr:"ADDRESS", add_to_cart:"Save Selection" }
     };
 
     function setLang(l) {
         curLang = l;
-        document.getElementById('l-ms').className = l==='ms'?"px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold":"px-3 py-1 text-white/70 rounded-full text-[10px] font-bold";
-        document.getElementById('l-en').className = l==='en'?"px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold":"px-3 py-1 text-white/70 rounded-full text-[10px] font-bold";
+        document.getElementById('l-ms').className = l==='ms'?"px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold transition":"px-3 py-1 text-white/70 rounded-full text-[10px] font-bold transition";
+        document.getElementById('l-en').className = l==='en'?"px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold transition":"px-3 py-1 text-white/70 rounded-full text-[10px] font-bold transition";
         
         document.querySelectorAll('[data-i18n]').forEach(e => e.innerText = i18n[l][e.dataset.i18n]);
         document.getElementById('c_name').placeholder = i18n[l].ph_name;
         document.getElementById('c_addr').placeholder = i18n[l].ph_addr;
+        document.getElementById('search-input').placeholder = l==='ms' ? 'Cari biskut...' : 'Search cookies...';
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -126,13 +200,12 @@
                 throw new Error("Invalid Link");
             }
             
-            document.getElementById('shop-name').innerText = SHOP.n || 'Reseller Shop';
+            document.getElementById('shop-name').innerText = SHOP.n || 'PipahCookies';
+            document.title = SHOP.n + " - Order";
             
             if (SHOP.b) {
                 const bg = document.getElementById('header-bg');
                 bg.style.backgroundImage = `url('${SHOP.b}')`;
-                bg.style.opacity = '0.5';
-                document.getElementById('header-container').style.height = '320px';
             }
 
             if (SHOP.l) {
@@ -146,23 +219,11 @@
                 const c = SHOP.c;
                 const style = document.createElement('style');
                 style.innerHTML = `
-                    /* 1. Header & Bottom Bar Background */
                     .theme-bg-dark, #header-container { background-color: ${c} !important; }
-                    
-                    /* 2. Primary Buttons (WhatsApp) */
-                    .theme-bg, .bg-green-500 { background-color: ${c} !important; }
-                    
-                    /* 3. Text Colors (Prices & Icons) */
+                    .theme-bg, .bg-green-500, .bg-orange-600 { background-color: ${c} !important; border-color: ${c} !important; }
                     .theme-text, .text-orange-600 { color: ${c} !important; }
-                    
-                    /* 4. Soft Backgrounds (Icon Circles) */
-                    .theme-icon-bg, .bg-orange-50 { background-color: ${c}1a !important; color: ${c} !important; } 
-                    
-                    /* 5. Borders & Rings */
-                    .theme-border { border-color: ${c}66 !important; }
-                    .theme-ring, .ring-orange-500:focus { --tw-ring-color: ${c} !important; }
-                    
-                    /* 6. Loader */
+                    .theme-icon-bg { background-color: ${c}1a !important; color: ${c} !important; } 
+                    .theme-ring:focus { --tw-ring-color: ${c} !important; }
                     .loader { border-top-color: ${c} !important; }
                 `;
                 document.head.appendChild(style);
@@ -179,53 +240,138 @@
                     });
                 }
             });
+            
+            document.getElementById('item-count').innerText = `${CART.length} Items`;
             render();
             document.getElementById('loader').classList.add('hidden');
 
         } catch(e) { 
-            console.error(e); 
-            document.querySelector('#loader .loader').style.display = 'none';
-            document.querySelector('#loader p').innerHTML = '<span class="text-red-500">Shop Not Found or Deleted</span>';
+            console.error(e);
+            document.getElementById('loader').innerHTML = '<p class="text-red-500 font-bold">Shop Error.</p>'; 
         }
     });
 
-    function render() {
-        const list = document.getElementById('product-list'); list.innerHTML = '';
+    function render(filter = "") {
+        const list = document.getElementById('product-list'); 
+        list.innerHTML = '';
+        
         CART.forEach((item, idx) => {
+            if(filter && !item.name.toLowerCase().includes(filter.toLowerCase())) return;
+
             let priceHTML = `<p class="text-orange-600 font-extrabold theme-text">RM ${item.price.toFixed(2)}</p>`;
-            
+            let badgeHTML = '';
+
+            // Logic for badges
+            if (idx === 0 && !filter) {
+                badgeHTML = `<span class="absolute -top-2 -left-2 bg-yellow-400 text-[9px] font-bold px-2 py-0.5 rounded shadow-sm z-10">BEST SELLER 🔥</span>`;
+            }
             if (item.oldPrice > item.price) {
                 priceHTML = `
                 <div>
-                    <span class="text-xs text-slate-400 line-through mr-1">RM${item.oldPrice.toFixed(2)}</span>
+                    <span class="text-[10px] text-slate-400 line-through mr-1">RM${item.oldPrice.toFixed(2)}</span>
                     <span class="text-orange-600 font-extrabold theme-text">RM ${item.price.toFixed(2)}</span>
                 </div>`;
             }
 
+            const qtyBadge = item.qty > 0 ? `<div class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-md z-10 animate-bounce">${item.qty}</div>` : '';
+
             list.innerHTML += `
-            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex gap-4 items-center transition">
-                <img src="${item.image}" class="w-20 h-20 rounded-xl object-cover bg-gray-100">
+            <div class="relative bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex gap-4 items-center transition active:scale-[0.98]" onclick="openModal(${idx})">
+                ${badgeHTML}
+                ${qtyBadge}
+                <img src="${item.image}" class="w-20 h-20 rounded-xl object-cover bg-gray-100 shadow-sm" loading="lazy">
                 <div class="flex-1">
-                    <h4 class="font-bold text-slate-800 leading-tight mb-1">${item.name}</h4>
+                    <h4 class="font-bold text-slate-800 leading-tight mb-1 text-sm line-clamp-2">${item.name}</h4>
                     ${priceHTML}
                 </div>
-                <div class="flex items-center gap-3 bg-slate-50 p-1 rounded-lg border border-slate-100">
-                    <button class="w-8 h-8 bg-white text-slate-600 rounded-md shadow-sm font-bold" onclick="upd(${idx}, -1)">-</button>
-                    <span class="font-bold text-sm w-4 text-center select-none" id="q-${idx}">${item.qty}</span>
-                    <button class="w-8 h-8 bg-slate-900 text-white rounded-md shadow-sm font-bold theme-bg-dark" onclick="upd(${idx}, 1)">+</button>
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                    <i class="fa-solid fa-plus"></i>
                 </div>
             </div>`;
         });
     }
 
-    window.upd = (idx, d) => {
-        if(CART[idx].qty + d < 0) return;
-        CART[idx].qty += d;
-        document.getElementById(`q-${idx}`).innerText = CART[idx].qty;
+    function filterProducts() {
+        render(document.getElementById('search-input').value);
+    }
+
+    // MODAL FUNCTIONS
+    function openModal(idx) {
+        currentModalIdx = idx;
+        const item = CART[idx];
+        
+        document.getElementById('m-img').src = item.image;
+        document.getElementById('m-name').innerText = item.name;
+        document.getElementById('m-price').innerText = `RM ${item.price.toFixed(2)}`;
+        document.getElementById('m-qty').innerText = item.qty;
+        
+        if(item.oldPrice > item.price){
+            const op = document.getElementById('m-old-price');
+            op.innerText = `RM ${item.oldPrice.toFixed(2)}`;
+            op.classList.remove('hidden');
+        } else {
+            document.getElementById('m-old-price').classList.add('hidden');
+        }
+
+        document.getElementById('modal-backdrop').classList.remove('hidden');
+        document.getElementById('product-modal').classList.remove('hidden');
+        
+        // Slight delay for animation
+        setTimeout(() => {
+            document.getElementById('modal-backdrop').classList.remove('opacity-0');
+            document.getElementById('product-modal').classList.remove('translate-y-full');
+        }, 10);
+    }
+
+    function closeModal() {
+        document.getElementById('modal-backdrop').classList.add('opacity-0');
+        document.getElementById('product-modal').classList.add('translate-y-full');
+        setTimeout(() => {
+            document.getElementById('modal-backdrop').classList.add('hidden');
+            document.getElementById('product-modal').classList.add('hidden');
+        }, 300);
+    }
+
+    function updateModalQty(d) {
+        let currentQ = parseInt(document.getElementById('m-qty').innerText);
+        if(currentQ + d < 0) return;
+        document.getElementById('m-qty').innerText = currentQ + d;
+    }
+
+    function confirmModal() {
+        if(currentModalIdx > -1) {
+            const newQ = parseInt(document.getElementById('m-qty').innerText);
+            CART[currentModalIdx].qty = newQ;
+            recalcTotal();
+            render(document.getElementById('search-input').value);
+            closeModal();
+        }
+    }
+
+    function recalcTotal() {
         let total = 0, count = 0;
         CART.forEach(c => { total += c.qty * c.price; count += c.qty; });
         document.getElementById('grand-total').innerText = "RM " + total.toFixed(2);
-        const bar = document.getElementById('cart-bar'); count > 0 ? bar.classList.remove('translate-y-40') : bar.classList.add('translate-y-40');
+        document.getElementById('total-qty').innerText = `(${count} items)`;
+        
+        const bar = document.getElementById('cart-bar'); 
+        if (count > 0) {
+            bar.classList.remove('translate-y-full');
+        } else {
+            bar.classList.add('translate-y-full');
+        }
+    }
+
+    function shareShop() {
+        if (navigator.share) {
+            navigator.share({
+                title: SHOP.n || 'Order Cookies',
+                text: 'Check out these delicious cookies!',
+                url: window.location.href
+            }).catch(console.error);
+        } else {
+            alert("Copy Link: " + window.location.href);
+        }
     }
 
     window.submitOrder = async () => {
@@ -234,6 +380,11 @@
         const items = CART.filter(c => c.qty > 0);
         if(!name) return alert(i18n[curLang].alert_name);
         if(items.length === 0) return alert(i18n[curLang].alert_item);
+
+        const btn = document.querySelector('button[onclick="submitOrder()"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Processing...`;
+        btn.disabled = true;
 
         try {
             const batch = db.batch();
@@ -248,14 +399,19 @@
             items.forEach(i => { batch.update(db.collection('products').doc(i.id), { soldCount: firebase.firestore.FieldValue.increment(i.qty) }); });
             await batch.commit();
 
-            let msg = `*ORDER ${SHOP.n.toUpperCase()}* 👋\n👤 ${name}\n`;
+            let msg = `*NEW ORDER: ${SHOP.n.toUpperCase()}* 🍪\n\n👤 *${name}*\n`;
             if(addr) msg += `📍 ${addr}\n`;
-            msg += `\n*ITEMS:*`;
+            msg += `\n*ORDER LIST:*`;
             items.forEach(i => { msg += `\n▪️ ${i.qty}x ${i.name}`; });
             msg += `\n\n*TOTAL: RM ${total.toFixed(2)}*`;
+            msg += `\n_Generated by PipahCookies App_`;
             
             window.location.href = `https://wa.me/${SHOP.w}?text=${encodeURIComponent(msg)}`;
-        } catch (error) { window.location.href = `https://wa.me/${SHOP.w}`; }
+        } catch (error) { 
+            console.error(error);
+            alert("Error sending order. Redirecting to WhatsApp anyway.");
+            window.location.href = `https://wa.me/${SHOP.w}`; 
+        }
     }
   </script>
 </body>
