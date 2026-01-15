@@ -15,16 +15,10 @@
         .sidebar-link.active { background: #eff6ff; color: #2563eb; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Custom scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-
-        /* PREVENT IOS ZOOM on inputs */
         input, select, textarea { font-size: 16px !important; }
-
-        /* SAFE AREA UTILITIES */
         .safe-top { padding-top: env(safe-area-inset-top); }
         .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
     </style>
@@ -86,7 +80,15 @@
                         <p class="text-[10px] text-slate-400 font-bold uppercase">Units Sold</p>
                         <h3 class="text-xl font-extrabold text-slate-800" id="stat-units">0</h3>
                     </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 col-span-2 md:col-span-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Total Visitors</p>
+                        <h3 class="text-xl font-extrabold text-blue-600" id="stat-visits">0</h3>
+                    </div>
                 </div>
+                
+                <button onclick="nav('resellers')" class="w-full bg-blue-50 text-blue-600 font-bold py-3 rounded-xl mb-4 border border-blue-100 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-list-ol"></i> View Shop Rankings
+                </button>
             </div>
 
             <div id="view-manage" class="hidden w-full max-w-5xl mx-auto">
@@ -100,8 +102,15 @@
             </div>
 
             <div id="view-resellers" class="hidden w-full max-w-5xl mx-auto">
-                <h2 class="font-bold text-xl mb-4">Top Resellers</h2>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-2" id="reseller-list"></div>
+                <h2 class="font-bold text-xl mb-4">Shop Performance</h2>
+                
+                <div class="flex justify-between px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase">
+                    <span>Rank / Name</span>
+                    <span>Stats</span>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-50" id="reseller-list">
+                    </div>
             </div>
             
             <div class="h-10 safe-bottom"></div>
@@ -110,16 +119,13 @@
 
     <div id="product-modal" class="fixed inset-0 z-[60] hidden flex items-end md:items-center justify-center pointer-events-none">
         <div class="absolute inset-0 bg-black/60 pointer-events-auto backdrop-blur-sm" onclick="closeModal()"></div>
-        
         <div class="bg-white w-full md:w-[500px] md:rounded-2xl rounded-t-2xl shadow-2xl pointer-events-auto max-h-[90dvh] flex flex-col z-10 relative safe-bottom">
             <div class="p-4 border-b flex justify-between bg-slate-50 rounded-t-2xl shrink-0">
                 <h3 class="font-bold">Product Details</h3>
                 <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center bg-slate-200 rounded-full"><i class="fa-solid fa-times text-slate-500"></i></button>
             </div>
-            
             <div class="p-5 space-y-4 overflow-y-auto custom-scroll flex-1">
                 <input type="hidden" id="p-id">
-                
                 <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('p-file').click()">
                     <img id="p-preview" class="h-32 mx-auto object-contain hidden rounded-lg">
                     <div id="p-upload-ui">
@@ -128,7 +134,6 @@
                     </div>
                     <input type="file" id="p-file" class="hidden" accept="image/*" onchange="previewImage(event)">
                 </div>
-
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase">Product Name</label>
                     <input type="text" id="p-name" class="w-full border border-slate-300 rounded-lg p-3 font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="e.g. Nutella Tart">
@@ -137,7 +142,6 @@
                     <label class="text-[10px] font-bold text-slate-400 uppercase">Description</label>
                     <textarea id="p-desc" rows="2" class="w-full border border-slate-300 rounded-lg p-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Shown in shop..."></textarea>
                 </div>
-
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
                     <p class="text-xs font-extrabold text-blue-800 uppercase flex items-center gap-2"><i class="fa-solid fa-tags"></i> Pricing Config</p>
                     <div class="grid grid-cols-2 gap-3">
@@ -155,13 +159,11 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="flex items-center gap-2 pb-4">
                     <input type="checkbox" id="p-avail" class="w-6 h-6 accent-blue-600 rounded" checked>
                     <label class="font-bold text-sm text-slate-700">Available in Stock</label>
                 </div>
             </div>
-            
             <div class="p-4 border-t bg-white safe-bottom rounded-b-2xl shrink-0">
                 <button onclick="saveProduct()" id="btn-save" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition flex items-center justify-center gap-2">
                     Save Product
@@ -184,11 +186,11 @@
 
         if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        
         const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37";
 
         let PRODUCTS = [];
         let CURRENT_EDIT_ID = null;
+        let MAP_STATS = {}; // Stores combined data (Sales + Visits)
 
         // UI Logic
         function toggleSidebar() { 
@@ -210,8 +212,6 @@
             document.getElementById('view-'+v).classList.remove('hidden'); 
             document.querySelectorAll('.sidebar-link').forEach(e=>e.classList.remove('active')); 
             document.getElementById('btn-'+v).classList.add('active'); 
-            
-            // Auto close sidebar on mobile when link clicked
             if(window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
                 document.getElementById('sidebar-overlay').classList.add('hidden');
@@ -229,11 +229,9 @@
                 const grid = document.getElementById('manage-grid'); 
                 grid.innerHTML = ''; 
                 PRODUCTS = [];
-                
                 snap.forEach(doc => {
                     const p = {id:doc.id, ...doc.data()}; 
                     PRODUCTS.push(p);
-                    
                     grid.innerHTML += `
                     <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex gap-3 relative overflow-hidden group">
                         <div class="w-20 h-20 rounded-lg bg-slate-100 flex-shrink-0">
@@ -253,37 +251,89 @@
             });
         }
 
+        // --- NEW STATS LOGIC (Separate Visits per Shop) ---
         function loadStats() {
+            // Listener 1: Orders (Sales)
             db.collection('orders').onSnapshot(snap => {
-                let sales=0, units=0, map={};
+                let sales=0, units=0;
+                
+                // Clear Sales Only (keep visits)
+                Object.keys(MAP_STATS).forEach(k => MAP_STATS[k].sales = 0);
+
                 snap.forEach(d => { 
                     const o = d.data(); 
                     sales += o.totalPrice||0;
                     (o.items||[]).forEach(i => units+=i.qty);
                     const n = o.resellerName || "Unknown";
-                    if(!map[n]) map[n] = {sales:0}; 
-                    map[n].sales += o.totalPrice;
+                    
+                    if(!MAP_STATS[n]) MAP_STATS[n] = {sales:0, visits:0}; 
+                    MAP_STATS[n].sales += o.totalPrice;
                 });
+
                 document.getElementById('stat-sales').innerText = "RM " + sales.toFixed(2);
                 document.getElementById('stat-units').innerText = units;
+                renderLeaderboard();
+            });
+
+            // Listener 2: Reseller Visits (Per Shop)
+            db.collection('reseller_visits').onSnapshot(snap => {
+                let totalVisits = 0;
                 
-                const list = document.getElementById('reseller-list'); 
-                list.innerHTML='';
-                if(Object.keys(map).length === 0) list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">No Data</p>';
-                
-                Object.keys(map).sort((a,b)=>map[b].sales-map[a].sales).forEach((k,i)=>{
-                    list.innerHTML += `
-                    <div class="flex justify-between items-center p-3 border-b border-slate-50 last:border-0">
-                        <div class="flex gap-3 items-center">
-                            <span class="w-6 text-center font-bold text-slate-400 text-sm">#${i+1}</span>
-                            <span class="font-bold text-slate-700 text-sm">${k}</span>
-                        </div>
-                        <span class="font-bold text-green-600 text-sm">RM${map[k].sales.toFixed(0)}</span>
-                    </div>`;
+                snap.forEach(d => {
+                    const data = d.data();
+                    const name = d.id; // Reseller Name is doc ID
+                    const count = data.count || 0;
+                    
+                    if(!MAP_STATS[name]) MAP_STATS[name] = {sales:0, visits:0};
+                    MAP_STATS[name].visits = count;
+                    totalVisits += count;
                 });
+                
+                document.getElementById('stat-visits').innerText = totalVisits; // Total top card
+                renderLeaderboard(); // Updates the individual list
             });
         }
 
+        function renderLeaderboard() {
+            const list = document.getElementById('reseller-list'); 
+            list.innerHTML='';
+            
+            const keys = Object.keys(MAP_STATS);
+            if(keys.length === 0) {
+                list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">No Data</p>';
+                return;
+            }
+
+            // Sort by SALES first, then VISITS
+            keys.sort((a,b) => {
+                const salesDiff = (MAP_STATS[b].sales) - (MAP_STATS[a].sales);
+                if(salesDiff !== 0) return salesDiff;
+                return (MAP_STATS[b].visits) - (MAP_STATS[a].visits);
+            });
+
+            keys.forEach((k,i) => {
+                const s = MAP_STATS[k];
+                list.innerHTML += `
+                <div class="flex justify-between items-center p-4 hover:bg-slate-50 transition">
+                    <div class="flex gap-3 items-center min-w-0 flex-1">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 font-bold text-slate-500 text-xs shrink-0">${i+1}</span>
+                        <div class="flex flex-col truncate">
+                            <span class="font-bold text-slate-700 text-sm truncate">${k}</span>
+                            <span class="text-[10px] text-slate-400">Reseller Shop</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-end gap-1 shrink-0">
+                        <span class="font-extrabold text-green-600 text-sm">RM${s.sales.toFixed(0)}</span>
+                        <div class="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                            <i class="fa-solid fa-eye"></i> ${s.visits}
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        // --- PRODUCT EDITING ---
         function openModal() { 
             CURRENT_EDIT_ID=null; 
             ['p-name','p-desc','p-retail','p-agent','p-minqty'].forEach(i=>document.getElementById(i).value=''); 
@@ -324,7 +374,6 @@
             } 
         }
 
-        // --- IMAGE COMPRESSOR ---
         function compressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -334,19 +383,13 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        // Max width 800px is enough for phone screens
                         const MAX_WIDTH = 800;
                         const scaleSize = MAX_WIDTH / img.width;
                         canvas.width = MAX_WIDTH;
                         canvas.height = img.height * scaleSize;
-
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        
-                        // Compress to JPEG at 70% quality
-                        canvas.toBlob((blob) => {
-                            resolve(blob);
-                        }, 'image/jpeg', 0.7);
+                        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
                     };
                 };
             });
@@ -377,12 +420,9 @@
 
                 if(file) { 
                     btn.innerHTML = '<div class="loader"></div> Uploading...';
-                    
-                    // COMPRESS BEFORE UPLOAD
                     const compressedBlob = await compressImage(file);
                     const formData = new FormData();
                     formData.append("image", compressedBlob, "image.jpg");
-                    
                     const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
                     const result = await res.json();
                     if(!result.success) throw new Error("Upload failed");
@@ -396,7 +436,6 @@
 
                 if(CURRENT_EDIT_ID) await db.collection('products').doc(CURRENT_EDIT_ID).update(data);
                 else await db.collection('products').add(data);
-                
                 closeModal();
             } catch(e) {
                 console.error(e);
