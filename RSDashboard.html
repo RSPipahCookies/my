@@ -86,6 +86,16 @@
              <div class="text-center py-10 text-slate-400">Loading products...</div>
         </div>
     </div>
+    
+    <div class="mt-8 mb-24">
+        <div class="flex items-center justify-between mb-4 px-1">
+            <h3 class="font-bold text-slate-800 text-sm uppercase">My Created Links</h3>
+            <button onclick="clearHistory()" class="text-xs text-red-400">Clear List</button>
+        </div>
+        <div id="history-list" class="space-y-3">
+            <p class="text-center text-slate-400 text-sm py-4">No links created yet.</p>
+        </div>
+    </div>
   </div>
 
   <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-40 pb-8 safe-area-bottom">
@@ -94,7 +104,7 @@
       </button>
   </div>
 
-     <script>
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
       authDomain: "pipahcookies-order.firebaseapp.com",
@@ -105,15 +115,14 @@
       appId: "1:1038900448087:web:a46586f21e9ae989708c12"
     };
 
-    // 1. Initialize Firebase
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     
-    // 2. Offline Persistence
     db.enablePersistence().catch((err) => {
-        if (err.code == 'failed-precondition') console.log("Offline mode failed: Multiple tabs open");
+        if (err.code == 'failed-precondition') console.log("Offline mode failed");
         else if (err.code == 'unimplemented') console.log("Browser doesn't support offline storage");
     });
+
     // 1. Expanded Color List
     const COLORS = [
         {h:'#A67734'}, // Gold
@@ -128,7 +137,13 @@
         {h:'#84cc16'}  // Lime
     ];
 
-    // 2. Updated Render Function (With Custom Picker)
+    function init() { 
+        renderColors(); 
+        loadState(); 
+        fetchProducts(); 
+        renderHistory(); // Load history on start
+    }
+
     function renderColors() {
         const c = document.getElementById('rs_color').value;
         
@@ -148,7 +163,7 @@
         document.getElementById('color-picker').innerHTML = html;
         document.getElementById('gen-btn').style.background = c;
         
-        // If the current color isn't in the preset list, highlight the custom button
+        // Highlight custom button if needed
         const isPreset = COLORS.some(col => col.h.toLowerCase() === c.toLowerCase());
         if(!isPreset) {
             const customBtn = document.getElementById('color-picker').lastElementChild;
@@ -156,7 +171,13 @@
             customBtn.style.border = "2px solid #0f172a";
         }
     }
-
+    
+    // !!! FIXED: This function was missing !!!
+    window.setColor = (hex) => { 
+        document.getElementById('rs_color').value = hex; 
+        renderColors(); 
+        saveState(); 
+    }
 
     function fetchProducts() {
         db.collection('products').where('available', '==', true).get().then(snap => {
@@ -309,7 +330,58 @@
         }
     }
 
-    // --- NEW GENERATE LINK LOGIC (SHORT URL) ---
+    // --- HISTORY FUNCTIONS (NEW) ---
+    function renderHistory() {
+        const history = JSON.parse(localStorage.getItem('rs_history') || '[]');
+        const list = document.getElementById('history-list');
+        
+        if(history.length === 0) {
+            list.innerHTML = '<p class="text-center text-slate-400 text-sm py-4">No links created yet.</p>';
+            return;
+        }
+
+        list.innerHTML = history.map(h => `
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div class="overflow-hidden">
+                    <p class="font-bold text-sm text-slate-800 truncate">${h.name}</p>
+                    <p class="text-[10px] text-slate-400">${new Date(h.date).toLocaleDateString()}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="OrderNow.html?id=${h.id}" target="_blank" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 grid place-items-center"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
+                    <button onclick="deleteShop('${h.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 grid place-items-center"><i class="fa-solid fa-trash text-xs"></i></button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.deleteShop = async (id) => {
+        if(!confirm("Permanently delete this shop link? Customers won't be able to access it.")) return;
+        
+        const btn = event.currentTarget;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+        try {
+            await db.collection('shops').doc(id).delete();
+            let history = JSON.parse(localStorage.getItem('rs_history') || '[]');
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('rs_history', JSON.stringify(history));
+            renderHistory();
+            alert("Shop deleted successfully.");
+        } catch(e) {
+            console.error(e);
+            alert("Error deleting shop. Check internet.");
+            renderHistory();
+        }
+    }
+
+    window.clearHistory = () => {
+        if(confirm("Clear this list from your phone? (The links will still work for customers)")) {
+            localStorage.removeItem('rs_history');
+            renderHistory();
+        }
+    }
+
+    // --- GENERATE LINK (UPDATED) ---
     window.generateLink = async () => {
         const wa = document.getElementById('rs_wa').value.replace(/[^0-9]/g, '');
         const name = document.getElementById('rs_name').value;
@@ -329,14 +401,12 @@
 
         if(!items.length) return alert("Please select at least 1 product");
 
-        // UI: Loading State
         const btn = document.getElementById('gen-btn');
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Creating Link...';
         btn.disabled = true;
 
         try {
-            // 1. Prepare Data
             const shopData = { 
                 w: wa.startsWith('0') ? '60'+wa.slice(1) : wa, 
                 n: name, 
@@ -346,17 +416,19 @@
                 i: items, 
                 p: prices, 
                 op: oldPrices,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp() // Optional: Timestamp
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            // 2. Save to Firestore (Collection: 'shops')
             const docRef = await db.collection('shops').add(shopData);
 
-            // 3. Generate Short URL using ID
-            // NOTE: Ensure your OrderNow.html is updated to read '?id='
+            // SAVE TO HISTORY
+            const history = JSON.parse(localStorage.getItem('rs_history') || '[]');
+            history.unshift({ id: docRef.id, name: name, date: Date.now() });
+            localStorage.setItem('rs_history', JSON.stringify(history));
+            renderHistory();
+
             const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','OrderNow.html')}?id=${docRef.id}`;
             
-            // 4. Share or Copy
             if(navigator.share) {
                 await navigator.share({title: name, url: url});
             } else {
@@ -368,7 +440,6 @@
             console.error("Error creating shop:", error);
             alert("Failed to create link. Please check your internet connection.");
         } finally {
-            // Restore Button
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
@@ -376,5 +447,5 @@
 
     init();
   </script>
-     </body>
+</body>
 </html>
