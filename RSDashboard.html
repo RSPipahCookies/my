@@ -99,16 +99,17 @@
                 
                 <div class="input-group">
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block transition">Shop Name</label>
-               <div class="input-group mt-3">
-    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Promo Banner (Moving Text)</label>
-    <div class="relative">
-        <i class="fa-solid fa-bullhorn absolute left-4 top-3.5 text-slate-400"></i>
-        <input type="text" id="rs_promo" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-800 outline-none transition" placeholder="e.g. BUY 2 FREE 1 TODAY!" oninput="saveState()">
-    </div>
-</div>
-                  <div class="relative">
+                    <div class="relative">
                         <i class="fa-solid fa-tag absolute left-4 top-3.5 text-slate-400"></i>
                         <input type="text" id="rs_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-800 outline-none transition" placeholder="e.g. Cookies Sedap Nina" oninput="saveState()">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block">Promo Banner (Moving Text)</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-bullhorn absolute left-4 top-3.5 text-slate-400"></i>
+                        <input type="text" id="rs_promo" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-slate-800 outline-none transition" placeholder="e.g. BUY 2 FREE 1 TODAY!" oninput="saveState()">
                     </div>
                 </div>
 
@@ -322,14 +323,15 @@
 
     window.selectAll = () => { document.querySelectorAll('input[type="checkbox"]').forEach(c => { if(!c.checked) { c.click(); } }); }
     
-    // --- STATE & UPLOAD (Same Logic, Better UI) ---
+    // --- STATE & UPLOAD ---
     function saveState() {
         localStorage.setItem('rs_v3', JSON.stringify({
             wa: document.getElementById('rs_wa').value,
             name: document.getElementById('rs_name').value,
             color: document.getElementById('rs_color').value,
             logo: document.getElementById('rs_logo').value,
-            banner: document.getElementById('rs_banner').value
+            banner: document.getElementById('rs_banner').value,
+            promo: document.getElementById('rs_promo').value
         }));
     }
 
@@ -337,6 +339,7 @@
         const s = JSON.parse(localStorage.getItem('rs_v3')||'{}');
         if(s.wa) document.getElementById('rs_wa').value = s.wa;
         if(s.name) document.getElementById('rs_name').value = s.name;
+        if(s.promo) document.getElementById('rs_promo').value = s.promo;
         if(s.color) setColor(s.color);
         
         if(s.logo) {
@@ -355,7 +358,7 @@
     window.clearData = () => { if(confirm("Start Fresh? This clears your draft.")) { localStorage.removeItem('rs_v3'); location.reload(); } }
 
     // --- IMGBB UPLOAD ---
-    const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37"; // User Provided Key
+    const IMGBB_API_KEY = "0bc69af865e3b77504d6b3d2eb3a1d37"; 
 
     async function uploadImage(input, previewId, storageId) {
         const file = input.files[0];
@@ -409,7 +412,7 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <a href="OrderNow.html?id=${h.id}" target="_blank" class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
+                    <a href="ordernow.html?id=${h.id}" target="_blank" class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
                     <button onclick="deleteShop('${h.id}')" class="w-9 h-9 rounded-full bg-red-50 border border-red-100 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition"><i class="fa-solid fa-trash text-xs"></i></button>
                 </div>
             </div>
@@ -432,6 +435,7 @@
         const wa = document.getElementById('rs_wa').value.replace(/[^0-9]/g, '');
         const name = document.getElementById('rs_name').value;
         const color = document.getElementById('rs_color').value;
+        const promo = document.getElementById('rs_promo').value || "Selamat Datang! Fresh cookies dari oven."; 
         
         if(!wa || !name) return alert("Fill in WhatsApp & Shop Name first.");
         
@@ -450,27 +454,25 @@
         btn.disabled = true;
 
         try {
-            const promo = document.getElementById('rs_promo').value || "Selamat Datang! Fresh cookies dari oven."; // Default text if empty
-
-const docRef = await db.collection('shops').add({
-    w: wa.startsWith('0') ? '60'+wa.slice(1) : wa, 
-    n: name, 
-    c: color, 
-    l: document.getElementById('rs_logo').value, 
-    b: document.getElementById('rs_banner').value,
-    pm: promo, // <--- ✅ ADD THIS LINE (pm = promo message)
-    i: items, 
-    p: prices, 
-    op: oldPrices,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-});
+            const docRef = await db.collection('shops').add({
+                w: wa.startsWith('0') ? '60'+wa.slice(1) : wa, 
+                n: name, 
+                c: color, 
+                pm: promo,
+                l: document.getElementById('rs_logo').value, 
+                b: document.getElementById('rs_banner').value, 
+                i: items, p: prices, op: oldPrices,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
             const hist = JSON.parse(localStorage.getItem('rs_history') || '[]');
             hist.unshift({ id: docRef.id, name: name, date: Date.now() });
             localStorage.setItem('rs_history', JSON.stringify(hist));
             renderHistory();
 
-            const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','OrderNow.html')}?id=${docRef.id}`;
+            // FIXED: Lowercase filename
+            const url = `${window.location.origin}${window.location.pathname.replace('RSDashboard.html','Ordernow.html')}?id=${docRef.id}`;
+            
             if(navigator.share) await navigator.share({title: name, url: url});
             else { prompt("Copy Link:", url); }
 
