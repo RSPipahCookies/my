@@ -24,10 +24,10 @@
     <p class="font-bold text-slate-400 text-sm animate-pulse">Loading Shop...</p>
   </div>
 
-  <div class="relative w-full bg-slate-900 overflow-hidden shadow-2xl transition-all duration-500" id="header-container" style="min-height: 250px; border-radius: 0 0 2.5rem 2.5rem;">
+  <div class="relative w-full bg-slate-900 overflow-hidden shadow-2xl transition-all duration-500 theme-bg-dark" id="header-container" style="min-height: 250px; border-radius: 0 0 2.5rem 2.5rem;">
     <div id="header-bg" class="absolute inset-0 bg-cover bg-center transition-opacity duration-500" style="opacity: 0.3;"></div>
     
-    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
 
     <div class="absolute top-4 right-4 z-20 flex bg-black/30 backdrop-blur rounded-full p-1">
         <button onclick="setLang('ms')" id="l-ms" class="px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold">MY</button>
@@ -37,21 +37,23 @@
     <div class="absolute bottom-0 left-0 right-0 p-6 text-white z-10 flex flex-col items-center text-center pb-10">
         <img id="shop-logo" class="w-20 h-20 rounded-full border-4 border-white shadow-xl mb-3 object-cover hidden bg-white">
         
-        <div class="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2 border border-white/10" data-i18n="agent_badge">Official Agent</div>
+        <div class="inline-block bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-2 border border-white/10 theme-border" data-i18n="agent_badge">Official Agent</div>
+        
         <h1 id="shop-name" class="text-3xl font-extrabold leading-tight mb-2 text-shadow">...</h1>
-        <p class="text-orange-100 text-sm flex items-center gap-2"><i class="fa-solid fa-truck-fast"></i> <span data-i18n="secure_msg">Fast Delivery & Secure</span></p>
+        <p class="text-white/80 text-sm flex items-center gap-2"><i class="fa-solid fa-truck-fast"></i> <span data-i18n="secure_msg">Fast Delivery & Secure</span></p>
     </div>
   </div>
 
   <div class="max-w-md mx-auto px-4 -mt-6 relative z-20 space-y-6">
+    
     <div class="bg-white p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
         <div class="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
-            <div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 grid place-items-center"><i class="fa-regular fa-user"></i></div>
+            <div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 grid place-items-center theme-icon-bg theme-text"><i class="fa-regular fa-user"></i></div>
             <h3 class="text-sm font-bold text-slate-700 uppercase" data-i18n="your_info">Maklumat Anda</h3>
         </div>
         <div class="space-y-3">
-            <input type="text" id="c_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-orange-500 transition" placeholder="Nama Penuh">
-            <textarea id="c_addr" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:ring-2 ring-orange-500 transition" placeholder="Alamat Penghantaran"></textarea>
+            <input type="text" id="c_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-orange-500 transition theme-ring" placeholder="Nama Penuh">
+            <textarea id="c_addr" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:ring-2 ring-orange-500 transition theme-ring" placeholder="Alamat Penghantaran"></textarea>
         </div>
     </div>
 
@@ -62,20 +64,19 @@
   </div>
 
   <div class="fixed bottom-6 left-4 right-4 z-40 max-w-md mx-auto transition-all duration-300 transform translate-y-40" id="cart-bar">
-    <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700">
+    <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-slate-700 theme-bg-dark">
         <div>
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider" data-i18n="total">Jumlah Besar</p>
             <p class="text-2xl font-bold leading-none" id="grand-total">RM 0.00</p>
         </div>
-        <button onclick="submitOrder()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition flex items-center gap-2 shadow-lg shadow-green-500/30 active:scale-95">
+        <button onclick="submitOrder()" class="bg-green-500 hover:brightness-110 text-white font-bold py-3 px-6 rounded-xl transition flex items-center gap-2 shadow-lg active:scale-95 theme-bg">
             <i class="fa-brands fa-whatsapp text-xl"></i>
             <span data-i18n="btn_order">Order</span>
         </button>
     </div>
   </div>
 
-<script>
-    // ⚠️ FIREBASE CONFIG
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
       authDomain: "pipahcookies-order.firebaseapp.com",
@@ -105,32 +106,26 @@
         document.getElementById('c_addr').placeholder = i18n[l].ph_addr;
     }
 
-    // --- UPDATED LOADING LOGIC ---
     document.addEventListener('DOMContentLoaded', async () => {
         const params = new URLSearchParams(window.location.search);
-        const shopId = params.get('id'); // NEW: Short ID
-        const encoded = params.get('d'); // OLD: Long Data
+        const shopId = params.get('id');
+        const encoded = params.get('d');
 
         try {
-            // 1. FETCH PRODUCTS FIRST (Needed for images/names)
             const snap = await db.collection('products').get();
             snap.forEach(d => DB_PRODUCTS[d.id] = d.data());
 
-            // 2. GET SHOP DATA (Either from DB or URL)
             if (shopId) {
-                // Method A: Fetch from Firestore (Short Link)
                 const doc = await db.collection('shops').doc(shopId).get();
-                if (!doc.exists) throw new Error("Shop not found in database");
+                if (!doc.exists) throw new Error("Shop not found");
                 SHOP = doc.data();
             } else if (encoded) {
-                // Method B: Decode from URL (Old Link)
                 const str = decodeURIComponent(atob(encoded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
                 SHOP = JSON.parse(str);
             } else {
                 throw new Error("Invalid Link");
             }
             
-            // 3. SETUP BRANDING
             document.getElementById('shop-name').innerText = SHOP.n || 'Reseller Shop';
             
             if (SHOP.b) {
@@ -146,17 +141,41 @@
                 logo.classList.remove('hidden');
             }
 
-            // 4. BUILD CART
+            // --- THEME COLOR INJECTION ---
+            if (SHOP.c) {
+                const c = SHOP.c;
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    /* 1. Header & Bottom Bar Background */
+                    .theme-bg-dark, #header-container { background-color: ${c} !important; }
+                    
+                    /* 2. Primary Buttons (WhatsApp) */
+                    .theme-bg, .bg-green-500 { background-color: ${c} !important; }
+                    
+                    /* 3. Text Colors (Prices & Icons) */
+                    .theme-text, .text-orange-600 { color: ${c} !important; }
+                    
+                    /* 4. Soft Backgrounds (Icon Circles) */
+                    .theme-icon-bg, .bg-orange-50 { background-color: ${c}1a !important; color: ${c} !important; } 
+                    
+                    /* 5. Borders & Rings */
+                    .theme-border { border-color: ${c}66 !important; }
+                    .theme-ring, .ring-orange-500:focus { --tw-ring-color: ${c} !important; }
+                    
+                    /* 6. Loader */
+                    .loader { border-top-color: ${c} !important; }
+                `;
+                document.head.appendChild(style);
+            }
+
             SHOP.i.forEach((id, idx) => {
                 const p = DB_PRODUCTS[id];
                 if(p) {
                     CART.push({ 
-                        id, 
-                        name: p.name, 
+                        id, name: p.name, 
                         price: parseFloat(SHOP.p[idx]), 
                         oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0,
-                        qty: 0, 
-                        image: p.image 
+                        qty: 0, image: p.image 
                     });
                 }
             });
@@ -165,7 +184,6 @@
 
         } catch(e) { 
             console.error(e); 
-            // Show error in the loader
             document.querySelector('#loader .loader').style.display = 'none';
             document.querySelector('#loader p').innerHTML = '<span class="text-red-500">Shop Not Found or Deleted</span>';
         }
@@ -174,14 +192,13 @@
     function render() {
         const list = document.getElementById('product-list'); list.innerHTML = '';
         CART.forEach((item, idx) => {
-            // Price Display Logic
-            let priceHTML = `<p class="text-orange-600 font-extrabold">RM ${item.price.toFixed(2)}</p>`;
+            let priceHTML = `<p class="text-orange-600 font-extrabold theme-text">RM ${item.price.toFixed(2)}</p>`;
             
             if (item.oldPrice > item.price) {
                 priceHTML = `
                 <div>
                     <span class="text-xs text-slate-400 line-through mr-1">RM${item.oldPrice.toFixed(2)}</span>
-                    <span class="text-orange-600 font-extrabold">RM ${item.price.toFixed(2)}</span>
+                    <span class="text-orange-600 font-extrabold theme-text">RM ${item.price.toFixed(2)}</span>
                 </div>`;
             }
 
@@ -195,7 +212,7 @@
                 <div class="flex items-center gap-3 bg-slate-50 p-1 rounded-lg border border-slate-100">
                     <button class="w-8 h-8 bg-white text-slate-600 rounded-md shadow-sm font-bold" onclick="upd(${idx}, -1)">-</button>
                     <span class="font-bold text-sm w-4 text-center select-none" id="q-${idx}">${item.qty}</span>
-                    <button class="w-8 h-8 bg-slate-900 text-white rounded-md shadow-sm font-bold" onclick="upd(${idx}, 1)">+</button>
+                    <button class="w-8 h-8 bg-slate-900 text-white rounded-md shadow-sm font-bold theme-bg-dark" onclick="upd(${idx}, 1)">+</button>
                 </div>
             </div>`;
         });
