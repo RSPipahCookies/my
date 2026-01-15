@@ -15,9 +15,8 @@
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 40px; }
     .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
     .tier-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; }
-    .tier-1 { background: #e2e8f0; color: #64748b; } 
-    .tier-2 { background: #dbeafe; color: #2563eb; } 
-    .tier-3 { background: #dcfce7; color: #16a34a; } 
+    .tier-1 { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; } 
+    .tier-2 { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; } 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
@@ -41,6 +40,7 @@
         <div id="cart-items" class="space-y-4">
             <div class="text-center py-8"><div class="loader mx-auto"></div></div>
         </div>
+        
         <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
             <span class="font-bold text-slate-500" data-i18n="total">Jumlah Besar</span>
             <span class="text-2xl font-extrabold text-blue-600" id="grand-total">RM 0.00</span>
@@ -88,7 +88,7 @@
   </div>
 
   <script>
-    // YOUR NEW CONFIG
+    // 1. FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
       authDomain: "pipahcookies-order.firebaseapp.com",
@@ -102,8 +102,10 @@
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const HQ_WHATSAPP = "60182806839"; 
+    // 2. SETTINGS
+    const HQ_WHATSAPP = "601128004794"; // <--- YOUR NUMBER HERE
     const CART_KEY = 'pipah_reseller_cart_v1';
+    
     let CART = [], PRODUCTS_MAP = {};
     let curLang = 'ms';
 
@@ -112,22 +114,26 @@
             title: "Checkout Stok", cart_title: "Senarai Barang", total: "Jumlah Besar", details_title: "Butiran Reseller",
             lbl_name: "Nama Penuh", lbl_date: "Tarikh Pickup", lbl_oid: "No. Order", lbl_note: "Nota Tambahan (Optional)",
             btn_submit: "Hantar Order (WhatsApp)", btn_receipt: "Simpan Resit (TXT)",
-            empty_cart: "Cart kosong", empty_sub: "Tiada barang dipilih", add_stock: "Tambah Stok +",
+            empty_cart: "Cart kosong", add_stock: "Tambah Stok +",
             alert_name: "Sila isi Nama Penuh anda.", alert_cart: "Cart kosong.", alert_err: "Ralat sambungan.",
-            tier_1: "Harga Runcit", tier_2: "Harga Ejen", tier_3: "Harga Borong"
+            tier_1: "Harga Runcit", tier_2: "Harga Ejen"
         },
         en: {
             title: "Stock Checkout", cart_title: "Item List", total: "Grand Total", details_title: "Reseller Details",
             lbl_name: "Full Name", lbl_date: "Pickup Date", lbl_oid: "Order ID", lbl_note: "Extra Note (Optional)",
             btn_submit: "Submit Order (WhatsApp)", btn_receipt: "Save Receipt (TXT)",
-            empty_cart: "Cart is empty", empty_sub: "No items selected", add_stock: "Add Stock +",
+            empty_cart: "Cart is empty", add_stock: "Add Stock +",
             alert_name: "Please enter your Full Name.", alert_cart: "Cart is empty.", alert_err: "Connection error.",
-            tier_1: "Retail Price", tier_2: "Agent Price", tier_3: "Bulk Price"
+            tier_1: "Retail Price", tier_2: "Agent Price"
         }
     };
 
     async function init() {
         generateOrderId();
+        
+        // Set today's date
+        document.getElementById('r_date').valueAsDate = new Date();
+
         const raw = localStorage.getItem(CART_KEY);
         if(raw) CART = JSON.parse(raw);
 
@@ -156,6 +162,9 @@
     }
 
     function getPriceForQty(product, qty) {
+        // Safe check for product existence
+        if (!product) return { price: 0, label: "Error", css: "tier-1" };
+
         let finalPrice = product.priceTier1 || product.price || 0;
         let tierName = i18n[curLang].tier_1;
         let tierClass = "tier-1";
@@ -183,15 +192,15 @@
 
         document.getElementById('btn-submit').classList.remove('opacity-50', 'pointer-events-none');
 
-        CART.forEach(item => {
-            const p = PRODUCTS_MAP[item.id] || { name: item.name }; // Fallback to item.name if map fails
-            const name = p.name || "Product"; 
+        CART.forEach((item, index) => {
+            const p = PRODUCTS_MAP[item.id]; 
+            const name = p ? p.name : (item.name || "Unknown Item"); // Fallback if deleted from DB
             const pricing = getPriceForQty(p, item.qty);
             const subtotal = pricing.price * item.qty;
             total += subtotal;
 
             container.innerHTML += `
-            <div class="flex justify-between items-start border-b border-slate-50 last:border-0 pb-3 last:pb-0">
+            <div class="flex justify-between items-start border-b border-slate-50 last:border-0 pb-3 last:pb-0 group">
                 <div class="flex items-start gap-3">
                     <div class="bg-blue-50 text-blue-600 w-10 h-10 rounded-lg grid place-items-center font-bold text-sm mt-0.5">${item.qty}x</div>
                     <div>
@@ -202,10 +211,24 @@
                         </div>
                     </div>
                 </div>
-                <span class="font-bold text-slate-800 mt-0.5">RM ${subtotal.toFixed(2)}</span>
+                <div class="flex flex-col items-end gap-1">
+                    <span class="font-bold text-slate-800">RM ${subtotal.toFixed(2)}</span>
+                    <button onclick="removeItem(${index})" class="text-[10px] text-red-400 font-bold hover:text-red-600">
+                        <i class="fa-solid fa-trash"></i> Buang
+                    </button>
+                </div>
             </div>`;
         });
         document.getElementById('grand-total').innerText = `RM ${total.toFixed(2)}`;
+    }
+
+    // NEW: Delete item function
+    window.removeItem = (index) => {
+        if(confirm("Buang barang ini?")) {
+            CART.splice(index, 1);
+            localStorage.setItem(CART_KEY, JSON.stringify(CART));
+            renderCart();
+        }
     }
 
     async function submitOrder() {
@@ -227,9 +250,10 @@
                 const p = PRODUCTS_MAP[c.id] || {name: c.name};
                 const pricing = getPriceForQty(p, c.qty);
                 grandTotal += pricing.price * c.qty;
-                return { id: c.id, name: p.name, qty: c.qty, price: pricing.price, tier: pricing.label };
+                return { id: c.id, name: p.name || c.name, qty: c.qty, price: pricing.price, tier: pricing.label };
             });
 
+            // 1. Save to Firebase
             const batch = db.batch();
             const orderRef = db.collection('orders').doc(oid);
             batch.set(orderRef, {
@@ -238,13 +262,17 @@
                 items: itemsToSave, totalPrice: grandTotal, status: 'new'
             });
 
+            // 2. Update Inventory
             itemsToSave.forEach(i => {
-                const prodRef = db.collection('products').doc(i.id);
-                batch.update(prodRef, { soldCount: firebase.firestore.FieldValue.increment(i.qty) });
+                if(i.id) {
+                    const prodRef = db.collection('products').doc(i.id);
+                    batch.update(prodRef, { soldCount: firebase.firestore.FieldValue.increment(i.qty) });
+                }
             });
 
             await batch.commit();
 
+            // 3. WhatsApp Message
             let msg = `*RESTOCK ORDER: ${oid}* 📦\n👤 ${name}\n`;
             if(date) msg += `📅 ${date}\n`;
             msg += `\n*ITEMS:*`;
@@ -275,7 +303,7 @@
             const pricing = getPriceForQty(p, c.qty);
             const sub = pricing.price * c.qty;
             total += sub;
-            content += `${c.qty}x ${p.name} @ RM${pricing.price} = RM${sub.toFixed(2)}\n`;
+            content += `${c.qty}x ${p.name || c.name} @ RM${pricing.price} = RM${sub.toFixed(2)}\n`;
         });
         
         content += `--------------------------------\nTOTAL: RM ${total.toFixed(2)}\n================================\n`;
