@@ -169,8 +169,7 @@
             </div>
         </div>
     </div>
-
-    <script>
+                    <script>
         // CONFIG
         const firebaseConfig = {
           apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
@@ -211,7 +210,6 @@
             document.querySelectorAll('.sidebar-link').forEach(e=>e.classList.remove('active')); 
             document.getElementById('btn-'+v).classList.add('active'); 
             
-            // Auto close sidebar on mobile when link clicked
             if(window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
                 document.getElementById('sidebar-overlay').classList.add('hidden');
@@ -324,6 +322,34 @@
             } 
         }
 
+        // --- NEW: Image Compressor Helper ---
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        // Max width 800px is enough for mobile views
+                        const MAX_WIDTH = 800;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        // Compress to JPEG at 70% quality
+                        canvas.toBlob((blob) => {
+                            resolve(blob);
+                        }, 'image/jpeg', 0.7);
+                    };
+                };
+            });
+        }
+
         async function saveProduct() {
             const btn = document.getElementById('btn-save'); 
             const oldText = btn.innerHTML;
@@ -348,8 +374,15 @@
                 }
 
                 if(file) { 
+                    btn.innerHTML = '<div class="loader"></div> Uploading...'; // Update text
+                    
+                    // 1. Compress Image first
+                    const compressedBlob = await compressImage(file);
+                    
+                    // 2. Upload compressed version
                     const formData = new FormData();
-                    formData.append("image", file);
+                    formData.append("image", compressedBlob, "image.jpg");
+                    
                     const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
                     const result = await res.json();
                     if(!result.success) throw new Error("Upload failed");
