@@ -104,8 +104,7 @@
       </div>
   </div>
 
-      <script>
-    // ⚠️ IMPORTANT: Ensure this Config matches your main app if you share the same inventory
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
       authDomain: "pipahcookies-order.firebaseapp.com",
@@ -117,18 +116,13 @@
     };
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        // ENABLE OFFLINE PERSISTENCE
-firebase.firestore().enablePersistence()
-    .catch((err) => {
-        if (err.code == 'failed-precondition') {
-            console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-        } else if (err.code == 'unimplemented') {
-            console.log('The current browser does not support all of the features required to enable persistence');
-        }
+    const db = firebase.firestore();
+    
+    // OFFLINE MODE
+    db.enablePersistence().catch((err) => {
+        if (err.code == 'failed-precondition') console.log('Multiple tabs open');
+        else if (err.code == 'unimplemented') console.log('Browser no support');
     });
-
-const db = firebase.firestore();
-        
 
     // --- I18N CONFIG ---
     let curLang = 'ms';
@@ -214,15 +208,14 @@ const db = firebase.firestore();
     
     window.closeModal = (e) => { if(e.target.id==='modal') document.getElementById('modal').style.display = 'none'; };
 
-    // FIX 2: Save FULL product details to cart, not just ID
     function addToCart(id) {
-        const product = PRODUCTS.find(x => x.id === id); // Get full data
+        const product = PRODUCTS.find(x => x.id === id);
         const exist = CART.find(c => c.id === id); 
         
         if(exist) {
             exist.qty++; 
         } else {
-            // Save a copy of the product with qty
+            // Important: We save the full product data so Checkout page knows about Tiers
             CART.push({...product, qty: 1}); 
         }
         
@@ -235,14 +228,6 @@ const db = firebase.firestore();
     }
 
     function updateCart() { document.getElementById('cart-count').innerText = CART.reduce((a,b)=>a+b.qty,0); }
-
-    if ('serviceWorker' in navigator) { 
-        window.addEventListener('load', () => { 
-            navigator.serviceWorker.register('./service-worker.js')
-                .then(reg => console.log('SW Registered'))
-                .catch(err => console.log('SW Fail', err)); 
-        }); 
-    }
   </script>
 </body>
 </html>
