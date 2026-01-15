@@ -17,6 +17,10 @@
         .sidebar-link.active { background: #eff6ff; color: #2563eb; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Custom scrollbar for better mobile feel in modal */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
@@ -88,12 +92,14 @@
     </div>
 
     <div id="product-modal" class="fixed inset-0 z-50 hidden flex items-end md:items-center justify-center pointer-events-none">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto" onclick="closeModal()"></div>
-        <div class="bg-white w-full md:w-[500px] md:rounded-2xl rounded-t-2xl shadow-2xl pointer-events-auto max-h-[90vh] flex flex-col">
+        <div class="absolute inset-0 bg-black/50 pointer-events-auto" onclick="closeModal()"></div>
+        
+        <div class="bg-white w-full md:w-[500px] md:rounded-2xl rounded-t-2xl shadow-2xl pointer-events-auto max-h-[90vh] flex flex-col z-10 relative">
             <div class="p-4 border-b flex justify-between bg-slate-50 rounded-t-2xl">
                 <h3 class="font-bold">Product Details</h3>
-                <button onclick="closeModal()"><i class="fa-solid fa-times text-slate-400"></i></button>
+                <button onclick="closeModal()"><i class="fa-solid fa-times text-slate-400 text-xl"></i></button>
             </div>
+            
             <div class="p-5 space-y-4 overflow-y-auto custom-scroll">
                 <input type="hidden" id="p-id">
                 
@@ -108,7 +114,7 @@
 
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase">Product Name</label>
-                    <input type="text" id="p-name" class="w-full border border-slate-300 rounded-lg p-2.5 font-bold outline-none focus:border-blue-500">
+                    <input type="text" id="p-name" class="w-full border border-slate-300 rounded-lg p-2.5 font-bold outline-none focus:border-blue-500" placeholder="e.g. Nutella Tart">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase">Description</label>
@@ -138,7 +144,8 @@
                     <label class="font-bold text-sm text-slate-700">Available in Stock</label>
                 </div>
             </div>
-            <div class="p-4 border-t bg-white safe-area-bottom">
+            
+            <div class="p-4 border-t bg-white safe-area-bottom rounded-b-2xl">
                 <button onclick="saveProduct()" id="btn-save" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-blue-700 transition flex items-center justify-center gap-2">
                     Save Product
                 </button>
@@ -147,7 +154,7 @@
     </div>
 
     <script>
-        // YOUR NEW CONFIG
+        // CONFIG
         const firebaseConfig = {
           apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
           authDomain: "pipahcookies-order.firebaseapp.com",
@@ -165,6 +172,7 @@
         let PRODUCTS = [];
         let CURRENT_EDIT_ID = null;
 
+        // UI Logic
         function toggleSidebar() { 
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('sidebar-overlay');
@@ -196,6 +204,7 @@
             loadStats(); 
         }
 
+        // Database Logic
         function loadProducts() {
             db.collection('products').onSnapshot(snap => {
                 const grid = document.getElementById('manage-grid'); 
@@ -256,6 +265,7 @@
             });
         }
 
+        // Modal Logic
         function openModal() { 
             CURRENT_EDIT_ID=null; 
             ['p-name','p-desc','p-retail','p-agent','p-minqty'].forEach(i=>document.getElementById(i).value=''); 
