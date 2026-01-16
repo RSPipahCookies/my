@@ -147,7 +147,7 @@
       </div>
   </div>
 
-  <script>
+<script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
       authDomain: "pipahcookies-order.firebaseapp.com",
@@ -164,6 +164,7 @@
     let SHOP = {}, CART = [], DB_PRODUCTS = {}, curLang='ms';
     let currentModalIdx = -1;
 
+    // ... (Keep your i18n object here) ...
     const i18n = {
         ms: { your_info:"Maklumat Anda", menu:"Menu Pilihan", total:"Jumlah Besar", btn_order:"Hantar Order", ph_name:"Nama Penuh", ph_addr:"Alamat Penghantaran", alert_name:"Sila isi nama.", alert_item:"Sila pilih biskut.", promo_text:"Selamat Datang! Dapatkan biskut premium fresh dari oven sekarang.", lbl_name:"NAMA", lbl_addr:"ALAMAT", add_to_cart:"Simpan Pilihan" },
         en: { your_info:"Your Details", menu:"Menu", total:"Grand Total", btn_order:"Send Order", ph_name:"Full Name", ph_addr:"Delivery Address", alert_name:"Please enter name.", alert_item:"Please select items.", promo_text:"Welcome! Get premium fresh cookies directly from the oven.", lbl_name:"NAME", lbl_addr:"ADDRESS", add_to_cart:"Save Selection" }
@@ -189,6 +190,7 @@
             const snap = await db.collection('products').get();
             snap.forEach(d => DB_PRODUCTS[d.id] = d.data());
 
+            // 1. GET SHOP DATA
             if (shopId) {
                 const doc = await db.collection('shops').doc(shopId).get();
                 if (!doc.exists) throw new Error("Shop not found");
@@ -197,10 +199,21 @@
                 const str = decodeURIComponent(atob(encoded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
                 SHOP = JSON.parse(str);
             } else {
-                throw new Error("Invalid Link");
+                // Default fallback if no link used
+                SHOP = { n: "PipahCookies", w: "60123456789", p:[], i:[] }; 
             }
 
-            // ✅ CUSTOM PROMO TEXT LOGIC
+            // 2. TRACK VISITOR (Moved here to ensure we have the Name)
+            // This ensures Admin sees the visit under the correct Reseller Name
+            if(SHOP.n && SHOP.n !== "PipahCookies") {
+                 db.collection('reseller_visits').doc(SHOP.n).set({
+                    count: firebase.firestore.FieldValue.increment(1),
+                    lastVisit: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log("Visit counted for:", SHOP.n);
+            }
+
+            // ... (Rest of your UI rendering logic) ...
             if (SHOP.pm) {
                 document.getElementById('shop-promo').innerText = SHOP.pm;
             } else {
@@ -221,7 +234,6 @@
                 logo.classList.remove('hidden');
             }
 
-            // --- THEME COLOR INJECTION ---
             if (SHOP.c) {
                 const c = SHOP.c;
                 const style = document.createElement('style');
@@ -236,19 +248,20 @@
                 document.head.appendChild(style);
             }
 
-            SHOP.i.forEach((id, idx) => {
-                const p = DB_PRODUCTS[id];
-                if(p) {
-                    // ✅ FIXED: Save Description from DB to CART
-                    CART.push({ 
-                        id, name: p.name, 
-                        price: parseFloat(SHOP.p[idx]), 
-                        oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0,
-                        qty: 0, image: p.image,
-                        description: p.description // Added this line
-                    });
-                }
-            });
+            if(SHOP.i){
+                SHOP.i.forEach((id, idx) => {
+                    const p = DB_PRODUCTS[id];
+                    if(p) {
+                        CART.push({ 
+                            id, name: p.name, 
+                            price: parseFloat(SHOP.p[idx]), 
+                            oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0,
+                            qty: 0, image: p.image,
+                            description: p.description 
+                        });
+                    }
+                });
+            }
             
             document.getElementById('item-count').innerText = `${CART.length} Items`;
             render();
@@ -260,6 +273,7 @@
         }
     });
 
+    // ... (Keep render, filterProducts, openModal, closeModal, updateModalQty, confirmModal, recalcTotal, shareShop functions exactly as they are) ...
     function render(filter = "") {
         const list = document.getElementById('product-list'); 
         list.innerHTML = '';
@@ -270,7 +284,6 @@
             let priceHTML = `<p class="text-orange-600 font-extrabold theme-text">RM ${item.price.toFixed(2)}</p>`;
             let badgeHTML = '';
 
-            // Logic for badges
             if (idx === 0 && !filter) {
                 badgeHTML = `<span class="absolute -top-2 -left-2 bg-yellow-400 text-[9px] font-bold px-2 py-0.5 rounded shadow-sm z-10">BEST SELLER 🔥</span>`;
             }
@@ -300,11 +313,8 @@
         });
     }
 
-    function filterProducts() {
-        render(document.getElementById('search-input').value);
-    }
+    function filterProducts() { render(document.getElementById('search-input').value); }
 
-    // MODAL FUNCTIONS
     function openModal(idx) {
         currentModalIdx = idx;
         const item = CART[idx];
@@ -313,8 +323,6 @@
         document.getElementById('m-name').innerText = item.name;
         document.getElementById('m-price').innerText = `RM ${item.price.toFixed(2)}`;
         document.getElementById('m-qty').innerText = item.qty;
-        
-        // ✅ FIXED: Show Dynamic Description with fallback
         document.getElementById('m-desc').innerText = item.description || "Premium quality homemade cookies made with pure butter and high-quality chocolate. Freshly baked daily for the best taste.";
         
         if(item.oldPrice > item.price){
@@ -327,8 +335,6 @@
 
         document.getElementById('modal-backdrop').classList.remove('hidden');
         document.getElementById('product-modal').classList.remove('hidden');
-        
-        // Slight delay for animation
         setTimeout(() => {
             document.getElementById('modal-backdrop').classList.remove('opacity-0');
             document.getElementById('product-modal').classList.remove('translate-y-full');
@@ -406,13 +412,12 @@
 
             batch.set(orderRef, {
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                customerName: name, customerAddress: addr, resellerName: SHOP.n, resellerPhone: SHOP.w, items: orderItems, totalPrice: total, type: 'customer_order'
+                customerName: name, customerAddress: addr, resellerName: SHOP.n || 'PipahCookies', resellerPhone: SHOP.w, items: orderItems, totalPrice: total, type: 'customer_order'
             });
             items.forEach(i => { batch.update(db.collection('products').doc(i.id), { soldCount: firebase.firestore.FieldValue.increment(i.qty) }); });
             await batch.commit();
 
-            // ✅ SAFETY FIX: Added default fallback for SHOP.n to prevent crash
-            let msg = `*NEW ORDER: ${(SHOP.n || 'RESELLER').toUpperCase()}* 🍪\n\n👤 *${name}*\n`;
+            let msg = `*NEW ORDER: ${(SHOP.n || 'CUSTOMER').toUpperCase()}* 🍪\n\n👤 *${name}*\n`;
             if(addr) msg += `📍 ${addr}\n`;
             msg += `\n*ORDER LIST:*`;
             items.forEach(i => { msg += `\n▪️ ${i.qty}x ${i.name}`; });
@@ -426,19 +431,7 @@
             window.location.href = `https://wa.me/${SHOP.w}`; 
         }
     }
-  </script>
-  <script>
-    // TRACK VISITORS PER SHOP
-    const params = new URLSearchParams(window.location.search);
-    const currentReseller = params.get('r'); 
+</script>
 
-    if(currentReseller) {
-        // Save count specifically for this reseller
-        db.collection('reseller_visits').doc(currentReseller).set({
-            count: firebase.firestore.FieldValue.increment(1),
-            lastVisit: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-    }
-  </script>
 </body>
 </html>
