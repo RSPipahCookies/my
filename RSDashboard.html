@@ -35,9 +35,14 @@
 
   <div class="glass-header text-white sticky top-0 z-40 pb-4 rounded-b-[2rem] shadow-xl">
     <div class="px-5 py-4 flex justify-between items-center">
-        <div>
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Reseller Portal</p>
-            <h1 class="text-xl font-bold">Create Shop</h1>
+        <div class="flex items-center gap-3">
+            <a href="index.html" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+            </a>
+            <div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Reseller Portal</p>
+                <h1 class="text-xl font-bold">Create Shop</h1>
+            </div>
         </div>
         <button onclick="clearData()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:bg-red-500 hover:text-white transition">
             <i class="fa-solid fa-rotate-right text-xs"></i>
@@ -385,9 +390,13 @@
         }
     }
 
-    // --- HISTORY & LINK GENERATION (FIXED) ---
+    // --- HISTORY & LINK GENERATION (FIXED & SORTED) ---
     function renderHistory() {
-        const history = JSON.parse(localStorage.getItem('rs_history') || '[]');
+        let history = JSON.parse(localStorage.getItem('rs_history') || '[]');
+        
+        // --- ADDED SORTING HERE (Newest First) ---
+        history.sort((a, b) => (b.date || 0) - (a.date || 0));
+
         const list = document.getElementById('history-list');
         
         if(history.length === 0) {
@@ -462,8 +471,6 @@
             localStorage.setItem('rs_history', JSON.stringify(hist));
             renderHistory();
 
-            // ✅ OPTION 2 FIX: Robust Replace logic
-            // This replaces 'rsdashboard.html' (case insensitive) with 'OrderNow.html' (CamelCase)
             let path = window.location.pathname;
             path = path.replace(/rsdashboard\.html/i, 'OrderNow.html');
             const url = `${window.location.origin}${path}?id=${docRef.id}`;
