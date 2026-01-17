@@ -179,7 +179,7 @@
     db.enablePersistence().catch(err => console.log("Persistence disabled"));
 
     // --- GLOBALS ---
-    let editingId = null; // Tracks if we are editing an existing shop
+    let editingId = null; 
 
     // COLORS
     const COLORS = [
@@ -194,6 +194,7 @@
         renderHistory(); 
     }
 
+    // --- COLOR & UI ---
     function renderColors() {
         const c = document.getElementById('rs_color').value;
         let html = COLORS.map(col => 
@@ -211,7 +212,6 @@
         btn.style.backgroundColor = c;
         btn.style.boxShadow = `0 10px 15px -3px ${c}40`;
         
-        // Update checkbox styles dynamically
         document.querySelectorAll('.toggle-checkbox:checked').forEach(chk => {
             chk.style.borderColor = c;
             chk.nextElementSibling.style.backgroundColor = c;
@@ -224,6 +224,7 @@
         if(!editingId) saveState(); 
     }
 
+    // --- PRODUCT LOGIC ---
     function fetchProducts() {
         db.collection('products').where('available', '==', true).get().then(snap => {
             const list = document.getElementById('product-list'); 
@@ -319,7 +320,7 @@
     
     // --- STATE & UPLOAD ---
     function saveState() {
-        if (editingId) return; // Don't overwrite draft with edit data
+        if (editingId) return; 
         localStorage.setItem('rs_v3', JSON.stringify({
             wa: document.getElementById('rs_wa').value,
             name: document.getElementById('rs_name').value,
@@ -336,7 +337,6 @@
         if(s.name) document.getElementById('rs_name').value = s.name;
         if(s.promo) document.getElementById('rs_promo').value = s.promo;
         if(s.color) setColor(s.color);
-        
         if(s.logo) setImg('logo', s.logo);
         if(s.banner) setImg('banner', s.banner);
     }
@@ -361,18 +361,14 @@
         editingId = null;
         document.getElementById('gen-btn').innerHTML = `<span>Create Link</span><i class="fa-solid fa-arrow-right"></i>`;
         document.querySelector('h1').innerText = "Create Shop";
-        
-        // Remove cancel button if exists
         const oldCancel = document.getElementById('cancel-edit-btn');
         if(oldCancel) oldCancel.remove();
         
-        // Reset Form
         document.getElementById('rs_wa').value = "";
         document.getElementById('rs_name').value = "";
         document.getElementById('rs_promo').value = "";
-        document.querySelectorAll('input[type="checkbox"]:checked').forEach(c => c.click()); // Uncheck all
-        loadState(); // Reload draft
-        
+        document.querySelectorAll('input[type="checkbox"]:checked').forEach(c => c.click()); 
+        loadState(); 
         alert("Exited Edit Mode");
     }
 
@@ -400,7 +396,27 @@
         }
     }
 
-    // --- HISTORY, EDIT & DELETE ---
+    // --- HELPER: GET SHOP URL ---
+    function getShopUrl(id) {
+        // Gets current URL path, removes filename (e.g., rsdashboard.html), adds OrderNow.html
+        let path = window.location.pathname;
+        if (!path.endsWith('/')) {
+            path = path.substring(0, path.lastIndexOf('/') + 1);
+        }
+        return `${window.location.origin}${path}OrderNow.html?id=${id}`;
+    }
+
+    // --- HELPER: COPY LINK ---
+    window.copyShopLink = (id) => {
+        const url = getShopUrl(id);
+        if(navigator.clipboard && navigator.clipboard.writeText) {
+             navigator.clipboard.writeText(url).then(() => alert("Link Copied!"));
+        } else {
+            prompt("Copy Link:", url);
+        }
+    }
+
+    // --- HISTORY RENDER (UPDATED WITH COPY BTN) ---
     function renderHistory() {
         let history = JSON.parse(localStorage.getItem('rs_history') || '[]');
         history.sort((a, b) => (b.date || 0) - (a.date || 0));
@@ -421,9 +437,10 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="loadShop('${h.id}')" id="btn-edit-${h.id}" class="w-9 h-9 rounded-full bg-blue-50 border border-blue-100 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition"><i class="fa-solid fa-pencil text-xs"></i></button>
-                    <a href="OrderNow.html?id=${h.id}" target="_blank" class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-800 hover:text-white transition"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
-                    <button onclick="deleteShop('${h.id}')" class="w-9 h-9 rounded-full bg-red-50 border border-red-100 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition"><i class="fa-solid fa-trash text-xs"></i></button>
+                    <button onclick="copyShopLink('${h.id}')" class="w-9 h-9 rounded-full bg-amber-50 border border-amber-200 text-amber-500 flex items-center justify-center hover:bg-amber-500 hover:text-white transition shadow-sm" title="Copy Link"><i class="fa-regular fa-copy text-xs"></i></button>
+                    <button onclick="loadShop('${h.id}')" id="btn-edit-${h.id}" class="w-9 h-9 rounded-full bg-blue-50 border border-blue-100 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition shadow-sm"><i class="fa-solid fa-pencil text-xs"></i></button>
+                    <a href="OrderNow.html?id=${h.id}" target="_blank" class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-800 hover:text-white transition shadow-sm"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
+                    <button onclick="deleteShop('${h.id}')" class="w-9 h-9 rounded-full bg-red-50 border border-red-100 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition shadow-sm"><i class="fa-solid fa-trash text-xs"></i></button>
                 </div>
             </div>
         `).join('');
@@ -439,45 +456,33 @@
             const doc = await db.collection('shops').doc(id).get();
             if (!doc.exists) throw new Error("Shop not found");
             const data = doc.data();
-            editingId = id; // Set Global Edit ID
+            editingId = id; 
 
-            // 1. Fill Basics
             document.getElementById('rs_wa').value = data.w.startsWith('60') ? '0' + data.w.substring(2) : data.w;
             document.getElementById('rs_name').value = data.n;
             document.getElementById('rs_promo').value = data.pm || '';
-            
-            // 2. Images
             if(data.b) setImg('banner', data.b);
             if(data.l) setImg('logo', data.l);
-            
-            // 3. Color
             setColor(data.c || '#f97316');
 
-            // 4. Products (Reset then fill)
-            document.querySelectorAll('input[type="checkbox"]:checked').forEach(c => c.click()); // Reset all
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(c => c.click()); 
             
             if (data.i && data.i.length) {
-                // We need to wait a tick for toggle animations
                 setTimeout(() => {
                     data.i.forEach((itemId, index) => {
                         const chk = document.getElementById(`chk-${itemId}`);
                         if (chk) {
-                            // Set prices FIRST
                             document.getElementById(`price-${itemId}`).value = data.p[index];
                             if(data.op) document.getElementById(`old-price-${itemId}`).value = data.op[index];
-                            
-                            // Then Click (which triggers calc and open)
                             if (!chk.checked) chk.click(); 
                         }
                     });
                 }, 100);
             }
 
-            // 5. Update UI for Edit Mode
             document.getElementById('gen-btn').innerHTML = `<span>Update Shop</span><i class="fa-solid fa-rotate"></i>`;
             document.querySelector('h1').innerText = "Editing Shop...";
             
-            // Add Cancel Button
             if(!document.getElementById('cancel-edit-btn')) {
                 const h1div = document.querySelector('.glass-header h1').parentNode;
                 const cancelBtn = document.createElement('div');
@@ -487,7 +492,6 @@
                 cancelBtn.onclick = cancelEdit;
                 h1div.appendChild(cancelBtn);
             }
-            
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
         } catch (e) {
@@ -546,30 +550,24 @@
 
         try {
             if (editingId) {
-                // UPDATE EXISTING
+                // UPDATE
                 await db.collection('shops').doc(editingId).update(payload);
                 alert("Shop updated successfully!");
-                
-                // Update local history name if changed
                 let h = JSON.parse(localStorage.getItem('rs_history') || '[]');
                 const idx = h.findIndex(x => x.id === editingId);
                 if(idx > -1) { h[idx].name = name; h[idx].date = Date.now(); }
                 localStorage.setItem('rs_history', JSON.stringify(h));
-                
             } else {
-                // CREATE NEW
+                // CREATE
                 const docRef = await db.collection('shops').add(payload);
                 const hist = JSON.parse(localStorage.getItem('rs_history') || '[]');
                 hist.unshift({ id: docRef.id, name: name, date: Date.now() });
                 localStorage.setItem('rs_history', JSON.stringify(hist));
                 
-                // Prompt Share
-                let path = window.location.pathname.replace(/rsdashboard\.html/i, 'OrderNow.html');
-                const url = `${window.location.origin}${path}?id=${docRef.id}`;
+                const url = getShopUrl(docRef.id);
                 if(navigator.share) await navigator.share({title: name, url: url});
                 else prompt("Copy Link:", url);
             }
-
             renderHistory();
             if(editingId) cancelEdit(); 
 
@@ -579,6 +577,7 @@
     
     init();
   </script>
+
 
 </body>
 </html>
