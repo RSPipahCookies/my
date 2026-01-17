@@ -163,6 +163,7 @@
       </div>
   </div>
 
+
 <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
@@ -187,11 +188,143 @@
         {h:'#10b981'}, {h:'#ef4444'}, {h:'#0f172a'}, {h:'#8b5cf6'}
     ];
 
+    // --- TRUST-FOCUSED TEMPLATES ---
+    const MARKETING_TEMPLATES = [
+        {
+            title: "Paling Selamat (Anti-Scam)",
+            text: "✅ *Link Ni Selamat (Menu Sahaja)*\n\nHi semua, untuk order cookies {name}, boleh tengok gambar dekat link ni.\n\nJangan risau, ini link katalog biasa:\n❌ Tak perlu install App/APK\n❌ Tak minta password bank\n❌ Tak perlu bayar dalam web\n\nTekan, pilih kuih, lepastu kita deal manual dalam WhatsApp.\n\nTengok sini 👇:\n{url}"
+        },
+        {
+            title: "Penjelasan Sistem (Digital Menu)",
+            text: "🍪 *Menu Digital {name}*\n\nZaman sekarang semua nak cepat. Jadi saya buat Menu Digital ni untuk senangkan korang tengok harga & gambar.\n\nLink ni cuma 'Borang Order'. Lepas submit, dia akan terus masuk WhatsApp saya. Bayaran transfer manual macam biasa.\n\nJemput tengok menu 👇:\n{url}"
+        },
+        {
+            title: "Direct WhatsApp (Telus)",
+            text: "Nak order tanpa pening kepala? Guna link ni 👇\n\n{url}\n\nFungsi link ni cuma untuk *listkan order* korang supaya tak tertinggal barang. \n\nLepas tekan 'Order', korang akan chat dengan saya (owner sebenar) dekat WhatsApp. Bukan robot ya! 😊"
+        },
+        {
+            title: "Official Catalog (Nampak Pro)",
+            text: "✨ *Katalog Rasmi {name}*\n\nUntuk elakkan scammer atau salah harga, sila rujuk katalog rasmi kami di sini:\n\n👉 {url}\n\nSemua harga & stok terkini ada dipaparkan. 100% Selamat & Trusted."
+        },
+        {
+            title: "Gaya Santai (Kawan-kawan)",
+            text: "Korang, ni link kedai online saya. 🍪\n\nKalau nak tengok-tengok dulu pun boleh. Link ni selamat, jangan takut tekan. Dia macam menu kedai makan je.\n\nKalau berkenan baru PM tepi. Jemput cuci mata:\n{url}"
+        },
+        {
+            title: "Jaminan Manual Payment",
+            text: "Ramai takut tekan link sebab takut duit hilang kan? 😅\n\nJangan risau, link {name} ni **TIADA PAYMENT GATEWAY**. Maksudnya tak boleh bayar pun dalam tu.\n\nIa cuma untuk pilih barang je. Nak bayar nanti, saya bagi QR Code/No Akaun dekat WhatsApp.\n\nTry tengok sini 👇:\n{url}"
+        },
+        {
+            title: "Short & Sweet (Padat)",
+            text: "Buka link ni untuk tengok senarai Cookies Raya 2024 👇\n\n🔗 {url}\n\n✅ Link Selamat (Verified)\n✅ Direct ke WhatsApp 01X-XXXXXXX\n✅ Bayaran Manual (Transfer)\n\nJemput order!"
+        },
+        {
+            title: "Reseller/Agent Sah",
+            text: "Saya Agent Sah {name}. ✅\n\nBoleh order guna sistem kami untuk fast response. Tak perlu tunggu saya reply satu-satu.\n\nTekan link, pilih kuih, terus hantar order. Saya akan reply secepat mungkin untuk confirmation.\n\nLink Order 👇:\n{url}"
+        },
+        {
+            title: "Focus Privacy",
+            text: "🔒 *Order Dengan Selamat*\n\nKami menjaga privasi anda. Link tempahan ini tidak menyimpan data perbankan anda. \n\nIa hanyalah alat untuk memudahkan tempahan ke WhatsApp. \n\nSila buat tempahan di sini:\n{url}"
+        },
+        {
+            title: "Soft Call-to-Action",
+            text: "Susah nak agak berapa harga kalau beli banyak? 🤔\n\nGuna link ni, dia tolong kirakan total siap-siap. Puas hati baru proceed order.\n\nTekan je, tak kena bayar pun untuk tengok:\n{url}"
+        }
+    ];
+
     function init() { 
+        createModalHTML(); 
         renderColors(); 
         loadState(); 
         fetchProducts(); 
         renderHistory(); 
+    }
+
+    // --- MODAL LOGIC ---
+    function createModalHTML() {
+        if(document.getElementById('caption-modal')) return;
+        
+        const modal = document.createElement('div');
+        modal.id = 'caption-modal';
+        modal.className = 'fixed inset-0 z-[60] hidden';
+        modal.innerHTML = `
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeCaptionModal()"></div>
+            <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:rounded-2xl bg-slate-50 rounded-t-[2rem] shadow-2xl flex flex-col max-h-[85vh] transition-transform duration-300 transform translate-y-full" id="caption-panel">
+                <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-white rounded-t-[2rem]">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Pilih Ayat Trusted ✅</h3>
+                        <p class="text-[10px] text-slate-400">Pilih ayat yang buat customer rasa selamat.</p>
+                    </div>
+                    <button onclick="closeCaptionModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-red-100 hover:text-red-500 transition"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="overflow-y-auto p-4 space-y-3 bg-slate-50" id="caption-list">
+                    </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    window.openCaptionModal = (id, shopName) => {
+        const url = getShopUrl(id);
+        const list = document.getElementById('caption-list');
+        const modal = document.getElementById('caption-modal');
+        const panel = document.getElementById('caption-panel');
+        
+        // Generate list
+        list.innerHTML = MARKETING_TEMPLATES.map((t, i) => {
+            // Replace placeholders
+            const content = t.text.replace(/{url}/g, url).replace(/{name}/g, shopName);
+            
+            return `
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-orange-300 transition group cursor-pointer" onclick="copyToClip(this.querySelector('button'), \`${encodeURIComponent(content)}\`)">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-bold uppercase bg-green-50 text-green-600 px-2 py-1 rounded-md tracking-wider border border-green-100"><i class="fa-solid fa-shield-halved mr-1"></i> ${t.title}</span>
+                    <button class="text-xs bg-slate-900 text-white px-3 py-1.5 rounded-lg font-bold active:scale-95 transition flex items-center gap-2 group-hover:bg-orange-500 shadow-lg shadow-slate-200">
+                        Copy <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-600 whitespace-pre-line leading-relaxed border-l-2 border-slate-100 pl-3">${content}</p>
+            </div>`;
+        }).join('');
+
+        // Show Modal
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            panel.classList.remove('translate-y-full');
+        }, 10);
+    }
+
+    window.closeCaptionModal = () => {
+        const modal = document.getElementById('caption-modal');
+        const panel = document.getElementById('caption-panel');
+        panel.classList.add('translate-y-full');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    window.copyToClip = (btn, encodedText) => {
+        const text = decodeURIComponent(encodedText);
+        // Stop propagation if clicked via parent div
+        if(event) event.stopPropagation();
+
+        if(navigator.clipboard && navigator.clipboard.writeText) {
+             navigator.clipboard.writeText(text).then(() => {
+                 const originalHTML = btn.innerHTML;
+                 btn.innerHTML = 'Copied! <i class="fa-solid fa-check"></i>';
+                 btn.classList.remove('bg-slate-900', 'group-hover:bg-orange-500');
+                 btn.classList.add('bg-green-500', 'text-white');
+                 
+                 setTimeout(() => {
+                     btn.innerHTML = originalHTML;
+                     btn.classList.add('bg-slate-900', 'group-hover:bg-orange-500');
+                     btn.classList.remove('bg-green-500', 'text-white');
+                     closeCaptionModal(); // Auto close after copy
+                 }, 1000);
+             });
+        } else {
+            prompt("Copy this:", text);
+        }
     }
 
     // --- COLOR & UI ---
@@ -398,7 +531,6 @@
 
     // --- HELPER: GET SHOP URL ---
     function getShopUrl(id) {
-        // Gets current URL path, removes filename (e.g., rsdashboard.html), adds OrderNow.html
         let path = window.location.pathname;
         if (!path.endsWith('/')) {
             path = path.substring(0, path.lastIndexOf('/') + 1);
@@ -406,7 +538,6 @@
         return `${window.location.origin}${path}OrderNow.html?id=${id}`;
     }
 
-    // --- HELPER: COPY LINK ---
     window.copyShopLink = (id) => {
         const url = getShopUrl(id);
         if(navigator.clipboard && navigator.clipboard.writeText) {
@@ -416,7 +547,7 @@
         }
     }
 
-    // --- HISTORY RENDER (UPDATED WITH COPY BTN) ---
+    // --- HISTORY RENDER ---
     function renderHistory() {
         let history = JSON.parse(localStorage.getItem('rs_history') || '[]');
         history.sort((a, b) => (b.date || 0) - (a.date || 0));
@@ -437,6 +568,7 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
+                    <button onclick="openCaptionModal('${h.id}', '${h.name}')" class="w-9 h-9 rounded-full bg-green-50 border border-green-200 text-green-600 flex items-center justify-center hover:bg-green-500 hover:text-white transition shadow-sm" title="Pilih Ayat Marketing"><i class="fa-regular fa-message text-xs"></i></button>
                     <button onclick="copyShopLink('${h.id}')" class="w-9 h-9 rounded-full bg-amber-50 border border-amber-200 text-amber-500 flex items-center justify-center hover:bg-amber-500 hover:text-white transition shadow-sm" title="Copy Link"><i class="fa-regular fa-copy text-xs"></i></button>
                     <button onclick="loadShop('${h.id}')" id="btn-edit-${h.id}" class="w-9 h-9 rounded-full bg-blue-50 border border-blue-100 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition shadow-sm"><i class="fa-solid fa-pencil text-xs"></i></button>
                     <a href="OrderNow.html?id=${h.id}" target="_blank" class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-800 hover:text-white transition shadow-sm"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></a>
