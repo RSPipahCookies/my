@@ -34,6 +34,13 @@
         <div class="bg-white/10 p-1 rounded-full flex">
             <button onclick="setLang('ms')" id="btn-ms" class="px-3 py-1 bg-white text-slate-900 rounded-full text-[10px] font-bold transition">MY</button>
             <button onclick="setLang('en')" id="btn-en" class="px-3 py-1 text-white/70 hover:bg-white/10 rounded-full text-[10px] font-bold transition">EN</button>
+      <button 
+  id="install-btn" 
+  hidden
+  onclick="installPWA()" 
+  class="ml-2 px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-[10px] font-bold shadow-lg transition active:scale-95 flex items-center gap-1">
+  <i class="fa-solid fa-download"></i> Install App
+      </button>
         </div>
     </div>
     
@@ -103,13 +110,7 @@
           </div>
       </div>
   </div>
-<button 
-  id="install-btn" 
-  hidden
-  onclick="installPWA()" 
-  class="ml-2 px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-[10px] font-bold shadow-lg transition active:scale-95 flex items-center gap-1">
-  <i class="fa-solid fa-download"></i> Install App
-</button>
+
   
   <script>
     const firebaseConfig = {
