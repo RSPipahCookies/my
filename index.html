@@ -103,7 +103,14 @@
           </div>
       </div>
   </div>
-
+<button 
+  id="install-btn" 
+  hidden
+  onclick="installPWA()" 
+  class="ml-2 px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-[10px] font-bold shadow-lg transition active:scale-95 flex items-center gap-1">
+  <i class="fa-solid fa-download"></i> Install App
+</button>
+  
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
@@ -228,6 +235,50 @@
     }
 
     function updateCart() { document.getElementById('cart-count').innerText = CART.reduce((a,b)=>a+b.qty,0); }
+  </script>
+  <script>// --- PWA INSTALLATION LOGIC ---
+
+// 1. Register your Service Worker file
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        // Make sure this matches your actual filename (service-worker.js)
+        navigator.serviceWorker.register('./service-worker.js') 
+            .then(reg => console.log('SW Registered'))
+            .catch(err => console.log('SW Error:', err));
+    });
+}
+
+// 2. Handle the Install Prompt
+let deferredPrompt;
+const installBtn = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();       // Stop browser from showing default banner
+    deferredPrompt = e;       // Save the event for later
+    installBtn.hidden = false; // Show our custom button
+    installBtn.style.display = 'flex'; // Ensure flex layout applies
+});
+
+async function installPWA() {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();  // Show the browser prompt
+    
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response: ${outcome}`);
+    
+    // We can't use the prompt again, so hide button
+    deferredPrompt = null;
+    installBtn.hidden = true;
+    installBtn.style.display = 'none';
+}
+
+window.addEventListener('appinstalled', () => {
+    installBtn.hidden = true; // Hide button if installed
+    installBtn.style.display = 'none';
+    console.log('App installed successfully');
+});
   </script>
 </body>
 </html>
