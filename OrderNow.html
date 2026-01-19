@@ -15,17 +15,12 @@
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #F8FAFC; padding-bottom: 140px; -webkit-tap-highlight-color: transparent; }
     .loader { border: 3px solid #f3f3f3; border-top: 3px solid #ea580c; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    
-    /* Hide scrollbar for clean UI */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* Modal Animation */
     .modal-enter { transform: translateY(100%); opacity: 0; }
     .modal-enter-active { transform: translateY(0); opacity: 1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .modal-exit { transform: translateY(100%); opacity: 0; transition: all 0.2s ease-in; }
-    
-    .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .active-tab { background-color: #f97316; color: white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3); }
+    .inactive-tab { background-color: transparent; color: #64748b; }
   </style>
 </head>
 <body class="select-none">
@@ -81,14 +76,36 @@
             <div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 grid place-items-center theme-icon-bg theme-text"><i class="fa-regular fa-user"></i></div>
             <h3 class="text-sm font-bold text-slate-700 uppercase" data-i18n="your_info">Maklumat Anda</h3>
         </div>
+        
+        <div class="flex p-1 bg-slate-100 rounded-xl mb-4" id="method-container">
+            <button onclick="setMethod('delivery')" id="btn-delivery" class="flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 active-tab theme-bg">
+                <i class="fa-solid fa-motorcycle"></i> <span data-i18n="m_delivery">Delivery</span>
+            </button>
+            <button onclick="setMethod('pickup')" id="btn-pickup" class="flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 inactive-tab">
+                <i class="fa-solid fa-shop"></i> <span data-i18n="m_pickup">Self Pickup</span>
+            </button>
+        </div>
+
         <div class="space-y-4">
             <div>
                 <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block" data-i18n="lbl_name">Nama</label>
                 <input type="text" id="c_name" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-orange-500 transition theme-ring" placeholder="Nama Penuh">
             </div>
-            <div>
+            
+            <div id="delivery-input">
                 <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block" data-i18n="lbl_addr">Alamat</label>
                 <textarea id="c_addr" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:ring-2 ring-orange-500 transition theme-ring" placeholder="Alamat Penghantaran"></textarea>
+            </div>
+
+            <div id="pickup-input" class="hidden grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block" data-i18n="lbl_date">Tarikh</label>
+                    <input type="date" id="c_date" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 outline-none focus:ring-2 ring-orange-500 transition theme-ring">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1 block" data-i18n="lbl_time">Masa</label>
+                    <input type="time" id="c_time" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold text-slate-800 outline-none focus:ring-2 ring-orange-500 transition theme-ring">
+                </div>
             </div>
         </div>
     </div>
@@ -134,7 +151,6 @@
             </div>
           </div>
           <p id="m-desc" class="text-slate-500 text-sm leading-relaxed mb-6">Loading description...</p>
-          
           <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-100">
               <span class="font-bold text-slate-600 text-sm">Quantity</span>
               <div class="flex items-center gap-4">
@@ -163,11 +179,23 @@
 
     let SHOP = {}, CART = [], DB_PRODUCTS = {}, curLang='ms';
     let currentModalIdx = -1;
+    let selectedMethod = 'delivery'; // 'delivery' or 'pickup'
 
-    // ... (Keep your i18n object here) ...
     const i18n = {
-        ms: { your_info:"Maklumat Anda", menu:"Menu Pilihan", total:"Jumlah Besar", btn_order:"Hantar Order", ph_name:"Nama Penuh", ph_addr:"Alamat Penghantaran", alert_name:"Sila isi nama.", alert_item:"Sila pilih biskut.", promo_text:"Selamat Datang! Dapatkan biskut premium fresh dari oven sekarang.", lbl_name:"NAMA", lbl_addr:"ALAMAT", add_to_cart:"Simpan Pilihan" },
-        en: { your_info:"Your Details", menu:"Menu", total:"Grand Total", btn_order:"Send Order", ph_name:"Full Name", ph_addr:"Delivery Address", alert_name:"Please enter name.", alert_item:"Please select items.", promo_text:"Welcome! Get premium fresh cookies directly from the oven.", lbl_name:"NAME", lbl_addr:"ADDRESS", add_to_cart:"Save Selection" }
+        ms: { 
+            your_info:"Maklumat Anda", menu:"Menu Pilihan", total:"Jumlah Besar", btn_order:"Hantar Order", 
+            ph_name:"Nama Penuh", ph_addr:"Alamat Penghantaran", alert_name:"Sila isi nama.", alert_item:"Sila pilih biskut.", 
+            promo_text:"Selamat Datang! Dapatkan biskut premium fresh dari oven sekarang.", lbl_name:"NAMA", lbl_addr:"ALAMAT PENGHANTARAN", 
+            add_to_cart:"Simpan Pilihan", m_delivery:"Penghantaran", m_pickup:"Ambil Sendiri", lbl_date:"TARIKH", lbl_time:"MASA",
+            alert_addr: "Sila isi alamat.", alert_time: "Sila pilih tarikh & masa."
+        },
+        en: { 
+            your_info:"Your Details", menu:"Menu", total:"Grand Total", btn_order:"Send Order", 
+            ph_name:"Full Name", ph_addr:"Delivery Address", alert_name:"Please enter name.", alert_item:"Please select items.", 
+            promo_text:"Welcome! Get premium fresh cookies directly from the oven.", lbl_name:"NAME", lbl_addr:"DELIVERY ADDRESS", 
+            add_to_cart:"Save Selection", m_delivery:"Delivery", m_pickup:"Self Pickup", lbl_date:"DATE", lbl_time:"TIME",
+            alert_addr: "Please enter address.", alert_time: "Please select date & time."
+        }
     };
 
     function setLang(l) {
@@ -190,7 +218,6 @@
             const snap = await db.collection('products').get();
             snap.forEach(d => DB_PRODUCTS[d.id] = d.data());
 
-            // 1. GET SHOP DATA
             if (shopId) {
                 const doc = await db.collection('shops').doc(shopId).get();
                 if (!doc.exists) throw new Error("Shop not found");
@@ -198,53 +225,41 @@
             } else if (encoded) {
                 const str = decodeURIComponent(atob(encoded).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
                 SHOP = JSON.parse(str);
-            } else {
-                // Default fallback if no link used
-                SHOP = { n: "PipahCookies", w: "60123456789", p:[], i:[] }; 
-            }
+            } else { SHOP = { n: "PipahCookies", w: "60123456789", p:[], i:[] }; }
 
-            // 2. TRACK VISITOR (Moved here to ensure we have the Name)
-            // This ensures Admin sees the visit under the correct Reseller Name
             if(SHOP.n && SHOP.n !== "PipahCookies") {
-                 db.collection('reseller_visits').doc(SHOP.n).set({
-                    count: firebase.firestore.FieldValue.increment(1),
-                    lastVisit: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                console.log("Visit counted for:", SHOP.n);
+                 db.collection('reseller_visits').doc(SHOP.n).set({ count: firebase.firestore.FieldValue.increment(1), lastVisit: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
             }
 
-            // ... (Rest of your UI rendering logic) ...
-            if (SHOP.pm) {
-                document.getElementById('shop-promo').innerText = SHOP.pm;
+            // --- FULFILLMENT SETUP ---
+            const hasDelivery = SHOP.fulfillment ? SHOP.fulfillment.delivery : true;
+            const hasPickup = SHOP.fulfillment ? SHOP.fulfillment.pickup : true;
+
+            if (!hasDelivery && hasPickup) {
+                setMethod('pickup');
+                document.getElementById('btn-delivery').classList.add('hidden');
+            } else if (hasDelivery && !hasPickup) {
+                setMethod('delivery');
+                document.getElementById('btn-pickup').classList.add('hidden');
+            } else if (!hasDelivery && !hasPickup) {
+                // Fallback if both disabled
+                setMethod('delivery');
             } else {
-                document.getElementById('shop-promo').innerText = "Welcome! Order delicious cookies now."; 
+                setMethod('delivery'); // Default if both enabled
             }
-            
+            // --------------------------
+
+            if (SHOP.pm) document.getElementById('shop-promo').innerText = SHOP.pm;
             document.getElementById('shop-name').innerText = SHOP.n || 'PipahCookies';
             document.title = SHOP.n + " - Order";
             
-            if (SHOP.b) {
-                const bg = document.getElementById('header-bg');
-                bg.style.backgroundImage = `url('${SHOP.b}')`;
-            }
-
-            if (SHOP.l) {
-                const logo = document.getElementById('shop-logo');
-                logo.src = SHOP.l;
-                logo.classList.remove('hidden');
-            }
+            if (SHOP.b) document.getElementById('header-bg').style.backgroundImage = `url('${SHOP.b}')`;
+            if (SHOP.l) { const logo = document.getElementById('shop-logo'); logo.src = SHOP.l; logo.classList.remove('hidden'); }
 
             if (SHOP.c) {
                 const c = SHOP.c;
                 const style = document.createElement('style');
-                style.innerHTML = `
-                    .theme-bg-dark, #header-container { background-color: ${c} !important; }
-                    .theme-bg, .bg-green-500, .bg-orange-600 { background-color: ${c} !important; border-color: ${c} !important; }
-                    .theme-text, .text-orange-600 { color: ${c} !important; }
-                    .theme-icon-bg { background-color: ${c}1a !important; color: ${c} !important; } 
-                    .theme-ring:focus { --tw-ring-color: ${c} !important; }
-                    .loader { border-top-color: ${c} !important; }
-                `;
+                style.innerHTML = `.theme-bg-dark, #header-container { background-color: ${c} !important; }.theme-bg, .active-tab { background-color: ${c} !important; border-color: ${c} !important; color: white !important; }.theme-text, .text-orange-600 { color: ${c} !important; }.theme-icon-bg { background-color: ${c}1a !important; color: ${c} !important; }.theme-ring:focus { --tw-ring-color: ${c} !important; }.loader { border-top-color: ${c} !important; }`;
                 document.head.appendChild(style);
             }
 
@@ -252,11 +267,15 @@
                 SHOP.i.forEach((id, idx) => {
                     const p = DB_PRODUCTS[id];
                     if(p) {
+                        // CHECK FOR CUSTOM IMAGE
+                        const customImg = (SHOP.pi && SHOP.pi[idx]) ? SHOP.pi[idx] : p.image;
+                        
                         CART.push({ 
                             id, name: p.name, 
                             price: parseFloat(SHOP.p[idx]), 
                             oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0,
-                            qty: 0, image: p.image,
+                            qty: 0, 
+                            image: customImg, // Use determined image
                             description: p.description 
                         });
                     }
@@ -267,137 +286,82 @@
             render();
             document.getElementById('loader').classList.add('hidden');
 
-        } catch(e) { 
-            console.error(e);
-            document.getElementById('loader').innerHTML = '<p class="text-red-500 font-bold">Shop Error.</p>'; 
-        }
+        } catch(e) { console.error(e); document.getElementById('loader').innerHTML = '<p class="text-red-500 font-bold">Shop Error.</p>'; }
     });
 
-    // ... (Keep render, filterProducts, openModal, closeModal, updateModalQty, confirmModal, recalcTotal, shareShop functions exactly as they are) ...
+    // NEW: Method Toggle Function
+    function setMethod(method) {
+        selectedMethod = method;
+        const btnDel = document.getElementById('btn-delivery');
+        const btnPick = document.getElementById('btn-pickup');
+        const inpDel = document.getElementById('delivery-input');
+        const inpPick = document.getElementById('pickup-input');
+
+        if(method === 'delivery') {
+            btnDel.className = "flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 active-tab theme-bg";
+            btnPick.className = "flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 inactive-tab";
+            inpDel.classList.remove('hidden');
+            inpPick.classList.add('hidden');
+        } else {
+            btnPick.className = "flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 active-tab theme-bg";
+            btnDel.className = "flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 inactive-tab";
+            inpPick.classList.remove('hidden');
+            inpDel.classList.add('hidden');
+        }
+    }
+
     function render(filter = "") {
-        const list = document.getElementById('product-list'); 
-        list.innerHTML = '';
-        
+        const list = document.getElementById('product-list'); list.innerHTML = '';
         CART.forEach((item, idx) => {
             if(filter && !item.name.toLowerCase().includes(filter.toLowerCase())) return;
-
             let priceHTML = `<p class="text-orange-600 font-extrabold theme-text">RM ${item.price.toFixed(2)}</p>`;
-            let badgeHTML = '';
-
-            if (idx === 0 && !filter) {
-                badgeHTML = `<span class="absolute -top-2 -left-2 bg-yellow-400 text-[9px] font-bold px-2 py-0.5 rounded shadow-sm z-10">BEST SELLER 🔥</span>`;
-            }
-            if (item.oldPrice > item.price) {
-                priceHTML = `
-                <div>
-                    <span class="text-[10px] text-slate-400 line-through mr-1">RM${item.oldPrice.toFixed(2)}</span>
-                    <span class="text-orange-600 font-extrabold theme-text">RM ${item.price.toFixed(2)}</span>
-                </div>`;
-            }
-
+            let badgeHTML = (idx === 0 && !filter) ? `<span class="absolute -top-2 -left-2 bg-yellow-400 text-[9px] font-bold px-2 py-0.5 rounded shadow-sm z-10">BEST SELLER 🔥</span>` : '';
+            if (item.oldPrice > item.price) { priceHTML = `<div><span class="text-[10px] text-slate-400 line-through mr-1">RM${item.oldPrice.toFixed(2)}</span><span class="text-orange-600 font-extrabold theme-text">RM ${item.price.toFixed(2)}</span></div>`; }
             const qtyBadge = item.qty > 0 ? `<div class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-md z-10 animate-bounce">${item.qty}</div>` : '';
 
             list.innerHTML += `
             <div class="relative bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex gap-4 items-center transition active:scale-[0.98]" onclick="openModal(${idx})">
-                ${badgeHTML}
-                ${qtyBadge}
+                ${badgeHTML}${qtyBadge}
                 <img src="${item.image}" class="w-20 h-20 rounded-xl object-cover bg-gray-100 shadow-sm" loading="lazy">
-                <div class="flex-1">
-                    <h4 class="font-bold text-slate-800 leading-tight mb-1 text-sm line-clamp-2">${item.name}</h4>
-                    ${priceHTML}
-                </div>
-                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                    <i class="fa-solid fa-plus"></i>
-                </div>
+                <div class="flex-1"><h4 class="font-bold text-slate-800 leading-tight mb-1 text-sm line-clamp-2">${item.name}</h4>${priceHTML}</div>
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-plus"></i></div>
             </div>`;
         });
     }
 
     function filterProducts() { render(document.getElementById('search-input').value); }
-
     function openModal(idx) {
-        currentModalIdx = idx;
-        const item = CART[idx];
-        
-        document.getElementById('m-img').src = item.image;
-        document.getElementById('m-name').innerText = item.name;
-        document.getElementById('m-price').innerText = `RM ${item.price.toFixed(2)}`;
-        document.getElementById('m-qty').innerText = item.qty;
-        document.getElementById('m-desc').innerText = item.description || "Premium quality homemade cookies made with pure butter and high-quality chocolate. Freshly baked daily for the best taste.";
-        
-        if(item.oldPrice > item.price){
-            const op = document.getElementById('m-old-price');
-            op.innerText = `RM ${item.oldPrice.toFixed(2)}`;
-            op.classList.remove('hidden');
-        } else {
-            document.getElementById('m-old-price').classList.add('hidden');
-        }
-
-        document.getElementById('modal-backdrop').classList.remove('hidden');
-        document.getElementById('product-modal').classList.remove('hidden');
-        setTimeout(() => {
-            document.getElementById('modal-backdrop').classList.remove('opacity-0');
-            document.getElementById('product-modal').classList.remove('translate-y-full');
-        }, 10);
+        currentModalIdx = idx; const item = CART[idx];
+        document.getElementById('m-img').src = item.image; document.getElementById('m-name').innerText = item.name; document.getElementById('m-price').innerText = `RM ${item.price.toFixed(2)}`;
+        document.getElementById('m-qty').innerText = item.qty; document.getElementById('m-desc').innerText = item.description || "Premium quality homemade cookies made with pure butter. Freshly baked.";
+        if(item.oldPrice > item.price){ document.getElementById('m-old-price').innerText = `RM ${item.oldPrice.toFixed(2)}`; document.getElementById('m-old-price').classList.remove('hidden'); } else { document.getElementById('m-old-price').classList.add('hidden'); }
+        document.getElementById('modal-backdrop').classList.remove('hidden'); document.getElementById('product-modal').classList.remove('hidden');
+        setTimeout(() => { document.getElementById('modal-backdrop').classList.remove('opacity-0'); document.getElementById('product-modal').classList.remove('translate-y-full'); }, 10);
     }
-
-    function closeModal() {
-        document.getElementById('modal-backdrop').classList.add('opacity-0');
-        document.getElementById('product-modal').classList.add('translate-y-full');
-        setTimeout(() => {
-            document.getElementById('modal-backdrop').classList.add('hidden');
-            document.getElementById('product-modal').classList.add('hidden');
-        }, 300);
-    }
-
-    function updateModalQty(d) {
-        let currentQ = parseInt(document.getElementById('m-qty').innerText);
-        if(currentQ + d < 0) return;
-        document.getElementById('m-qty').innerText = currentQ + d;
-    }
-
-    function confirmModal() {
-        if(currentModalIdx > -1) {
-            const newQ = parseInt(document.getElementById('m-qty').innerText);
-            CART[currentModalIdx].qty = newQ;
-            recalcTotal();
-            render(document.getElementById('search-input').value);
-            closeModal();
-        }
-    }
-
+    function closeModal() { document.getElementById('modal-backdrop').classList.add('opacity-0'); document.getElementById('product-modal').classList.add('translate-y-full'); setTimeout(() => { document.getElementById('modal-backdrop').classList.add('hidden'); document.getElementById('product-modal').classList.add('hidden'); }, 300); }
+    function updateModalQty(d) { let currentQ = parseInt(document.getElementById('m-qty').innerText); if(currentQ + d < 0) return; document.getElementById('m-qty').innerText = currentQ + d; }
+    function confirmModal() { if(currentModalIdx > -1) { CART[currentModalIdx].qty = parseInt(document.getElementById('m-qty').innerText); recalcTotal(); render(document.getElementById('search-input').value); closeModal(); } }
     function recalcTotal() {
-        let total = 0, count = 0;
-        CART.forEach(c => { total += c.qty * c.price; count += c.qty; });
-        document.getElementById('grand-total').innerText = "RM " + total.toFixed(2);
-        document.getElementById('total-qty').innerText = `(${count} items)`;
-        
-        const bar = document.getElementById('cart-bar'); 
-        if (count > 0) {
-            bar.classList.remove('translate-y-full');
-        } else {
-            bar.classList.add('translate-y-full');
-        }
+        let total = 0, count = 0; CART.forEach(c => { total += c.qty * c.price; count += c.qty; });
+        document.getElementById('grand-total').innerText = "RM " + total.toFixed(2); document.getElementById('total-qty').innerText = `(${count} items)`;
+        const bar = document.getElementById('cart-bar'); if (count > 0) { bar.classList.remove('translate-y-full'); } else { bar.classList.add('translate-y-full'); }
     }
-
-    function shareShop() {
-        if (navigator.share) {
-            navigator.share({
-                title: SHOP.n || 'Order Cookies',
-                text: 'Check out these delicious cookies!',
-                url: window.location.href
-            }).catch(console.error);
-        } else {
-            alert("Copy Link: " + window.location.href);
-        }
-    }
+    function shareShop() { if (navigator.share) { navigator.share({ title: SHOP.n, text: 'Check out these delicious cookies!', url: window.location.href }).catch(console.error); } else { alert("Copy Link: " + window.location.href); } }
 
     window.submitOrder = async () => {
         const name = document.getElementById('c_name').value.trim();
-        const addr = document.getElementById('c_addr').value.trim();
         const items = CART.filter(c => c.qty > 0);
+        
+        // METHOD VALIDATION
+        const addr = document.getElementById('c_addr').value.trim();
+        const date = document.getElementById('c_date').value;
+        const time = document.getElementById('c_time').value;
+
         if(!name) return alert(i18n[curLang].alert_name);
         if(items.length === 0) return alert(i18n[curLang].alert_item);
+
+        if(selectedMethod === 'delivery' && !addr) return alert(i18n[curLang].alert_addr);
+        if(selectedMethod === 'pickup' && (!date || !time)) return alert(i18n[curLang].alert_time);
 
         const btn = document.querySelector('button[onclick="submitOrder()"]');
         const originalText = btn.innerHTML;
@@ -412,13 +376,22 @@
 
             batch.set(orderRef, {
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                customerName: name, customerAddress: addr, resellerName: SHOP.n || 'PipahCookies', resellerPhone: SHOP.w, items: orderItems, totalPrice: total, type: 'customer_order'
+                customerName: name, 
+                customerAddress: selectedMethod === 'delivery' ? addr : `PICKUP: ${date} @ ${time}`, 
+                method: selectedMethod,
+                resellerName: SHOP.n || 'PipahCookies', resellerPhone: SHOP.w, items: orderItems, totalPrice: total, type: 'customer_order'
             });
             items.forEach(i => { batch.update(db.collection('products').doc(i.id), { soldCount: firebase.firestore.FieldValue.increment(i.qty) }); });
             await batch.commit();
 
             let msg = `*NEW ORDER: ${(SHOP.n || 'CUSTOMER').toUpperCase()}* 🍪\n\n👤 *${name}*\n`;
-            if(addr) msg += `📍 ${addr}\n`;
+            
+            if (selectedMethod === 'delivery') {
+                msg += `🚚 *DELIVERY*\n📍 ${addr}\n`;
+            } else {
+                msg += `🛍️ *SELF PICKUP*\n📅 ${date} @ ${time}\n`;
+            }
+
             msg += `\n*ORDER LIST:*`;
             items.forEach(i => { msg += `\n▪️ ${i.qty}x ${i.name}`; });
             msg += `\n\n*TOTAL: RM ${total.toFixed(2)}*`;
@@ -427,7 +400,7 @@
             window.location.href = `https://wa.me/${SHOP.w}?text=${encodeURIComponent(msg)}`;
         } catch (error) { 
             console.error(error);
-            alert("Error sending order. Redirecting to WhatsApp anyway.");
+            alert("Error sending order. Redirecting to WhatsApp.");
             window.location.href = `https://wa.me/${SHOP.w}`; 
         }
     }
