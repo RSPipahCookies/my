@@ -6,8 +6,8 @@ const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './Images/icon.png',
-  './Images/offline.png', // <--- IMPORTANT: We cache this immediately!
+  './images/rs194.png',
+  './images/rs512.png', // <--- IMPORTANT: We cache this immediately!
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Outfit:wght@300;400;500;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
