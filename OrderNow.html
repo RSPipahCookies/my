@@ -120,22 +120,30 @@
   </div>
 
   <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-slate-200 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] pb-6 pt-3 px-4 transition-transform duration-300 transform translate-y-full" id="cart-bar">
-    <div class="max-w-md mx-auto flex items-center justify-between">
-        <div class="flex flex-col">
+    <div class="max-w-md mx-auto flex items-center justify-between gap-3">
+        <div class="flex flex-col flex-1" onclick="openCart()">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider" data-i18n="total">Jumlah Besar</span>
-            <div class="flex items-baseline gap-1">
+            <div class="flex items-baseline gap-1 cursor-pointer">
                 <span class="text-2xl font-extrabold text-slate-800" id="grand-total">RM 0.00</span>
                 <span class="text-xs text-slate-400 font-medium" id="total-qty">(0 items)</span>
+                <i class="fa-solid fa-chevron-up text-xs text-slate-300 ml-1"></i>
             </div>
         </div>
-        <button onclick="submitOrder()" class="bg-green-500 hover:brightness-110 text-white font-bold py-3 px-8 rounded-full transition flex items-center gap-2 shadow-lg shadow-green-500/30 active:scale-95 theme-bg">
-            <span data-i18n="btn_order">Checkout</span>
-            <i class="fa-solid fa-arrow-right"></i>
-        </button>
+        <div class="flex items-center gap-2">
+            <button onclick="openCart()" class="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-600 flex items-center justify-center shadow-sm active:scale-90 transition relative">
+                <i class="fa-solid fa-list-check text-lg"></i>
+            </button>
+            
+            <button onclick="submitOrder()" class="bg-green-500 hover:brightness-110 text-white font-bold h-12 px-6 rounded-full transition flex items-center gap-2 shadow-lg shadow-green-500/30 active:scale-95 theme-bg">
+                <span data-i18n="btn_order">Checkout</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
     </div>
   </div>
 
-  <div id="modal-backdrop" class="fixed inset-0 bg-black/60 z-[70] hidden transition-opacity duration-300 opacity-0 backdrop-blur-sm" onclick="closeModal()"></div>
+  <div id="modal-backdrop" class="fixed inset-0 bg-black/60 z-[70] hidden transition-opacity duration-300 opacity-0 backdrop-blur-sm" onclick="closeModal(); closeCart();"></div>
+  
   <div id="product-modal" class="fixed bottom-0 left-0 right-0 z-[80] bg-white rounded-t-3xl shadow-2xl transform translate-y-full transition-transform duration-300 max-h-[85vh] overflow-y-auto hidden">
       <div class="relative">
           <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-8 h-8 bg-black/20 text-white rounded-full flex items-center justify-center backdrop-blur"><i class="fa-solid fa-xmark"></i></button>
@@ -163,6 +171,29 @@
       </div>
   </div>
 
+  <div id="cart-modal" class="fixed bottom-0 left-0 right-0 z-[80] bg-white rounded-t-3xl shadow-2xl transform translate-y-full transition-transform duration-300 max-h-[85vh] flex flex-col hidden">
+    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-3xl">
+        <h2 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-basket-shopping text-orange-600 theme-text"></i> 
+            <span data-i18n="cart_title">Semak Pesanan</span>
+        </h2>
+        <button onclick="closeCart()" class="w-8 h-8 bg-slate-200 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-300 transition"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    
+    <div id="cart-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+        </div>
+
+    <div class="p-4 border-t border-slate-100 bg-white pb-8 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-10">
+        <div class="flex justify-between items-end mb-4">
+            <span class="text-sm font-bold text-slate-500 uppercase tracking-wide">Subtotal</span>
+            <span class="text-2xl font-extrabold text-slate-800" id="cart-subtotal">RM 0.00</span>
+        </div>
+        <button onclick="closeCart()" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition theme-bg-dark">
+            <span data-i18n="continue">Sambung / Checkout</span>
+        </button>
+    </div>
+  </div>
+
 <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
@@ -179,22 +210,22 @@
 
     let SHOP = {}, CART = [], DB_PRODUCTS = {}, curLang='ms';
     let currentModalIdx = -1;
-    let selectedMethod = 'delivery'; // 'delivery' or 'pickup'
+    let selectedMethod = 'delivery';
 
     const i18n = {
         ms: { 
-            your_info:"Maklumat Anda", menu:"Menu Pilihan", total:"Jumlah Besar", btn_order:"Hantar Order", 
+            your_info:"Maklumat Anda", menu:"Menu Pilihan", total:"Jumlah Besar", btn_order:"Hantar", 
             ph_name:"Nama Penuh", ph_addr:"Alamat Penghantaran", alert_name:"Sila isi nama.", alert_item:"Sila pilih biskut.", 
-            promo_text:"Selamat Datang! Dapatkan biskut premium fresh dari oven sekarang.", lbl_name:"NAMA", lbl_addr:"ALAMAT PENGHANTARAN", 
+            promo_text:"Selamat Datang! Dapatkan biskut homemade fresh dari oven sekarang.", lbl_name:"NAMA", lbl_addr:"ALAMAT PENGHANTARAN", 
             add_to_cart:"Simpan Pilihan", m_delivery:"Penghantaran", m_pickup:"Ambil Sendiri", lbl_date:"TARIKH", lbl_time:"MASA",
-            alert_addr: "Sila isi alamat.", alert_time: "Sila pilih tarikh & masa."
+            alert_addr: "Sila isi alamat.", alert_time: "Sila pilih tarikh & masa.", cart_title:"Semak Pesanan", continue:"Tutup"
         },
         en: { 
-            your_info:"Your Details", menu:"Menu", total:"Grand Total", btn_order:"Send Order", 
+            your_info:"Your Details", menu:"Menu", total:"Grand Total", btn_order:"Send", 
             ph_name:"Full Name", ph_addr:"Delivery Address", alert_name:"Please enter name.", alert_item:"Please select items.", 
             promo_text:"Welcome! Get premium fresh cookies directly from the oven.", lbl_name:"NAME", lbl_addr:"DELIVERY ADDRESS", 
             add_to_cart:"Save Selection", m_delivery:"Delivery", m_pickup:"Self Pickup", lbl_date:"DATE", lbl_time:"TIME",
-            alert_addr: "Please enter address.", alert_time: "Please select date & time."
+            alert_addr: "Please enter address.", alert_time: "Please select date & time.", cart_title:"Review Order", continue:"Close"
         }
     };
 
@@ -231,23 +262,12 @@
                  db.collection('reseller_visits').doc(SHOP.n).set({ count: firebase.firestore.FieldValue.increment(1), lastVisit: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
             }
 
-            // --- FULFILLMENT SETUP ---
             const hasDelivery = SHOP.fulfillment ? SHOP.fulfillment.delivery : true;
             const hasPickup = SHOP.fulfillment ? SHOP.fulfillment.pickup : true;
 
-            if (!hasDelivery && hasPickup) {
-                setMethod('pickup');
-                document.getElementById('btn-delivery').classList.add('hidden');
-            } else if (hasDelivery && !hasPickup) {
-                setMethod('delivery');
-                document.getElementById('btn-pickup').classList.add('hidden');
-            } else if (!hasDelivery && !hasPickup) {
-                // Fallback if both disabled
-                setMethod('delivery');
-            } else {
-                setMethod('delivery'); // Default if both enabled
-            }
-            // --------------------------
+            if (!hasDelivery && hasPickup) { setMethod('pickup'); document.getElementById('btn-delivery').classList.add('hidden'); } 
+            else if (hasDelivery && !hasPickup) { setMethod('delivery'); document.getElementById('btn-pickup').classList.add('hidden'); } 
+            else { setMethod('delivery'); }
 
             if (SHOP.pm) document.getElementById('shop-promo').innerText = SHOP.pm;
             document.getElementById('shop-name').innerText = SHOP.n || 'PipahCookies';
@@ -267,17 +287,8 @@
                 SHOP.i.forEach((id, idx) => {
                     const p = DB_PRODUCTS[id];
                     if(p) {
-                        // CHECK FOR CUSTOM IMAGE
                         const customImg = (SHOP.pi && SHOP.pi[idx]) ? SHOP.pi[idx] : p.image;
-                        
-                        CART.push({ 
-                            id, name: p.name, 
-                            price: parseFloat(SHOP.p[idx]), 
-                            oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0,
-                            qty: 0, 
-                            image: customImg, // Use determined image
-                            description: p.description 
-                        });
+                        CART.push({ id, name: p.name, price: parseFloat(SHOP.p[idx]), oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, qty: 0, image: customImg, description: p.description });
                     }
                 });
             }
@@ -289,7 +300,6 @@
         } catch(e) { console.error(e); document.getElementById('loader').innerHTML = '<p class="text-red-500 font-bold">Shop Error.</p>'; }
     });
 
-    // NEW: Method Toggle Function
     function setMethod(method) {
         selectedMethod = method;
         const btnDel = document.getElementById('btn-delivery');
@@ -300,13 +310,11 @@
         if(method === 'delivery') {
             btnDel.className = "flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 active-tab theme-bg";
             btnPick.className = "flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 inactive-tab";
-            inpDel.classList.remove('hidden');
-            inpPick.classList.add('hidden');
+            inpDel.classList.remove('hidden'); inpPick.classList.add('hidden');
         } else {
             btnPick.className = "flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 active-tab theme-bg";
             btnDel.className = "flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 inactive-tab";
-            inpPick.classList.remove('hidden');
-            inpDel.classList.add('hidden');
+            inpPick.classList.remove('hidden'); inpDel.classList.add('hidden');
         }
     }
 
@@ -338,21 +346,104 @@
         document.getElementById('modal-backdrop').classList.remove('hidden'); document.getElementById('product-modal').classList.remove('hidden');
         setTimeout(() => { document.getElementById('modal-backdrop').classList.remove('opacity-0'); document.getElementById('product-modal').classList.remove('translate-y-full'); }, 10);
     }
-    function closeModal() { document.getElementById('modal-backdrop').classList.add('opacity-0'); document.getElementById('product-modal').classList.add('translate-y-full'); setTimeout(() => { document.getElementById('modal-backdrop').classList.add('hidden'); document.getElementById('product-modal').classList.add('hidden'); }, 300); }
+    
+    function closeModal() { 
+        document.getElementById('modal-backdrop').classList.add('opacity-0'); 
+        document.getElementById('product-modal').classList.add('translate-y-full'); 
+        setTimeout(() => { 
+            document.getElementById('modal-backdrop').classList.add('hidden'); 
+            document.getElementById('product-modal').classList.add('hidden'); 
+        }, 300); 
+    }
+
     function updateModalQty(d) { let currentQ = parseInt(document.getElementById('m-qty').innerText); if(currentQ + d < 0) return; document.getElementById('m-qty').innerText = currentQ + d; }
-    function confirmModal() { if(currentModalIdx > -1) { CART[currentModalIdx].qty = parseInt(document.getElementById('m-qty').innerText); recalcTotal(); render(document.getElementById('search-input').value); closeModal(); } }
+    
+    function confirmModal() { 
+        if(currentModalIdx > -1) { 
+            CART[currentModalIdx].qty = parseInt(document.getElementById('m-qty').innerText); 
+            recalcTotal(); 
+            render(document.getElementById('search-input').value); 
+            closeModal(); 
+        } 
+    }
+
     function recalcTotal() {
         let total = 0, count = 0; CART.forEach(c => { total += c.qty * c.price; count += c.qty; });
-        document.getElementById('grand-total').innerText = "RM " + total.toFixed(2); document.getElementById('total-qty').innerText = `(${count} items)`;
-        const bar = document.getElementById('cart-bar'); if (count > 0) { bar.classList.remove('translate-y-full'); } else { bar.classList.add('translate-y-full'); }
+        document.getElementById('grand-total').innerText = "RM " + total.toFixed(2); 
+        document.getElementById('total-qty').innerText = `(${count} items)`;
+        document.getElementById('cart-subtotal').innerText = "RM " + total.toFixed(2);
+        
+        const bar = document.getElementById('cart-bar'); 
+        if (count > 0) { bar.classList.remove('translate-y-full'); } else { bar.classList.add('translate-y-full'); }
     }
+
+    // --- NEW CART FUNCTIONS ---
+    function openCart() {
+        renderCartList();
+        document.getElementById('modal-backdrop').classList.remove('hidden');
+        document.getElementById('cart-modal').classList.remove('hidden');
+        setTimeout(() => { 
+            document.getElementById('modal-backdrop').classList.remove('opacity-0'); 
+            document.getElementById('cart-modal').classList.remove('translate-y-full'); 
+        }, 10);
+    }
+
+    function closeCart() {
+        document.getElementById('modal-backdrop').classList.add('opacity-0');
+        document.getElementById('cart-modal').classList.add('translate-y-full');
+        setTimeout(() => { 
+            document.getElementById('modal-backdrop').classList.add('hidden'); 
+            document.getElementById('cart-modal').classList.add('hidden'); 
+        }, 300);
+    }
+
+    function renderCartList() {
+        const container = document.getElementById('cart-list');
+        container.innerHTML = '';
+        let hasItems = false;
+        
+        CART.forEach((item, idx) => {
+            if(item.qty > 0) {
+                hasItems = true;
+                container.innerHTML += `
+                <div class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                    <img src="${item.image}" class="w-16 h-16 rounded-lg object-cover bg-gray-100">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-slate-800 text-sm line-clamp-1">${item.name}</h4>
+                        <p class="text-orange-600 font-bold text-xs theme-text">RM ${item.price.toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
+                        <button onclick="updateCartItemQty(${idx}, -1)" class="w-7 h-7 bg-white text-slate-600 rounded shadow-sm flex items-center justify-center font-bold active:scale-90 transition">-</button>
+                        <span class="font-bold text-sm w-4 text-center">${item.qty}</span>
+                        <button onclick="updateCartItemQty(${idx}, 1)" class="w-7 h-7 bg-white text-slate-600 rounded shadow-sm flex items-center justify-center font-bold active:scale-90 transition">+</button>
+                    </div>
+                </div>`;
+            }
+        });
+
+        if(!hasItems) {
+            container.innerHTML = `<div class="flex flex-col items-center justify-center h-48 text-slate-400">
+                <i class="fa-solid fa-basket-shopping text-4xl mb-2 opacity-30"></i>
+                <p class="text-sm font-medium">Cart is empty</p>
+            </div>`;
+        }
+    }
+
+    function updateCartItemQty(idx, delta) {
+        if(CART[idx].qty + delta < 0) return;
+        CART[idx].qty += delta;
+        recalcTotal();
+        renderCartList(); // Refresh cart UI
+        render(document.getElementById('search-input').value); // Refresh main list badges
+    }
+    // -------------------------
+
     function shareShop() { if (navigator.share) { navigator.share({ title: SHOP.n, text: 'Check out these delicious cookies!', url: window.location.href }).catch(console.error); } else { alert("Copy Link: " + window.location.href); } }
 
     window.submitOrder = async () => {
         const name = document.getElementById('c_name').value.trim();
         const items = CART.filter(c => c.qty > 0);
         
-        // METHOD VALIDATION
         const addr = document.getElementById('c_addr').value.trim();
         const date = document.getElementById('c_date').value;
         const time = document.getElementById('c_time').value;
