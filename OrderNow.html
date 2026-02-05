@@ -194,7 +194,7 @@
     </div>
   </div>
 
-<script>
+ <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
       authDomain: "pipahcookies-order.firebaseapp.com",
@@ -211,6 +211,7 @@
     let SHOP = {}, CART = [], DB_PRODUCTS = {}, curLang='ms';
     let currentModalIdx = -1;
     let selectedMethod = 'delivery';
+    let cartSequence = 0; // NEW: Tracks the order of items added
 
     const i18n = {
         ms: { 
@@ -288,7 +289,18 @@
                     const p = DB_PRODUCTS[id];
                     if(p) {
                         const customImg = (SHOP.pi && SHOP.pi[idx]) ? SHOP.pi[idx] : p.image;
-                        CART.push({ id, name: p.name, price: parseFloat(SHOP.p[idx]), oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, qty: 0, image: customImg, description: p.description });
+                        // NEW: added 'seq: 0' to track order
+                        CART.push({ 
+                            id, 
+                            idx: idx, // Store original index for referencing
+                            name: p.name, 
+                            price: parseFloat(SHOP.p[idx]), 
+                            oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, 
+                            qty: 0, 
+                            image: customImg, 
+                            description: p.description,
+                            seq: 0 
+                        });
                     }
                 });
             }
@@ -338,12 +350,18 @@
     }
 
     function filterProducts() { render(document.getElementById('search-input').value); }
+    
     function openModal(idx) {
         currentModalIdx = idx; const item = CART[idx];
-        document.getElementById('m-img').src = item.image; document.getElementById('m-name').innerText = item.name; document.getElementById('m-price').innerText = `RM ${item.price.toFixed(2)}`;
-        document.getElementById('m-qty').innerText = item.qty; document.getElementById('m-desc').innerText = item.description || "Premium quality homemade cookies made with pure butter. Freshly baked.";
+        document.getElementById('m-img').src = item.image; 
+        document.getElementById('m-name').innerText = item.name; 
+        document.getElementById('m-price').innerText = `RM ${item.price.toFixed(2)}`;
+        document.getElementById('m-qty').innerText = item.qty; 
+        document.getElementById('m-desc').innerText = item.description || "Premium quality homemade cookies made with pure butter. Freshly baked.";
         if(item.oldPrice > item.price){ document.getElementById('m-old-price').innerText = `RM ${item.oldPrice.toFixed(2)}`; document.getElementById('m-old-price').classList.remove('hidden'); } else { document.getElementById('m-old-price').classList.add('hidden'); }
-        document.getElementById('modal-backdrop').classList.remove('hidden'); document.getElementById('product-modal').classList.remove('hidden');
+        
+        document.getElementById('modal-backdrop').classList.remove('hidden'); 
+        document.getElementById('product-modal').classList.remove('hidden');
         setTimeout(() => { document.getElementById('modal-backdrop').classList.remove('opacity-0'); document.getElementById('product-modal').classList.remove('translate-y-full'); }, 10);
     }
     
@@ -356,11 +374,22 @@
         }, 300); 
     }
 
-    function updateModalQty(d) { let currentQ = parseInt(document.getElementById('m-qty').innerText); if(currentQ + d < 0) return; document.getElementById('m-qty').innerText = currentQ + d; }
+    function updateModalQty(d) { 
+        let currentQ = parseInt(document.getElementById('m-qty').innerText); 
+        if(currentQ + d < 0) return; 
+        document.getElementById('m-qty').innerText = currentQ + d; 
+    }
     
     function confirmModal() { 
         if(currentModalIdx > -1) { 
-            CART[currentModalIdx].qty = parseInt(document.getElementById('m-qty').innerText); 
+            const newQty = parseInt(document.getElementById('m-qty').innerText);
+            
+            // NEW: Set sequence if adding for the first time
+            if (CART[currentModalIdx].qty === 0 && newQty > 0) {
+                CART[currentModalIdx].seq = ++cartSequence;
+            }
+
+            CART[currentModalIdx].qty = newQty; 
             recalcTotal(); 
             render(document.getElementById('search-input').value); 
             closeModal(); 
@@ -377,7 +406,6 @@
         if (count > 0) { bar.classList.remove('translate-y-full'); } else { bar.classList.add('translate-y-full'); }
     }
 
-    // --- NEW CART FUNCTIONS ---
     function openCart() {
         renderCartList();
         document.getElementById('modal-backdrop').classList.remove('hidden');
@@ -400,11 +428,13 @@
     function renderCartList() {
         const container = document.getElementById('cart-list');
         container.innerHTML = '';
-        let hasItems = false;
         
-        CART.forEach((item, idx) => {
-            if(item.qty > 0) {
-                hasItems = true;
+        // NEW: Sort by Sequence (Added time) instead of default index
+        const sortedCart = CART.filter(c => c.qty > 0).sort((a, b) => a.seq - b.seq);
+        
+        if(sortedCart.length > 0) {
+            sortedCart.forEach((item) => {
+                // Use original index (item.idx) for the button callbacks
                 container.innerHTML += `
                 <div class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                     <img src="${item.image}" class="w-16 h-16 rounded-lg object-cover bg-gray-100">
@@ -413,15 +443,13 @@
                         <p class="text-orange-600 font-bold text-xs theme-text">RM ${item.price.toFixed(2)}</p>
                     </div>
                     <div class="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
-                        <button onclick="updateCartItemQty(${idx}, -1)" class="w-7 h-7 bg-white text-slate-600 rounded shadow-sm flex items-center justify-center font-bold active:scale-90 transition">-</button>
+                        <button onclick="updateCartItemQty(${item.idx}, -1)" class="w-7 h-7 bg-white text-slate-600 rounded shadow-sm flex items-center justify-center font-bold active:scale-90 transition">-</button>
                         <span class="font-bold text-sm w-4 text-center">${item.qty}</span>
-                        <button onclick="updateCartItemQty(${idx}, 1)" class="w-7 h-7 bg-white text-slate-600 rounded shadow-sm flex items-center justify-center font-bold active:scale-90 transition">+</button>
+                        <button onclick="updateCartItemQty(${item.idx}, 1)" class="w-7 h-7 bg-white text-slate-600 rounded shadow-sm flex items-center justify-center font-bold active:scale-90 transition">+</button>
                     </div>
                 </div>`;
-            }
-        });
-
-        if(!hasItems) {
+            });
+        } else {
             container.innerHTML = `<div class="flex flex-col items-center justify-center h-48 text-slate-400">
                 <i class="fa-solid fa-basket-shopping text-4xl mb-2 opacity-30"></i>
                 <p class="text-sm font-medium">Cart is empty</p>
@@ -431,18 +459,25 @@
 
     function updateCartItemQty(idx, delta) {
         if(CART[idx].qty + delta < 0) return;
+        
+        // NEW: Set sequence if adding back from 0
+        if (CART[idx].qty === 0 && delta > 0) {
+            CART[idx].seq = ++cartSequence;
+        }
+
         CART[idx].qty += delta;
         recalcTotal();
         renderCartList(); // Refresh cart UI
         render(document.getElementById('search-input').value); // Refresh main list badges
     }
-    // -------------------------
 
     function shareShop() { if (navigator.share) { navigator.share({ title: SHOP.n, text: 'Check out these delicious cookies!', url: window.location.href }).catch(console.error); } else { alert("Copy Link: " + window.location.href); } }
 
     window.submitOrder = async () => {
         const name = document.getElementById('c_name').value.trim();
-        const items = CART.filter(c => c.qty > 0);
+        
+        // NEW: Sort items by sequence for checkout too
+        const items = CART.filter(c => c.qty > 0).sort((a, b) => a.seq - b.seq);
         
         const addr = document.getElementById('c_addr').value.trim();
         const date = document.getElementById('c_date').value;
@@ -455,7 +490,6 @@
         if(selectedMethod === 'pickup' && (!date || !time)) return alert(i18n[curLang].alert_time);
 
         const btn = document.querySelector('button[onclick="submitOrder()"]');
-        const originalText = btn.innerHTML;
         btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Processing...`;
         btn.disabled = true;
 
@@ -496,6 +530,7 @@
         }
     }
 </script>
+
 
 </body>
 </html>
