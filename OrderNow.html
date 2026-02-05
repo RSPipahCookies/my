@@ -17,8 +17,6 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .modal-enter { transform: translateY(100%); opacity: 0; }
-    .modal-enter-active { transform: translateY(0); opacity: 1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .active-tab { background-color: #f97316; color: white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3); }
     .inactive-tab { background-color: transparent; color: #64748b; }
   </style>
@@ -133,7 +131,6 @@
             <button onclick="openCart()" class="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-600 flex items-center justify-center shadow-sm active:scale-90 transition relative">
                 <i class="fa-solid fa-list-check text-lg"></i>
             </button>
-            
             <button onclick="submitOrder()" class="bg-green-500 hover:brightness-110 text-white font-bold h-12 px-6 rounded-full transition flex items-center gap-2 shadow-lg shadow-green-500/30 active:scale-95 theme-bg">
                 <span data-i18n="btn_order">Checkout</span>
                 <i class="fa-solid fa-arrow-right"></i>
@@ -179,10 +176,7 @@
         </h2>
         <button onclick="closeCart()" class="w-8 h-8 bg-slate-200 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-300 transition"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    
-    <div id="cart-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
-        </div>
-
+    <div id="cart-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
     <div class="p-4 border-t border-slate-100 bg-white pb-8 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-10">
         <div class="flex justify-between items-end mb-4">
             <span class="text-sm font-bold text-slate-500 uppercase tracking-wide">Subtotal</span>
@@ -194,7 +188,7 @@
     </div>
   </div>
 
- <script>
+<script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
       authDomain: "pipahcookies-order.firebaseapp.com",
@@ -211,7 +205,7 @@
     let SHOP = {}, CART = [], DB_PRODUCTS = {}, curLang='ms';
     let currentModalIdx = -1;
     let selectedMethod = 'delivery';
-    let cartSequence = 0; // NEW: Tracks the order of items added
+    let cartSequence = 0;
 
     const i18n = {
         ms: { 
@@ -272,7 +266,7 @@
 
             if (SHOP.pm) document.getElementById('shop-promo').innerText = SHOP.pm;
             document.getElementById('shop-name').innerText = SHOP.n || 'PipahCookies';
-            document.title = SHOP.n + " - Order";
+            document.title = (SHOP.n || 'PipahCookies') + " - Order";
             
             if (SHOP.b) document.getElementById('header-bg').style.backgroundImage = `url('${SHOP.b}')`;
             if (SHOP.l) { const logo = document.getElementById('shop-logo'); logo.src = SHOP.l; logo.classList.remove('hidden'); }
@@ -284,21 +278,22 @@
                 document.head.appendChild(style);
             }
 
+            // --- STRICT PRODUCT DATA ENFORCEMENT ---
             if(SHOP.i){
                 SHOP.i.forEach((id, idx) => {
                     const p = DB_PRODUCTS[id];
                     if(p) {
-                        const customImg = (SHOP.pi && SHOP.pi[idx]) ? SHOP.pi[idx] : p.image;
-                        // NEW: added 'seq: 0' to track order
+                        // REMOVED SHOP.pi logic. 
+                        // Now forces DB image and name.
                         CART.push({ 
                             id, 
-                            idx: idx, // Store original index for referencing
-                            name: p.name, 
+                            idx: idx, 
+                            name: p.name, // STRICT DB NAME
                             price: parseFloat(SHOP.p[idx]), 
                             oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, 
                             qty: 0, 
-                            image: customImg, 
-                            description: p.description,
+                            image: p.image, // STRICT DB IMAGE
+                            description: p.description, // STRICT DB DESC
                             seq: 0 
                         });
                     }
@@ -383,12 +378,7 @@
     function confirmModal() { 
         if(currentModalIdx > -1) { 
             const newQty = parseInt(document.getElementById('m-qty').innerText);
-            
-            // NEW: Set sequence if adding for the first time
-            if (CART[currentModalIdx].qty === 0 && newQty > 0) {
-                CART[currentModalIdx].seq = ++cartSequence;
-            }
-
+            if (CART[currentModalIdx].qty === 0 && newQty > 0) { CART[currentModalIdx].seq = ++cartSequence; }
             CART[currentModalIdx].qty = newQty; 
             recalcTotal(); 
             render(document.getElementById('search-input').value); 
@@ -410,31 +400,23 @@
         renderCartList();
         document.getElementById('modal-backdrop').classList.remove('hidden');
         document.getElementById('cart-modal').classList.remove('hidden');
-        setTimeout(() => { 
-            document.getElementById('modal-backdrop').classList.remove('opacity-0'); 
-            document.getElementById('cart-modal').classList.remove('translate-y-full'); 
-        }, 10);
+        setTimeout(() => { document.getElementById('modal-backdrop').classList.remove('opacity-0'); document.getElementById('cart-modal').classList.remove('translate-y-full'); }, 10);
     }
 
     function closeCart() {
         document.getElementById('modal-backdrop').classList.add('opacity-0');
         document.getElementById('cart-modal').classList.add('translate-y-full');
-        setTimeout(() => { 
-            document.getElementById('modal-backdrop').classList.add('hidden'); 
-            document.getElementById('cart-modal').classList.add('hidden'); 
-        }, 300);
+        setTimeout(() => { document.getElementById('modal-backdrop').classList.add('hidden'); document.getElementById('cart-modal').classList.add('hidden'); }, 300);
     }
 
     function renderCartList() {
         const container = document.getElementById('cart-list');
         container.innerHTML = '';
         
-        // NEW: Sort by Sequence (Added time) instead of default index
         const sortedCart = CART.filter(c => c.qty > 0).sort((a, b) => a.seq - b.seq);
         
         if(sortedCart.length > 0) {
             sortedCart.forEach((item) => {
-                // Use original index (item.idx) for the button callbacks
                 container.innerHTML += `
                 <div class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                     <img src="${item.image}" class="w-16 h-16 rounded-lg object-cover bg-gray-100">
@@ -450,42 +432,28 @@
                 </div>`;
             });
         } else {
-            container.innerHTML = `<div class="flex flex-col items-center justify-center h-48 text-slate-400">
-                <i class="fa-solid fa-basket-shopping text-4xl mb-2 opacity-30"></i>
-                <p class="text-sm font-medium">Cart is empty</p>
-            </div>`;
+            container.innerHTML = `<div class="flex flex-col items-center justify-center h-48 text-slate-400"><i class="fa-solid fa-basket-shopping text-4xl mb-2 opacity-30"></i><p class="text-sm font-medium">Cart is empty</p></div>`;
         }
     }
 
     function updateCartItemQty(idx, delta) {
         if(CART[idx].qty + delta < 0) return;
-        
-        // NEW: Set sequence if adding back from 0
-        if (CART[idx].qty === 0 && delta > 0) {
-            CART[idx].seq = ++cartSequence;
-        }
-
+        if (CART[idx].qty === 0 && delta > 0) { CART[idx].seq = ++cartSequence; }
         CART[idx].qty += delta;
-        recalcTotal();
-        renderCartList(); // Refresh cart UI
-        render(document.getElementById('search-input').value); // Refresh main list badges
+        recalcTotal(); renderCartList(); render(document.getElementById('search-input').value);
     }
 
     function shareShop() { if (navigator.share) { navigator.share({ title: SHOP.n, text: 'Check out these delicious cookies!', url: window.location.href }).catch(console.error); } else { alert("Copy Link: " + window.location.href); } }
 
     window.submitOrder = async () => {
         const name = document.getElementById('c_name').value.trim();
-        
-        // NEW: Sort items by sequence for checkout too
         const items = CART.filter(c => c.qty > 0).sort((a, b) => a.seq - b.seq);
-        
         const addr = document.getElementById('c_addr').value.trim();
         const date = document.getElementById('c_date').value;
         const time = document.getElementById('c_time').value;
 
         if(!name) return alert(i18n[curLang].alert_name);
         if(items.length === 0) return alert(i18n[curLang].alert_item);
-
         if(selectedMethod === 'delivery' && !addr) return alert(i18n[curLang].alert_addr);
         if(selectedMethod === 'pickup' && (!date || !time)) return alert(i18n[curLang].alert_time);
 
@@ -510,12 +478,7 @@
             await batch.commit();
 
             let msg = `*NEW ORDER: ${(SHOP.n || 'CUSTOMER').toUpperCase()}* 🍪\n\n👤 *${name}*\n`;
-            
-            if (selectedMethod === 'delivery') {
-                msg += `🚚 *DELIVERY*\n📍 ${addr}\n`;
-            } else {
-                msg += `🛍️ *SELF PICKUP*\n📅 ${date} @ ${time}\n`;
-            }
+            if (selectedMethod === 'delivery') { msg += `🚚 *DELIVERY*\n📍 ${addr}\n`; } else { msg += `🛍️ *SELF PICKUP*\n📅 ${date} @ ${time}\n`; }
 
             msg += `\n*ORDER LIST:*`;
             items.forEach(i => { msg += `\n▪️ ${i.qty}x ${i.name}`; });
@@ -523,14 +486,9 @@
             msg += `\n_Generated by PipahCookies App_`;
             
             window.location.href = `https://wa.me/${SHOP.w}?text=${encodeURIComponent(msg)}`;
-        } catch (error) { 
-            console.error(error);
-            alert("Error sending order. Redirecting to WhatsApp.");
-            window.location.href = `https://wa.me/${SHOP.w}`; 
-        }
+        } catch (error) { console.error(error); alert("Error sending order. Redirecting to WhatsApp."); window.location.href = `https://wa.me/${SHOP.w}`; }
     }
 </script>
-
 
 </body>
 </html>
