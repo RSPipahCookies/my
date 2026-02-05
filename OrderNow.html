@@ -279,26 +279,28 @@
             }
 
             // --- STRICT PRODUCT DATA ENFORCEMENT ---
-            if(SHOP.i){
-                SHOP.i.forEach((id, idx) => {
-                    const p = DB_PRODUCTS[id];
-                    if(p) {
-                        // REMOVED SHOP.pi logic. 
-                        // Now forces DB image and name.
-                        CART.push({ 
-                            id, 
-                            idx: idx, 
-                            name: p.name, // STRICT DB NAME
-                            price: parseFloat(SHOP.p[idx]), 
-                            oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, 
-                            qty: 0, 
-                            image: p.image, // STRICT DB IMAGE
-                            description: p.description, // STRICT DB DESC
-                            seq: 0 
-                        });
-                    }
-                });
-            }
+if(SHOP.i){
+    SHOP.i.forEach((id, idx) => {
+        const p = DB_PRODUCTS[id];
+        if(p) {
+            CART.push({ 
+                id, 
+                idx: idx, 
+                name: p.name, // STRICT DB NAME (Cannot be edited)
+                price: parseFloat(SHOP.p[idx]), 
+                oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, 
+                qty: 0, 
+                image: p.image, // STRICT DB IMAGE (Cannot be edited)
+                
+                // MODIFIED: Uses SHOP.ds[idx] if available, otherwise uses DB description
+                description: (SHOP.ds && SHOP.ds[idx]) ? SHOP.ds[idx] : p.description, 
+                
+                seq: 0 
+            });
+        }
+    });
+}
+
             
             document.getElementById('item-count').innerText = `${CART.length} Items`;
             render();
