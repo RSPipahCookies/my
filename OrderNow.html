@@ -19,6 +19,10 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .active-tab { background-color: #f97316; color: white; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3); }
     .inactive-tab { background-color: transparent; color: #64748b; }
+    
+    /* WhatsApp Modal Animation */
+    .wa-modal-enter { opacity: 0; transform: translate(-50%, -40%) scale(0.95); }
+    .wa-modal-active { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   </style>
 </head>
 <body class="select-none">
@@ -62,11 +66,6 @@
     <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-lg flex items-center gap-2 theme-bg overflow-hidden">
         <i class="fa-solid fa-bullhorn animate-pulse"></i>
         <marquee id="shop-promo" scrollamount="5" data-i18n="promo_text">Selamat Datang! Dapatkan biskut homemade fresh dari oven sekarang.</marquee>
-    </div>
-
-    <div class="bg-white p-2 rounded-xl shadow-md border border-slate-100 flex items-center gap-3 sticky top-4 z-30 transition-shadow focus-within:shadow-xl">
-        <i class="fa-solid fa-magnifying-glass text-slate-400 ml-2"></i>
-        <input type="text" id="search-input" onkeyup="filterProducts()" class="flex-1 bg-transparent outline-none text-sm font-semibold text-slate-700 placeholder-slate-400 h-10" placeholder="Search cookies...">
     </div>
 
     <div class="bg-white p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
@@ -188,6 +187,62 @@
     </div>
   </div>
 
+  <button onclick="openWhatsAppModal()" class="fixed left-0 top-1/2 transform -translate-y-1/2 z-50 bg-[#25D366] text-white p-3 pr-4 rounded-r-2xl shadow-lg hover:bg-[#128C7E] transition-all duration-300 flex items-center gap-2 group border-y border-r border-white/20">
+      <i class="fa-brands fa-whatsapp text-2xl"></i>
+  </button>
+
+  <div id="wa-modal-backdrop" class="fixed inset-0 bg-black/60 z-[90] hidden transition-opacity duration-300 opacity-0 backdrop-blur-sm" onclick="closeWhatsAppModal()"></div>
+  <div id="wa-modal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] w-[90%] max-w-sm bg-white rounded-3xl shadow-2xl wa-modal-enter transition-all duration-300 hidden">
+      <div class="p-6 relative">
+          <button onclick="closeWhatsAppModal()" class="absolute top-4 right-4 text-slate-300 hover:text-slate-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+          
+          <h3 id="wa-title" class="text-xl font-extrabold text-teal-700 mb-1">Chat dengan PipahCookies</h3>
+          <p class="text-slate-500 text-xs mb-6 font-medium">Pilih topik untuk mula chat di WhatsApp:</p>
+          
+          <div class="space-y-3">
+              <button onclick="sendWA('order')" class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-green-50 rounded-2xl transition border border-slate-100 hover:border-green-200 group active:scale-95">
+                  <div class="flex items-center gap-3">
+                      <span class="text-xl">🍪</span>
+                      <span class="font-bold text-slate-700 text-sm group-hover:text-green-700">Nak Order Cookies</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-green-400 text-xs"></i>
+              </button>
+
+              <button onclick="sendWA('stock')" class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-orange-50 rounded-2xl transition border border-slate-100 hover:border-orange-200 group active:scale-95">
+                  <div class="flex items-center gap-3">
+                      <span class="text-xl">🔥</span>
+                      <span class="font-bold text-slate-700 text-sm group-hover:text-orange-700">Tanya Stok Available</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-orange-400 text-xs"></i>
+              </button>
+
+              <button onclick="sendWA('reseller')" class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-yellow-50 rounded-2xl transition border border-slate-100 hover:border-yellow-200 group active:scale-95">
+                  <div class="flex items-center gap-3">
+                      <span class="text-xl">💰</span>
+                      <span class="font-bold text-slate-700 text-sm group-hover:text-yellow-700">Nak Jadi Reseller</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-yellow-400 text-xs"></i>
+              </button>
+              
+              <button onclick="sendWA('status')" class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-blue-50 rounded-2xl transition border border-slate-100 hover:border-blue-200 group active:scale-95">
+                  <div class="flex items-center gap-3">
+                      <span class="text-xl">📦</span>
+                      <span class="font-bold text-slate-700 text-sm group-hover:text-blue-700">Check Status Order</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-blue-400 text-xs"></i>
+              </button>
+
+              <button onclick="sendWA('help')" class="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-red-50 rounded-2xl transition border border-slate-100 hover:border-red-200 group active:scale-95">
+                  <div class="flex items-center gap-3">
+                      <span class="text-xl">🆘</span>
+                      <span class="font-bold text-slate-700 text-sm group-hover:text-red-700">Bantuan / Lain-lain</span>
+                  </div>
+                  <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-red-400 text-xs"></i>
+              </button>
+          </div>
+      </div>
+  </div>
+
 <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB1zNzsKmXXLVsOVGnVeGwlT_0uX3XqdO0",
@@ -232,7 +287,6 @@
         document.querySelectorAll('[data-i18n]').forEach(e => e.innerText = i18n[l][e.dataset.i18n]);
         document.getElementById('c_name').placeholder = i18n[l].ph_name;
         document.getElementById('c_addr').placeholder = i18n[l].ph_addr;
-        document.getElementById('search-input').placeholder = l==='ms' ? 'Cari biskut...' : 'Search cookies...';
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -265,8 +319,12 @@
             else { setMethod('delivery'); }
 
             if (SHOP.pm) document.getElementById('shop-promo').innerText = SHOP.pm;
-            document.getElementById('shop-name').innerText = SHOP.n || 'PipahCookies';
-            document.title = (SHOP.n || 'PipahCookies') + " - Order";
+            
+            // --- SET SHOP NAMES ---
+            const shopName = SHOP.n || 'PipahCookies';
+            document.getElementById('shop-name').innerText = shopName;
+            document.getElementById('wa-title').innerText = `Chat dengan ${shopName}`;
+            document.title = shopName + " - Order";
             
             if (SHOP.b) document.getElementById('header-bg').style.backgroundImage = `url('${SHOP.b}')`;
             if (SHOP.l) { const logo = document.getElementById('shop-logo'); logo.src = SHOP.l; logo.classList.remove('hidden'); }
@@ -278,30 +336,25 @@
                 document.head.appendChild(style);
             }
 
-            // --- STRICT PRODUCT DATA ENFORCEMENT ---
-if(SHOP.i){
-    SHOP.i.forEach((id, idx) => {
-        const p = DB_PRODUCTS[id];
-        if(p) {
-            CART.push({ 
-                id, 
-                idx: idx, 
-                name: p.name, // STRICT DB NAME (Cannot be edited)
-                price: parseFloat(SHOP.p[idx]), 
-                oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, 
-                qty: 0, 
-                image: p.image, // STRICT DB IMAGE (Cannot be edited)
-                
-                // MODIFIED: Uses SHOP.ds[idx] if available, otherwise uses DB description
-                description: (SHOP.ds && SHOP.ds[idx]) ? SHOP.ds[idx] : p.description, 
-                
-                seq: 0 
-            });
-        }
-    });
-}
+            if(SHOP.i){
+                SHOP.i.forEach((id, idx) => {
+                    const p = DB_PRODUCTS[id];
+                    if(p) {
+                        CART.push({ 
+                            id, 
+                            idx: idx, 
+                            name: p.name, 
+                            price: parseFloat(SHOP.p[idx]), 
+                            oldPrice: SHOP.op ? parseFloat(SHOP.op[idx]) : 0, 
+                            qty: 0, 
+                            image: p.image, 
+                            description: (SHOP.ds && SHOP.ds[idx]) ? SHOP.ds[idx] : p.description, 
+                            seq: 0 
+                        });
+                    }
+                });
+            }
 
-            
             document.getElementById('item-count').innerText = `${CART.length} Items`;
             render();
             document.getElementById('loader').classList.add('hidden');
@@ -346,7 +399,7 @@ if(SHOP.i){
         });
     }
 
-    function filterProducts() { render(document.getElementById('search-input').value); }
+    // Removed filterProducts() since input is gone
     
     function openModal(idx) {
         currentModalIdx = idx; const item = CART[idx];
@@ -383,7 +436,7 @@ if(SHOP.i){
             if (CART[currentModalIdx].qty === 0 && newQty > 0) { CART[currentModalIdx].seq = ++cartSequence; }
             CART[currentModalIdx].qty = newQty; 
             recalcTotal(); 
-            render(document.getElementById('search-input').value); 
+            render(); 
             closeModal(); 
         } 
     }
@@ -442,7 +495,7 @@ if(SHOP.i){
         if(CART[idx].qty + delta < 0) return;
         if (CART[idx].qty === 0 && delta > 0) { CART[idx].seq = ++cartSequence; }
         CART[idx].qty += delta;
-        recalcTotal(); renderCartList(); render(document.getElementById('search-input').value);
+        recalcTotal(); renderCartList(); render();
     }
 
     function shareShop() { if (navigator.share) { navigator.share({ title: SHOP.n, text: 'Check out these delicious cookies!', url: window.location.href }).catch(console.error); } else { alert("Copy Link: " + window.location.href); } }
@@ -489,6 +542,62 @@ if(SHOP.i){
             
             window.location.href = `https://wa.me/${SHOP.w}?text=${encodeURIComponent(msg)}`;
         } catch (error) { console.error(error); alert("Error sending order. Redirecting to WhatsApp."); window.location.href = `https://wa.me/${SHOP.w}`; }
+    }
+
+    // --- NEW WHATSAPP FUNCTIONS ---
+
+    function openWhatsAppModal() {
+        const backdrop = document.getElementById('wa-modal-backdrop');
+        const modal = document.getElementById('wa-modal');
+        
+        backdrop.classList.remove('hidden');
+        modal.classList.remove('hidden');
+        
+        // Slight delay to allow display:block to apply before opacity transition
+        setTimeout(() => {
+            backdrop.classList.remove('opacity-0');
+            modal.classList.add('wa-modal-active');
+        }, 10);
+    }
+
+    function closeWhatsAppModal() {
+        const backdrop = document.getElementById('wa-modal-backdrop');
+        const modal = document.getElementById('wa-modal');
+        
+        backdrop.classList.add('opacity-0');
+        modal.classList.remove('wa-modal-active');
+        
+        setTimeout(() => {
+            backdrop.classList.add('hidden');
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    function sendWA(type) {
+        let msg = "";
+        const shopName = SHOP.n || 'PipahCookies';
+        
+        switch(type) {
+            case 'order':
+                msg = `Hi ${shopName}, saya berminat nak order cookies. Boleh share catalog? 🍪`;
+                break;
+            case 'stock':
+                msg = `Hi ${shopName}, saya nak tanya stok cookies apa yang available sekarang? 🔥`;
+                break;
+            case 'reseller':
+                msg = `Hi ${shopName}, saya berminat nak jadi reseller / agent. Boleh bagi info lanjut? 💰`;
+                break;
+            case 'status':
+                msg = `Hi ${shopName}, saya nak check status order saya. 📦`;
+                break;
+            case 'help':
+                msg = `Hi ${shopName}, saya perlukan bantuan lain / ada pertanyaan lanjut. 🆘`;
+                break;
+        }
+        
+        // Use shop phone number, fallback if missing
+        const phone = SHOP.w || '601121243407'; 
+        window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     }
 </script>
 
